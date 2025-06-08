@@ -360,7 +360,7 @@ const getCoordsForPopover = (
 ) => {
   const [x1, y1] = getElementAbsoluteCoords(element, elementsMap);
   const { x: viewportX, y: viewportY } = sceneCoordsToViewportCoords(
-    { sceneX: x1 + element.width / 2, sceneY: y1 },
+    { sceneX: x1 + element.width / 3, sceneY: y1 },
     appState,
   );
   const x = viewportX - appState.offsetLeft - POPUP_WIDTH / 2;
