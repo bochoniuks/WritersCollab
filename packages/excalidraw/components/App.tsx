@@ -133,7 +133,7 @@ import {
   newLinearElement,
   newTextElement,
   refreshTextDimensions,
-  newScratchpadElement
+  newScratchpadElement,
 } from "@excalidraw/element";
 
 import { deepCopyElement, duplicateElements } from "@excalidraw/element";
@@ -159,7 +159,7 @@ import {
   isFlowchartNodeElement,
   isBindableElement,
   isTextElement,
-  isScratchpadElement
+  isScratchpadElement,
 } from "@excalidraw/element";
 
 import {
@@ -451,6 +451,7 @@ import { LaserTrails } from "../laser-trails";
 import { withBatchedUpdates, withBatchedUpdatesThrottled } from "../reactUtils";
 import { textWysiwyg } from "../wysiwyg/textWysiwyg";
 import { scratchpadWysiwyg } from "../wysiwyg/scratchpadWysiwyg";
+
 import { isOverScrollBars } from "../scene/scrollbars";
 
 import { isMaybeMermaidDefinition } from "../mermaid";
@@ -487,6 +488,8 @@ import { Toast } from "./Toast";
 import { findShapeByKey } from "./shapes";
 
 import UnlockPopup from "./UnlockPopup";
+
+import type { JSONContent } from "@tiptap/core";
 
 import type {
   RenderInteractiveSceneCallback,
@@ -5076,6 +5079,78 @@ class App extends React.Component<AppProps, AppState> {
     updateElement(element.originalText, false);
   }
 
+  private handleScratchpadWysiwyg(
+    element: ExcalidrawScratchpadElement,
+    { isExistingElement = false }: { isExistingElement?: boolean },
+  ) {
+    const updateElement = (nextDoc: JSONContent, isDeleted: boolean) => {
+      this.scene.replaceAllElements(
+        this.scene.getElementsIncludingDeleted().map((_el) =>
+          _el.id === element.id && isScratchpadElement(_el)
+            ? newElementWith(_el, {
+                tiptapDoc: nextDoc,
+                isDeleted: isDeleted ?? _el.isDeleted,
+              })
+            : _el,
+        ),
+      );
+    };
+
+    scratchpadWysiwyg({
+      id: element.id,
+      canvas: this.canvas,
+      getViewportCoords: (x, y) => {
+        const { x: vx, y: vy } = sceneCoordsToViewportCoords(
+          { sceneX: x, sceneY: y },
+          this.state,
+        );
+        return [vx - this.state.offsetLeft, vy - this.state.offsetTop];
+      },
+      onChange: withBatchedUpdates((nextDoc) => {
+        updateElement(nextDoc, false);
+        if (isNonDeletedElement(element)) {
+          updateBoundElements(element, this.scene);
+        }
+      }),
+      onSubmit: withBatchedUpdates(({ viaKeyboard, nextDoc }) => {
+        const isDeleted = !nextDoc.content?.length;
+        updateElement(nextDoc, isDeleted);
+        if (!isDeleted && viaKeyboard) {
+          const elId = element.containerId ?? element.id;
+          flushSync(() => {
+            this.setState((prev) => ({
+              selectedElementIds: makeNextSelectedElementIds(
+                { ...prev.selectedElementIds, [elId]: true },
+                prev,
+              ),
+            }));
+          });
+        }
+        if (isDeleted) {
+          fixBindingsAfterDeletion(this.scene.getNonDeletedElements(), [
+            element,
+          ]);
+        }
+        if (!isDeleted || isExistingElement) {
+          this.store.scheduleCapture();
+        }
+        flushSync(() => {
+          this.setState({ newElement: null, editingTextElement: null });
+        });
+        if (this.state.activeTool.locked) {
+          setCursorForShape(this.interactiveCanvas, this.state);
+        }
+        this.focusContainer();
+      }),
+      element,
+      excalidrawContainer: this.excalidrawContainerRef.current,
+      app: this,
+      autoSelect: !this.device.isTouchScreen,
+    });
+    this.deselectElements();
+    updateElement(element.tiptapDoc, false);
+  }
+
   private deselectElements() {
     this.setState({
       selectedElementIds: makeNextSelectedElementIds({}, this.state),
@@ -5339,23 +5414,33 @@ class App extends React.Component<AppProps, AppState> {
         shouldBindToContainer = true;
       }
     }
-    let existingTextElement: NonDeleted<ExcalidrawTextElement> | null = null;
+    let existingTextElement: NonDeleted<ExcalidrawScratchpadElement> | null =
+      null;
 
     const selectedElements = this.scene.getSelectedElements(this.state);
 
     if (selectedElements.length === 1) {
-      if (isTextElement(selectedElements[0])) {
+      if (isScratchpadElement(selectedElements[0])) {
         existingTextElement = selectedElements[0];
       } else if (container) {
-        existingTextElement = getBoundTextElement(
+        const bound = getBoundTextElement(
           selectedElements[0],
           this.scene.getNonDeletedElementsMap(),
         );
+        if (bound && isScratchpadElement(bound)) {
+          existingTextElement = bound;
+        }
       } else {
-        existingTextElement = this.getTextElementAtPosition(sceneX, sceneY);
+        const el = this.getTextElementAtPosition(sceneX, sceneY);
+        if (el && isScratchpadElement(el)) {
+          existingTextElement = el as NonDeleted<ExcalidrawScratchpadElement>;
+        }
       }
     } else {
-      existingTextElement = this.getTextElementAtPosition(sceneX, sceneY);
+      const el = this.getTextElementAtPosition(sceneX, sceneY);
+      if (el && isScratchpadElement(el)) {
+        existingTextElement = el as NonDeleted<ExcalidrawScratchpadElement>;
+      }
     }
 
     const fontFamily =
@@ -5501,23 +5586,33 @@ class App extends React.Component<AppProps, AppState> {
         shouldBindToContainer = true;
       }
     }
-    let existingTextElement: NonDeleted<ExcalidrawTextElement> | null = null;
+    let existingTextElement: NonDeleted<ExcalidrawScratchpadElement> | null =
+      null;
 
     const selectedElements = this.scene.getSelectedElements(this.state);
 
     if (selectedElements.length === 1) {
-      if (isTextElement(selectedElements[0])) {
+      if (isScratchpadElement(selectedElements[0])) {
         existingTextElement = selectedElements[0];
       } else if (container) {
-        existingTextElement = getBoundTextElement(
+        const bound = getBoundTextElement(
           selectedElements[0],
           this.scene.getNonDeletedElementsMap(),
         );
+        if (bound && isScratchpadElement(bound)) {
+          existingTextElement = bound;
+        }
       } else {
-        existingTextElement = this.getTextElementAtPosition(sceneX, sceneY);
+        const el = this.getTextElementAtPosition(sceneX, sceneY);
+        if (el && isScratchpadElement(el)) {
+          existingTextElement = el as NonDeleted<ExcalidrawScratchpadElement>;
+        }
       }
     } else {
-      existingTextElement = this.getTextElementAtPosition(sceneX, sceneY);
+      const el = this.getTextElementAtPosition(sceneX, sceneY);
+      if (el && isScratchpadElement(el)) {
+        existingTextElement = el as NonDeleted<ExcalidrawScratchpadElement>;
+      }
     }
 
     const fontFamily =
@@ -5567,7 +5662,7 @@ class App extends React.Component<AppProps, AppState> {
 
     const element =
       existingTextElement ||
-      newTextElement({
+      newScratchpadElement({
         x: parentCenterPosition ? parentCenterPosition.elementCenterX : sceneX,
         y: parentCenterPosition ? parentCenterPosition.elementCenterY : sceneY,
         strokeColor: this.state.currentItemStrokeColor,
@@ -5577,18 +5672,9 @@ class App extends React.Component<AppProps, AppState> {
         strokeStyle: this.state.currentItemStrokeStyle,
         roughness: this.state.currentItemRoughness,
         opacity: this.state.currentItemOpacity,
-        text: "",
-        fontSize,
-        fontFamily,
-        textAlign: parentCenterPosition
-          ? "center"
-          : this.state.currentItemTextAlign,
-        verticalAlign: parentCenterPosition
-          ? VERTICAL_ALIGN.MIDDLE
-          : DEFAULT_VERTICAL_ALIGN,
+        tiptapDoc: { type: "doc", content: [] },
         containerId: shouldBindToContainer ? container?.id : undefined,
         groupIds: container?.groupIds ?? [],
-        lineHeight,
         angle: container
           ? isArrowElement(container)
             ? (0 as Radians)
@@ -5600,7 +5686,7 @@ class App extends React.Component<AppProps, AppState> {
     if (!existingTextElement && shouldBindToContainer && container) {
       this.scene.mutateElement(container, {
         boundElements: (container.boundElements || []).concat({
-          type: "text",
+          type: "scratchpad",
           id: element.id,
         }),
       });
@@ -5617,7 +5703,7 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     if (autoEdit || existingTextElement || container) {
-      this.handleTextWysiwyg(element, {
+      this.handleScratchpadWysiwyg(element, {
         isExistingElement: !!existingTextElement,
       });
     } else {
@@ -6368,10 +6454,15 @@ class App extends React.Component<AppProps, AppState> {
         !this.state.showHyperlinkPopup
       ) {
         this.setState({ showHyperlinkPopup: "info" });
-      } else if (this.state.activeTool.type === "text") {
+      } else if (
+        this.state.activeTool.type === "text" ||
+        this.state.activeTool.type === "scratchpad"
+      ) {
         setCursor(
           this.interactiveCanvas,
-          isTextElement(hitElement) ? CURSOR_TYPE.TEXT : CURSOR_TYPE.CROSSHAIR,
+          isTextElement(hitElement) || isScratchpadElement(hitElement)
+            ? CURSOR_TYPE.TEXT
+            : CURSOR_TYPE.CROSSHAIR,
         );
       } else if (this.state.viewModeEnabled) {
         setCursor(this.interactiveCanvas, CURSOR_TYPE.GRAB);

@@ -1,14 +1,12 @@
 import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { EditorContent, JSONContent, useEditor } from "@tiptap/react";
+
+import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
-import type { Editor } from "@tiptap/core";
-
 
 import {
-  CODES,
   KEYS,
   CLASSES,
   POINTER_BUTTON,
@@ -34,11 +32,8 @@ import {
   getBoundTextMaxWidth,
   computeContainerDimensionForBoundText,
   computeBoundTextPosition,
-  getBoundTextElement,
 } from "@excalidraw/element";
-import { getTextWidth } from "@excalidraw/element";
-import { normalizeText } from "@excalidraw/element";
-import { wrapText } from "@excalidraw/element";
+
 import {
   isArrowElement,
   isBoundToContainer,
@@ -55,7 +50,6 @@ import type {
 
 import { actionSaveToActiveFile } from "../actions";
 
-import { parseClipboard } from "../clipboard";
 import {
   actionDecreaseFontSize,
   actionIncreaseFontSize,
@@ -65,6 +59,9 @@ import {
   actionZoomIn,
   actionZoomOut,
 } from "../actions/actionCanvas";
+
+import type { JSONContent } from "@tiptap/react";
+import type { Editor } from "@tiptap/core";
 
 import type App from "../components/App";
 import type { AppState } from "../types";

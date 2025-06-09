@@ -3,14 +3,8 @@ import { KEYS } from "@excalidraw/common";
 import {
   SelectionIcon,
   RectangleIcon,
-  DiamondIcon,
-  EllipseIcon,
   ArrowIcon,
-  LineIcon,
-  FreedrawIcon,
   TextIcon,
-  ImageIcon,
-  EraserIcon,
   ScratchpadIcon,
 } from "./icons";
 
@@ -88,7 +82,7 @@ export const SHAPES = [
   {
     icon: ScratchpadIcon,
     value: "scratchpad",
-    key: KEYS.S,           // choose an appropriate shortcut
+    key: KEYS.S, // choose an appropriate shortcut
     numericKey: KEYS["3"], // adjust if another number is free
     fillable: false,
   },

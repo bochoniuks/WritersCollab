@@ -1,12 +1,13 @@
 // packages/element/src/parseTiptapDoc.ts
-import type { JSONContent } from "@tiptap/core";
-import type { FontFamilyValues } from "@excalidraw/element/types";
 import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE } from "@excalidraw/common";
-import type { ExcalidrawTextElement } from "./types";
+
+import type { FontFamilyValues } from "@excalidraw/element/types";
+
+import type { JSONContent } from "@tiptap/core";
 
 export type TiptapSegment = {
   text: string;
-  fontFamily: FontFamilyValues;  // use numeric font-family values
+  fontFamily: FontFamilyValues; // use numeric font-family values
   fontSize: number;
   color: string;
 };
@@ -20,8 +21,12 @@ export const parseTiptapDoc = (doc: JSONContent): TiptapSegment[] => {
 
   const visit = (
     node: JSONContent,
-    style: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {},
-    ) => {
+    style: {
+      fontFamily?: FontFamilyValues;
+      fontSize?: number;
+      color?: string;
+    } = {},
+  ) => {
     if (!node) {
       return;
     }
@@ -55,9 +60,7 @@ export const parseTiptapDoc = (doc: JSONContent): TiptapSegment[] => {
     }
 
     if (Array.isArray(node.content)) {
-      node.content.forEach((child) =>
-        visit({ ...child }, { ...style }),
-      );
+      node.content.forEach((child) => visit({ ...child }, { ...style }));
     }
   };
 
