@@ -261,6 +261,7 @@ export const newScratchpadElement = (
     width: metrics.width,
     height: metrics.height,
     containerId: opts.containerId || null,
+    autoResize: true,              // initialise
   };
 
   // pass a value already typed as ExcalidrawScratchpadElement

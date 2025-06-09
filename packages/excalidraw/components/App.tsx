@@ -133,6 +133,7 @@ import {
   newLinearElement,
   newTextElement,
   refreshTextDimensions,
+  newScratchpadElement
 } from "@excalidraw/element";
 
 import { deepCopyElement, duplicateElements } from "@excalidraw/element";
@@ -158,6 +159,7 @@ import {
   isFlowchartNodeElement,
   isBindableElement,
   isTextElement,
+  isScratchpadElement
 } from "@excalidraw/element";
 
 import {
@@ -5464,6 +5466,168 @@ class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  private startScratchpadEditing = ({
+    sceneX,
+    sceneY,
+    insertAtParentCenter = true,
+    container,
+    autoEdit = true,
+  }: {
+    /** X position to insert text at */
+    sceneX: number;
+    /** Y position to insert text at */
+    sceneY: number;
+    /** whether to attempt to insert at element center if applicable */
+    insertAtParentCenter?: boolean;
+    container?: ExcalidrawTextContainer | null;
+    autoEdit?: boolean;
+  }) => {
+    let shouldBindToContainer = false;
+
+    let parentCenterPosition =
+      insertAtParentCenter &&
+      this.getTextWysiwygSnappedToCenterPosition(
+        sceneX,
+        sceneY,
+        this.state,
+        container,
+      );
+    if (container && parentCenterPosition) {
+      const boundTextElementToContainer = getBoundTextElement(
+        container,
+        this.scene.getNonDeletedElementsMap(),
+      );
+      if (!boundTextElementToContainer) {
+        shouldBindToContainer = true;
+      }
+    }
+    let existingTextElement: NonDeleted<ExcalidrawTextElement> | null = null;
+
+    const selectedElements = this.scene.getSelectedElements(this.state);
+
+    if (selectedElements.length === 1) {
+      if (isTextElement(selectedElements[0])) {
+        existingTextElement = selectedElements[0];
+      } else if (container) {
+        existingTextElement = getBoundTextElement(
+          selectedElements[0],
+          this.scene.getNonDeletedElementsMap(),
+        );
+      } else {
+        existingTextElement = this.getTextElementAtPosition(sceneX, sceneY);
+      }
+    } else {
+      existingTextElement = this.getTextElementAtPosition(sceneX, sceneY);
+    }
+
+    const fontFamily =
+      existingTextElement?.fontFamily || this.state.currentItemFontFamily;
+
+    const lineHeight =
+      existingTextElement?.lineHeight || getLineHeight(fontFamily);
+    const fontSize = this.state.currentItemFontSize;
+
+    if (
+      !existingTextElement &&
+      shouldBindToContainer &&
+      container &&
+      !isArrowElement(container)
+    ) {
+      const fontString = {
+        fontSize,
+        fontFamily,
+      };
+      const minWidth = getApproxMinLineWidth(
+        getFontString(fontString),
+        lineHeight,
+      );
+      const minHeight = getApproxMinLineHeight(fontSize, lineHeight);
+      const newHeight = Math.max(container.height, minHeight);
+      const newWidth = Math.max(container.width, minWidth);
+      this.scene.mutateElement(container, {
+        height: newHeight,
+        width: newWidth,
+      });
+      sceneX = container.x + newWidth / 2;
+      sceneY = container.y + newHeight / 2;
+      if (parentCenterPosition) {
+        parentCenterPosition = this.getTextWysiwygSnappedToCenterPosition(
+          sceneX,
+          sceneY,
+          this.state,
+          container,
+        );
+      }
+    }
+
+    const topLayerFrame = this.getTopLayerFrameAtSceneCoords({
+      x: sceneX,
+      y: sceneY,
+    });
+
+    const element =
+      existingTextElement ||
+      newTextElement({
+        x: parentCenterPosition ? parentCenterPosition.elementCenterX : sceneX,
+        y: parentCenterPosition ? parentCenterPosition.elementCenterY : sceneY,
+        strokeColor: this.state.currentItemStrokeColor,
+        backgroundColor: this.state.currentItemBackgroundColor,
+        fillStyle: this.state.currentItemFillStyle,
+        strokeWidth: this.state.currentItemStrokeWidth,
+        strokeStyle: this.state.currentItemStrokeStyle,
+        roughness: this.state.currentItemRoughness,
+        opacity: this.state.currentItemOpacity,
+        text: "",
+        fontSize,
+        fontFamily,
+        textAlign: parentCenterPosition
+          ? "center"
+          : this.state.currentItemTextAlign,
+        verticalAlign: parentCenterPosition
+          ? VERTICAL_ALIGN.MIDDLE
+          : DEFAULT_VERTICAL_ALIGN,
+        containerId: shouldBindToContainer ? container?.id : undefined,
+        groupIds: container?.groupIds ?? [],
+        lineHeight,
+        angle: container
+          ? isArrowElement(container)
+            ? (0 as Radians)
+            : container.angle
+          : (0 as Radians),
+        frameId: topLayerFrame ? topLayerFrame.id : null,
+      });
+
+    if (!existingTextElement && shouldBindToContainer && container) {
+      this.scene.mutateElement(container, {
+        boundElements: (container.boundElements || []).concat({
+          type: "text",
+          id: element.id,
+        }),
+      });
+    }
+    this.setState({ editingTextElement: element });
+
+    if (!existingTextElement) {
+      if (container && shouldBindToContainer) {
+        const containerIndex = this.scene.getElementIndex(container.id);
+        this.scene.insertElementAtIndex(element, containerIndex + 1);
+      } else {
+        this.scene.insertElement(element);
+      }
+    }
+
+    if (autoEdit || existingTextElement || container) {
+      this.handleTextWysiwyg(element, {
+        isExistingElement: !!existingTextElement,
+      });
+    } else {
+      this.setState({
+        newElement: element,
+        multiElement: null,
+      });
+    }
+  };
+
   private startImageCropping = (image: ExcalidrawImageElement) => {
     this.store.scheduleCapture();
     this.setState({
@@ -6629,6 +6793,7 @@ class App extends React.Component<AppProps, AppState> {
       this.state.activeTool.type === "selection" ||
       this.state.activeTool.type === "lasso" ||
       this.state.activeTool.type === "text" ||
+      this.state.activeTool.type === "scratchpad" || // new condition
       this.state.activeTool.type === "image";
 
     if (!allowOnPointerDown) {
@@ -6641,6 +6806,8 @@ class App extends React.Component<AppProps, AppState> {
         pointerDownState.origin.y,
         event.shiftKey,
       );
+    } else if (this.state.activeTool.type === "scratchpad") {
+      this.handleScratchpadOnPointerDown(event, pointerDownState);
     } else if (this.state.activeTool.type === "text") {
       this.handleTextOnPointerDown(event, pointerDownState);
     } else if (
@@ -7542,6 +7709,47 @@ class App extends React.Component<AppProps, AppState> {
       sceneY = element.y + element.height / 2;
     }
     this.startTextEditing({
+      sceneX,
+      sceneY,
+      insertAtParentCenter: !event.altKey,
+      container,
+      autoEdit: false,
+    });
+
+    resetCursor(this.interactiveCanvas);
+    if (!this.state.activeTool.locked) {
+      this.setState({
+        activeTool: updateActiveTool(this.state, { type: "selection" }),
+      });
+    }
+  };
+
+  private handleScratchpadOnPointerDown = (
+    event: React.PointerEvent<HTMLElement>,
+    pointerDownState: PointerDownState,
+  ): void => {
+    // if we're currently still editing text, clicking outside
+    // should only finalize it, not create another (irrespective
+    // of state.activeTool.locked)
+    if (this.state.editingTextElement) {
+      return;
+    }
+    let sceneX = pointerDownState.origin.x;
+    let sceneY = pointerDownState.origin.y;
+
+    const element = this.getElementAtPosition(sceneX, sceneY, {
+      includeBoundTextElement: true,
+    });
+
+    // FIXME
+    let container = this.getTextBindableContainerAtPosition(sceneX, sceneY);
+
+    if (hasBoundTextElement(element)) {
+      container = element as ExcalidrawTextContainer;
+      sceneX = element.x + element.width / 2;
+      sceneY = element.y + element.height / 2;
+    }
+    this.startScratchpadEditing({
       sceneX,
       sceneY,
       insertAtParentCenter: !event.altKey,

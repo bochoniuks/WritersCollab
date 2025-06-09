@@ -236,6 +236,7 @@ export type ExcalidrawScratchpadElement = _ExcalidrawElementBase & Readonly<{
   changeHistory?: ChangeEntry[];
 
   containerId: ExcalidrawGenericElement["id"] | null;
+  autoResize: boolean;             // new property
 
 }>;
 
