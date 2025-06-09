@@ -145,6 +145,7 @@ export const FONT_FAMILY = {
   "Comic Shanns": 8,
   "Liberation Sans": 9,
   Assistant: 10,
+  "Arimo": 11
 };
 
 export const FONT_FAMILY_FALLBACKS = {

@@ -131,6 +131,14 @@ export const FONT_METADATA: Record<number, FontMetadata> = {
     local: true,
     fallback: true,
   },
+  [FONT_FAMILY["Arimo"]]: {
+    metrics: {
+      unitsPerEm: 2048,
+      ascender: 1854,
+      descender: -434,
+      lineHeight: 1.25,  //(ascender – descender) / unitsPerEm × 1.15
+    },
+  },
 };
 
 /** Unicode ranges defined by google fonts */
