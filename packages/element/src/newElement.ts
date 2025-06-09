@@ -12,6 +12,8 @@ import {
   getLineHeight,
 } from "@excalidraw/common";
 
+import type { JSONContent } from "@tiptap/core";
+
 import type { Radians } from "@excalidraw/math";
 
 import type { MarkOptional, Merge } from "@excalidraw/common/utility-types";
@@ -48,6 +50,7 @@ import type {
   ExcalidrawArrowElement,
   ExcalidrawElbowArrowElement,
   ExcalidrawLineElement,
+  ExcalidrawScratchpadElement
 } from "./types";
 
 export type ElementConstructorOpts = MarkOptional<
@@ -234,6 +237,39 @@ const getTextElementPositionOffsets = (
         : 0,
     y: opts.verticalAlign === "middle" ? metrics.height / 2 : 0,
   };
+};
+
+export const newScratchpadElement = (
+  opts: ElementConstructorOpts & { 
+    tiptapDoc?: JSONContent;
+    containerId?: ExcalidrawTextContainer["id"] | null;
+  },
+): NonDeleted<ExcalidrawScratchpadElement> => {
+  const tiptapDoc: JSONContent =
+    opts.tiptapDoc ?? { type: "doc", content: [] };
+
+  const metrics = measureText(
+    "", // initial empty text
+    getFontString({ fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }),
+    getLineHeight(DEFAULT_FONT_FAMILY),
+  );
+
+  const scratchpadElementProps: ExcalidrawScratchpadElement = {
+    ..._newElementBase<ExcalidrawScratchpadElement>("scratchpad", opts),
+    tiptapDoc,
+    changeHistory: [],
+    width: metrics.width,
+    height: metrics.height,
+    containerId: opts.containerId || null,
+  };
+
+  // pass a value already typed as ExcalidrawScratchpadElement
+  const scratchpadElement: ExcalidrawScratchpadElement = newElementWith(
+    scratchpadElementProps,
+    {},
+  );
+
+  return scratchpadElement;
 };
 
 export const newTextElement = (

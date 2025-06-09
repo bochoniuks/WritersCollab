@@ -32,6 +32,7 @@ import type {
   FixedPointBinding,
   ExcalidrawFlowchartNodeElement,
   ExcalidrawLinearElementSubType,
+  ExcalidrawScratchpadElement,
 } from "./types";
 
 export const isInitializedImageElement = (
@@ -65,6 +66,11 @@ export const isIframeLikeElement = (
     !!element && (element.type === "iframe" || element.type === "embeddable")
   );
 };
+
+export const isScratchpadElement = (
+  element: ExcalidrawElement | null,
+): element is ExcalidrawScratchpadElement =>
+  element != null && element.type === "scratchpad";
 
 export const isTextElement = (
   element: ExcalidrawElement | null,
@@ -255,6 +261,7 @@ export const isExcalidrawElement = (
     case "frame":
     case "magicframe":
     case "image":
+    case "scratchpad":
     case "selection": {
       return true;
     }

@@ -14,6 +14,7 @@ import {
   getFontString,
   isRTL,
   getVerticalOffset,
+  getLineHeight,
 } from "@excalidraw/common";
 
 import type {
@@ -42,7 +43,7 @@ import {
   getBoundTextMaxHeight,
   getBoundTextMaxWidth,
 } from "./textElement";
-import { getLineHeightInPx } from "./textMeasurements";
+import { getLineHeightInPx, measureText } from "./textMeasurements";
 import {
   isTextElement,
   isLinearElement,
@@ -72,6 +73,7 @@ import type {
 
 import type { StrokeOptions } from "perfect-freehand";
 import type { RoughCanvas } from "roughjs/bin/canvas";
+import { parseTiptapDoc } from "./parseTiptapDoc";
 
 // using a stronger invert (100% vs our regular 93%) and saturate
 // as a temp hack to make images in dark theme look closer to original
@@ -812,6 +814,36 @@ export const renderElement = (
         );
       }
 
+      break;
+    }
+    case "scratchpad": {
+      // `element.tiptapDoc` contains Tiptap JSON describing
+      // segments with style marks (font, color, size).
+      // Convert each text node to a string and style info.
+      const segments = parseTiptapDoc(element.tiptapDoc);
+
+      context.save();
+      // apply base font for the element
+      context.textAlign = "left";
+      context.textBaseline = "top";
+
+      let cursorX = 0;
+      let cursorY = 0;
+
+      segments.forEach((seg) => {
+        const fontString = getFontString({
+          fontSize: seg.fontSize,
+          fontFamily: seg.fontFamily,
+        });
+        context.font = fontString;
+        context.fillStyle = seg.color;
+
+        context.fillText(seg.text, cursorX, cursorY);
+        cursorX += measureText(seg.text, fontString, getLineHeight(seg.fontFamily))
+          .width;
+      });
+
+      context.restore();
       break;
     }
     case "rectangle":

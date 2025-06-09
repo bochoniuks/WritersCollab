@@ -11,6 +11,7 @@ import {
   TextIcon,
   ImageIcon,
   EraserIcon,
+  ScratchpadIcon,
 } from "./icons";
 
 export const SHAPES = [
@@ -84,6 +85,13 @@ export const SHAPES = [
   //   numericKey: KEYS["0"],
   //   fillable: false,
   // },
+  {
+    icon: ScratchpadIcon,
+    value: "scratchpad",
+    key: KEYS.S,           // choose an appropriate shortcut
+    numericKey: KEYS["3"], // adjust if another number is free
+    fillable: false,
+  },
 ] as const;
 
 export const findShapeByKey = (key: string) => {

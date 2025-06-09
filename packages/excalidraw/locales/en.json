@@ -305,7 +305,8 @@
     "hand": "Hand (panning tool)",
     "extraTools": "More tools",
     "mermaidToExcalidraw": "Mermaid to Excalidraw",
-    "convertElementType": "Toggle shape type"
+    "convertElementType": "Toggle shape type",
+    "scratchpad": "Scratchpad"
   },
   "element": {
     "rectangle": "Rectangle",
@@ -321,7 +322,8 @@
     "magicframe": "Wireframe to code",
     "embeddable": "Web Embed",
     "selection": "Selection",
-    "iframe": "IFrame"
+    "iframe": "IFrame",
+    "scratchpad": "Scratchpad"
   },
   "headings": {
     "canvasActions": "Canvas actions",

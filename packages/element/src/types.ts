@@ -1,4 +1,5 @@
 import type { LocalPoint, Radians } from "@excalidraw/math";
+import type { JSONContent } from "@tiptap/core";
 
 import type {
   FONT_FAMILY,
@@ -212,12 +213,31 @@ export type ExcalidrawElement =
   | ExcalidrawFrameElement
   | ExcalidrawMagicFrameElement
   | ExcalidrawIframeElement
-  | ExcalidrawEmbeddableElement;
+  | ExcalidrawEmbeddableElement
+  | ExcalidrawScratchpadElement
 
 export type ExcalidrawNonSelectionElement = Exclude<
   ExcalidrawElement,
   ExcalidrawSelectionElement
 >;
+
+export interface ChangeEntry {
+  from: JSONContent;    // previous state of the edited fragment
+  to: JSONContent;      // new state after the edit
+  timestamp: number;    // Unix epoch or Date.now()
+  approved?: boolean;   // mark when a reviewer accepts the change
+}
+
+export type ExcalidrawScratchpadElement = _ExcalidrawElementBase & Readonly<{
+  type: "scratchpad";
+  // Tiptap’s JSON document representing the rich text
+  tiptapDoc: JSONContent;
+  // optional history of edits if change‑tracking will be implemented
+  changeHistory?: ChangeEntry[];
+
+  containerId: ExcalidrawGenericElement["id"] | null;
+
+}>;
 
 export type Ordered<TElement extends ExcalidrawElement> = TElement & {
   index: FractionalIndex;

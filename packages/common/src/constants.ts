@@ -422,6 +422,7 @@ export const LIBRARY_DISABLED_TYPES = new Set([
   "iframe",
   "embeddable",
   "image",
+  "scratchpad"
 ] as const);
 
 // use these constants to easily identify reference sites
@@ -442,6 +443,7 @@ export const TOOL_TYPE = {
   magicframe: "magicframe",
   embeddable: "embeddable",
   laser: "laser",
+  scratchpad: "scratchpad",
 } as const;
 
 export const EDITOR_LS_KEYS = {

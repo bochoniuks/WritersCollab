@@ -37,6 +37,7 @@ import type {
   ElementsMap,
   ExcalidrawElement,
   ExcalidrawElementType,
+  ExcalidrawScratchpadElement,
   ExcalidrawTextContainer,
   ExcalidrawTextElement,
   ExcalidrawTextElementWithContainer,
@@ -280,7 +281,7 @@ export const getBoundTextElement = (
 };
 
 export const getContainerElement = (
-  element: ExcalidrawTextElement | null,
+  element: ExcalidrawTextElement | ExcalidrawScratchpadElement | null,
   elementsMap: ElementsMap,
 ): ExcalidrawTextContainer | null => {
   if (!element) {
