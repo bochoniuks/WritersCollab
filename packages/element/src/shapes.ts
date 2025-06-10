@@ -63,6 +63,7 @@ export const getElementShape = <Point extends GlobalPoint | LocalPoint>(
     case "image":
     case "iframe":
     case "text":
+    case "scratchpad":
     case "selection":
       return getPolygonShape(element);
     case "arrow":
@@ -99,6 +100,8 @@ export const getElementShape = <Point extends GlobalPoint | LocalPoint>(
         shouldTestInside(element),
       );
     }
+    
+
   }
 };
 

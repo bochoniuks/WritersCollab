@@ -276,7 +276,8 @@
     "libraryElementTypeError": {
       "embeddable": "Embeddable elements cannot be added to the library.",
       "iframe": "IFrame elements cannot be added to the library.",
-      "image": "Support for adding images to the library coming soon!"
+      "image": "Support for adding images to the library coming soon!",
+      "scratchpad": "Support for adding scratchpads to the library coming soon!"
     },
     "asyncPasteFailedOnRead": "Couldn't paste (couldn't read from system clipboard).",
     "asyncPasteFailedOnParse": "Couldn't paste.",

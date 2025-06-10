@@ -49,6 +49,7 @@ import type {
   ExcalidrawImageElement,
   ExcalidrawLinearElement,
   ExcalidrawRectangleElement,
+  ExcalidrawScratchpadElement,
   ExcalidrawSelectionElement,
   ExcalidrawTextElement,
 } from "@excalidraw/element/types";
@@ -110,6 +111,7 @@ type RectangularElement =
   | ExcalidrawImageElement
   | ExcalidrawIframeElement
   | ExcalidrawTextElement
+  | ExcalidrawScratchpadElement
   | ExcalidrawSelectionElement;
 
 // polygon

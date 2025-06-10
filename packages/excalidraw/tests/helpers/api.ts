@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import util from "util";
+import type { JSONContent } from "@tiptap/core";
 
 import { pointFrom, type LocalPoint, type Radians } from "@excalidraw/math";
 
@@ -16,6 +17,7 @@ import {
   newImageElement,
   newLinearElement,
   newMagicFrameElement,
+  newScratchpadElement,
   newTextElement,
 } from "@excalidraw/element";
 
@@ -27,6 +29,7 @@ import type {
   ExcalidrawElement,
   ExcalidrawGenericElement,
   ExcalidrawTextElement,
+  ExcalidrawScratchpadElement,
   ExcalidrawLinearElement,
   ExcalidrawFreeDrawElement,
   ExcalidrawImageElement,
@@ -195,9 +198,10 @@ export class API {
       ? ExcalidrawTextElement["verticalAlign"]
       : never;
     boundElements?: ExcalidrawGenericElement["boundElements"];
-    containerId?: T extends "text"
+    containerId?: T extends "text" | "scratchpad"
       ? ExcalidrawTextElement["containerId"]
       : never;
+    tiptapDoc?: T extends "scratchpad" ? JSONContent : never; // new
     points?: T extends "arrow" | "line" | "freedraw" ? readonly LocalPoint[] : never;
     locked?: boolean;
     fileId?: T extends "image" ? string : never;
@@ -229,6 +233,8 @@ export class API {
     ? ExcalidrawFrameElement
     : T extends "magicframe"
     ? ExcalidrawMagicFrameElement
+    : T extends "scratchpad"                      // add
+    ? ExcalidrawScratchpadElement                // add
     : ExcalidrawGenericElement => {
     let element: Mutable<ExcalidrawElement> = null!;
 
@@ -360,6 +366,13 @@ export class API {
         break;
       case "magicframe":
         element = newMagicFrameElement({ ...base, width, height });
+        break;
+      case "scratchpad":
+        element = newScratchpadElement({
+          ...base,
+          containerId: rest.containerId ?? null,
+          tiptapDoc: rest.tiptapDoc,
+        });
         break;
       default:
         assertNever(

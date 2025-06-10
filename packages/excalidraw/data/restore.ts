@@ -90,6 +90,7 @@ export const AllowedExcalidrawActiveTools: Record<
   selection: true,
   lasso: true,
   text: true,
+  scratchpad: true,
   rectangle: true,
   diamond: true,
   ellipse: true,

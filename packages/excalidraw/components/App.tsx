@@ -323,6 +323,7 @@ import type {
   ExcalidrawArrowElement,
   ExcalidrawElbowArrowElement,
   SceneElementsMap,
+  ExcalidrawScratchpadElement,
 } from "@excalidraw/element/types";
 
 import type { Mutable, ValueOf } from "@excalidraw/common/utility-types";
@@ -5414,7 +5415,9 @@ class App extends React.Component<AppProps, AppState> {
         shouldBindToContainer = true;
       }
     }
-    let existingTextElement: NonDeleted<ExcalidrawScratchpadElement> | null =
+    let existingTextElement: NonDeleted<ExcalidrawTextElement> 
+        | NonDeleted<ExcalidrawScratchpadElement> 
+        | null =
       null;
 
     const selectedElements = this.scene.getSelectedElements(this.state);
@@ -5433,21 +5436,28 @@ class App extends React.Component<AppProps, AppState> {
       } else {
         const el = this.getTextElementAtPosition(sceneX, sceneY);
         if (el && isScratchpadElement(el)) {
-          existingTextElement = el as NonDeleted<ExcalidrawScratchpadElement>;
+          existingTextElement = el as NonDeleted<ExcalidrawTextElement>;
         }
       }
     } else {
       const el = this.getTextElementAtPosition(sceneX, sceneY);
       if (el && isScratchpadElement(el)) {
-        existingTextElement = el as NonDeleted<ExcalidrawScratchpadElement>;
+        existingTextElement = el as NonDeleted<ExcalidrawTextElement>;
       }
     }
 
-    const fontFamily =
-      existingTextElement?.fontFamily || this.state.currentItemFontFamily;
 
-    const lineHeight =
-      existingTextElement?.lineHeight || getLineHeight(fontFamily);
+    const fontFamily = isTextElement(existingTextElement)
+      ? existingTextElement.fontFamily
+      : this.state.currentItemFontFamily;
+    // const fontFamily =
+    //   existingTextElement?.fontFamily || this.state.currentItemFontFamily;
+    
+    const lineHeight = isTextElement(existingTextElement)
+      ? existingTextElement.lineHeight
+      : getLineHeight(fontFamily);
+    // const lineHeight =
+    //   existingTextElement?.lineHeight || getLineHeight(fontFamily);
     const fontSize = this.state.currentItemFontSize;
 
     if (
@@ -5540,9 +5550,43 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     if (autoEdit || existingTextElement || container) {
-      this.handleTextWysiwyg(element, {
-        isExistingElement: !!existingTextElement,
-      });
+      if (isScratchpadElement(element)) {
+          scratchpadWysiwyg({
+            id: element.id,
+            canvas: this.canvas,
+            excalidrawContainer: this.excalidrawContainerRef.current,
+            getViewportCoords: (x, y) =>
+              sceneCoordsToViewportCoords({ sceneX: x, sceneY: y }, this.state),
+            element,
+            app: this,
+            onChange: withBatchedUpdates((nextDoc) => {
+              this.scene.replaceAllElements(
+                this.scene.getElementsIncludingDeleted().map((el) =>
+                  el.id === element.id && isScratchpadElement(el)
+                    ? newElementWith(el, { tiptapDoc: nextDoc })
+                    : el,
+                ),
+              );
+            }),
+            onSubmit: withBatchedUpdates(({ viaKeyboard, nextDoc }) => {
+              this.scene.replaceAllElements(
+                this.scene.getElementsIncludingDeleted().map((el) =>
+                  el.id === element.id && isScratchpadElement(el)
+                    ? newElementWith(el, { tiptapDoc: nextDoc })
+                    : el,
+                ),
+              );
+              flushSync(() =>
+                this.setState({ newElement: null, editingTextElement: null }),
+              );
+              this.focusContainer();
+            }),
+          });
+        } else {
+          this.handleTextWysiwyg(element, {
+            isExistingElement: !!existingTextElement,
+          });
+      }
     } else {
       this.setState({
         newElement: element,
@@ -5615,11 +5659,11 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
-    const fontFamily =
-      existingTextElement?.fontFamily || this.state.currentItemFontFamily;
+    // const fontFamily =
+    //   existingTextElement?.fontFamily || this.state.currentItemFontFamily;
 
-    const lineHeight =
-      existingTextElement?.lineHeight || getLineHeight(fontFamily);
+    // const lineHeight =
+    //   existingTextElement?.lineHeight || getLineHeight(fontFamily);
     const fontSize = this.state.currentItemFontSize;
 
     if (
@@ -5628,23 +5672,23 @@ class App extends React.Component<AppProps, AppState> {
       container &&
       !isArrowElement(container)
     ) {
-      const fontString = {
-        fontSize,
-        fontFamily,
-      };
-      const minWidth = getApproxMinLineWidth(
-        getFontString(fontString),
-        lineHeight,
-      );
-      const minHeight = getApproxMinLineHeight(fontSize, lineHeight);
-      const newHeight = Math.max(container.height, minHeight);
-      const newWidth = Math.max(container.width, minWidth);
-      this.scene.mutateElement(container, {
-        height: newHeight,
-        width: newWidth,
-      });
-      sceneX = container.x + newWidth / 2;
-      sceneY = container.y + newHeight / 2;
+      // const fontString = {
+      //   fontSize,
+      //   fontFamily,
+      // };
+      // const minWidth = getApproxMinLineWidth(
+      //   getFontString(fontString),
+      //   lineHeight,
+      // );
+      // const minHeight = getApproxMinLineHeight(fontSize, lineHeight);
+      // const newHeight = Math.max(container.height, minHeight);
+      // const newWidth = Math.max(container.width, minWidth);
+      // this.scene.mutateElement(container, {
+      //   height: newHeight,
+      //   width: newWidth,
+      // });
+      // sceneX = container.x + newWidth / 2;
+      // sceneY = container.y + newHeight / 2;
       if (parentCenterPosition) {
         parentCenterPosition = this.getTextWysiwygSnappedToCenterPosition(
           sceneX,

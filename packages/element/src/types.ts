@@ -35,7 +35,7 @@ export type FractionalIndex = string & { _brand: "franctionalIndex" };
 
 export type BoundElement = Readonly<{
   id: ExcalidrawLinearElement["id"];
-  type: "arrow" | "text";
+  type: "arrow" | "text" | "scratchpad";
 }>;
 
 type _ExcalidrawElementBase = Readonly<{
