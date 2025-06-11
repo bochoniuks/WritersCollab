@@ -17,6 +17,7 @@ import {
 } from "@excalidraw/common";
 
 import {
+  isScratchpadElement,
   originalContainerCache,
   updateOriginalContainerCache,
 } from "@excalidraw/element";
@@ -65,6 +66,7 @@ import type { Editor } from "@tiptap/core";
 
 import type App from "../components/App";
 import type { AppState } from "../types";
+import { measureTiptapDoc } from "@excalidraw/element/parseTiptapDoc";
 
 const getTransform = (
   width: number,
@@ -138,14 +140,32 @@ export const scratchpadWysiwyg = ({
 
   const updateWysiwygStyle = () => {
     const appState = app.state;
-    const updatedTextElement = app.scene.getElement<ExcalidrawTextElement>(id);
+    const updatedElement = app.scene.getElement(id);
+      if (!updatedElement) {
+        return;
+      }
+      const elementsMap = app.scene.getNonDeletedElementsMap();
 
-    if (!updatedTextElement) {
-      return;
-    }
-    const { textAlign, verticalAlign } = updatedTextElement;
-    const elementsMap = app.scene.getNonDeletedElementsMap();
-    if (updatedTextElement && isTextElement(updatedTextElement)) {
+    if (isScratchpadElement(updatedElement)) {
+        // compute size from the scratchpad document
+        const { width, height } = measureTiptapDoc(updatedElement.tiptapDoc);
+        let coordX = updatedElement.x;
+        let coordY = updatedElement.y;
+
+        const [viewportX, viewportY] = getViewportCoords(coordX, coordY);
+        Object.assign(editable.style, {
+          left: `${viewportX}px`,
+          top: `${viewportY}px`,
+          width: `${width}px`,
+          height: `${height}px`,
+          color: updatedElement.strokeColor,
+          opacity: updatedElement.opacity / 100,
+          filter: "var(--theme-filter)",
+        });
+        app.scene.mutateElement(updatedElement, { x: coordX, y: coordY });
+      } 
+    else if (updatedElement && isTextElement(updatedElement)) {
+      const updatedTextElement = updatedElement;
       let coordX = updatedTextElement.x;
       let coordY = updatedTextElement.y;
       const container = getContainerElement(

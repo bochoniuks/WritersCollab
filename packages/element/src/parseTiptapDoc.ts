@@ -1,9 +1,10 @@
 // packages/element/src/parseTiptapDoc.ts
-import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE } from "@excalidraw/common";
+import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, getFontString, getLineHeight } from "@excalidraw/common";
 
 import type { FontFamilyValues } from "@excalidraw/element/types";
 
 import type { JSONContent } from "@tiptap/core";
+import { measureText } from "./textMeasurements";
 
 export type TiptapSegment = {
   text: string;
@@ -11,6 +12,20 @@ export type TiptapSegment = {
   fontSize: number;
   color: string;
 };
+
+// packages/element/src/parseTiptapDoc.ts
+export const measureTiptapDoc = (doc: JSONContent) => {
+  const segments = parseTiptapDoc(doc);
+  let width = 0, height = 0;
+  for (const seg of segments) {
+    const font = getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize });
+    const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));
+    width += metrics.width;
+    height = Math.max(height, metrics.height);
+  }
+  return { width, height };
+};
+
 
 /**
  * Traverses a Tiptap JSON document and flattens it into

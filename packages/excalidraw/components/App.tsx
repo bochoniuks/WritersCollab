@@ -532,6 +532,7 @@ import type {
 } from "../types";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
+import { measureTiptapDoc } from "@excalidraw/element/parseTiptapDoc";
 
 const AppContext = React.createContext<AppClassProperties>(null!);
 const AppPropsContext = React.createContext<AppProps>(null!);
@@ -5084,18 +5085,34 @@ class App extends React.Component<AppProps, AppState> {
     element: ExcalidrawScratchpadElement,
     { isExistingElement = false }: { isExistingElement?: boolean },
   ) {
+    // const updateElement = (nextDoc: JSONContent, isDeleted: boolean) => {
+    //   this.scene.replaceAllElements(
+    //     this.scene.getElementsIncludingDeleted().map((_el) =>
+    //       _el.id === element.id && isScratchpadElement(_el)
+    //         ? newElementWith(_el, {
+    //             tiptapDoc: nextDoc,
+    //             isDeleted: isDeleted ?? _el.isDeleted,
+    //           })
+    //         : _el,
+    //     ),
+    //   );
+    // };
+
     const updateElement = (nextDoc: JSONContent, isDeleted: boolean) => {
-      this.scene.replaceAllElements(
-        this.scene.getElementsIncludingDeleted().map((_el) =>
-          _el.id === element.id && isScratchpadElement(_el)
-            ? newElementWith(_el, {
-                tiptapDoc: nextDoc,
-                isDeleted: isDeleted ?? _el.isDeleted,
-              })
-            : _el,
-        ),
-      );
-    };
+    const { width, height } = measureTiptapDoc(nextDoc);
+    this.scene.replaceAllElements(
+      this.scene.getElementsIncludingDeleted().map((_el) =>
+        _el.id === element.id && isScratchpadElement(_el)
+          ? newElementWith(_el, {
+              tiptapDoc: nextDoc,
+              width,
+              height,
+              isDeleted: isDeleted ?? _el.isDeleted,
+            })
+          : _el,
+      ),
+    );
+  };
 
     scratchpadWysiwyg({
       id: element.id,
@@ -5164,14 +5181,19 @@ class App extends React.Component<AppProps, AppState> {
   private getTextElementAtPosition(
     x: number,
     y: number,
-  ): NonDeleted<ExcalidrawTextElement> | null {
+  ): NonDeleted<ExcalidrawTextElement | ExcalidrawScratchpadElement> | null {
     const element = this.getElementAtPosition(x, y, {
       includeBoundTextElement: true,
     });
-    if (element && isTextElement(element) && !element.isDeleted) {
-      return element;
-    }
-    return null;
+    
+    // if (element && isTextElement(element) && !element.isDeleted) {
+    //   return element;
+    // }
+    // return null;
+
+    return element && (isTextElement(element) || isScratchpadElement(element)) && !element.isDeleted
+      ? (element as NonDeleted<ExcalidrawTextElement | ExcalidrawScratchpadElement>)
+      : null;
   }
 
   private getElementAtPosition(
@@ -5912,6 +5934,20 @@ class App extends React.Component<AppProps, AppState> {
     resetCursor(this.interactiveCanvas);
     if (!event[KEYS.CTRL_OR_CMD] && !this.state.viewModeEnabled) {
       const hitElement = this.getElementAtPosition(sceneX, sceneY);
+      const textElement = this.getTextElementAtPosition(sceneX, sceneY);
+
+      if (textElement && isScratchpadElement(textElement)) {
+        this.startScratchpadEditing({
+          sceneX: textElement.x,
+          sceneY: textElement.y,
+          insertAtParentCenter: !event.altKey,
+          container: getContainerElement(
+            textElement,
+            this.scene.getNonDeletedElementsMap(),
+          ),
+        });
+        return;
+      }
 
       if (isIframeLikeElement(hitElement)) {
         this.setState({
