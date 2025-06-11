@@ -9643,6 +9643,10 @@ class App extends React.Component<AppProps, AppState> {
           isExistingElement: true,
         });
       }
+      else if (isScratchpadElement(newElement)) {
+        this.resetCursor();
+        this.handleScratchpadWysiwyg(newElement, { isExistingElement: true });
+      }
 
       if (
         activeTool.type !== "selection" &&
