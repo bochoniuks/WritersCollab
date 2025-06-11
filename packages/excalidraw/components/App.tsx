@@ -5099,7 +5099,10 @@ class App extends React.Component<AppProps, AppState> {
     // };
 
     const updateElement = (nextDoc: JSONContent, isDeleted: boolean) => {
-      const { width, height } = measureTiptapDoc(nextDoc);
+      const { width, height } = measureTiptapDoc(nextDoc, {
+        fontFamily: element.fontFamily,
+        fontSize: element.fontSize,
+      });
       this.scene.replaceAllElements(
         this.scene.getElementsIncludingDeleted().map((_el) =>
           _el.id === element.id && isScratchpadElement(_el)

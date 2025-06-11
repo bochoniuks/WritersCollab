@@ -149,7 +149,10 @@ export const scratchpadWysiwyg = ({
 
     if (isScratchpadElement(updatedElement)) {
         // compute size from the scratchpad document
-        const { width, height } = measureTiptapDoc(updatedElement.tiptapDoc);
+        const { width, height } = measureTiptapDoc(updatedElement.tiptapDoc, {
+          fontFamily: updatedElement.fontFamily,
+          fontSize: updatedElement.fontSize,
+        });
         let coordX = updatedElement.x;
         let coordY = updatedElement.y;
 

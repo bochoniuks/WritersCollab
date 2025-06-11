@@ -1,5 +1,5 @@
 // packages/element/src/parseTiptapDoc.ts
-import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, getFontString, getLineHeight } from "@excalidraw/common";
+import { COLOR_PALETTE, DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, getFontString, getLineHeight } from "@excalidraw/common";
 
 import type { FontFamilyValues } from "@excalidraw/element/types";
 
@@ -28,15 +28,21 @@ export type TiptapLine = TiptapSegment[];
 //   return { width, height };
 // };
 
-export const measureTiptapDoc = (doc: JSONContent) => {
+export const measureTiptapDoc = (
+    doc: JSONContent,
+    opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {}) => {
+        const defaultFontFamily = opts.fontFamily ?? DEFAULT_FONT_FAMILY;
+        const defaultFontSize = opts.fontSize ?? DEFAULT_FONT_SIZE;
+        const defaultColor = opts.color ?? COLOR_PALETTE.black;
+
   const lines = parseTiptapDoc(doc);
 
   if (lines.length === 0 || (lines.length === 1 && lines[0].length === 0)) {
     // empty document → minimal line height
     const metrics = measureText(
       "",
-      getFontString({ fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }),
-      getLineHeight(DEFAULT_FONT_FAMILY),
+      getFontString({ fontFamily: defaultFontFamily, fontSize: defaultFontSize }),
+      getLineHeight(defaultFontFamily),
     );
     return { width: metrics.width, height: metrics.height };
   }
@@ -64,8 +70,15 @@ export const measureTiptapDoc = (doc: JSONContent) => {
  * Traverses a Tiptap JSON document and flattens it into
  * an array of text segments with styling information.
  */
-export const parseTiptapDoc = (doc: JSONContent): TiptapLine[] => {
-  const lines: TiptapLine[] = [];
+export const parseTiptapDoc = (
+    doc: JSONContent,
+    opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {},
+    ): TiptapLine[] => {
+    const defaultFontFamily = opts.fontFamily ?? DEFAULT_FONT_FAMILY;
+    const defaultFontSize = opts.fontSize ?? DEFAULT_FONT_SIZE;
+    const defaultColor = opts.color ?? COLOR_PALETTE.black;
+  
+    const lines: TiptapLine[] = [];
   let current: TiptapLine = [];
 
   const pushLine = () => {
@@ -93,12 +106,11 @@ export const parseTiptapDoc = (doc: JSONContent): TiptapLine[] => {
     }
 
     if (node.type === "text") {
-        console.log(node)
-      current.push({
+        current.push({
         text: node.text ?? "",
-        fontFamily: style.fontFamily || DEFAULT_FONT_FAMILY,
-        fontSize: style.fontSize || DEFAULT_FONT_SIZE,
-        color: style.color || "black",
+        fontFamily: style.fontFamily || defaultFontFamily,
+        fontSize: style.fontSize || defaultFontSize,
+        color: style.color || defaultColor,
       });
     } else if (node.type === "hardBreak") {
       pushLine();
