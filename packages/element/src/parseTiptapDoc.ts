@@ -13,6 +13,8 @@ export type TiptapSegment = {
   color: string;
 };
 
+export type TiptapLine = TiptapSegment[];
+
 // packages/element/src/parseTiptapDoc.ts
 // export const measureTiptapDoc = (doc: JSONContent) => {
 //   const segments = parseTiptapDoc(doc);
@@ -91,6 +93,7 @@ export const parseTiptapDoc = (doc: JSONContent): TiptapLine[] => {
     }
 
     if (node.type === "text") {
+        console.log(node)
       current.push({
         text: node.text ?? "",
         fontFamily: style.fontFamily || DEFAULT_FONT_FAMILY,

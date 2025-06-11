@@ -14,6 +14,7 @@ import {
   getFontString,
   getFontFamilyString,
   isTestEnv,
+  getLineHeight,
 } from "@excalidraw/common";
 
 import {
@@ -157,6 +158,8 @@ export const scratchpadWysiwyg = ({
           fontSize: updatedElement.fontSize,
         });
 
+        const lineHeight = getLineHeight(updatedElement.fontFamily);
+
         const [viewportX, viewportY] = getViewportCoords(coordX, coordY);
         Object.assign(editable.style, {
           left: `${viewportX}px`,
@@ -164,6 +167,7 @@ export const scratchpadWysiwyg = ({
           width: `${width}px`,
           height: `${height}px`,
           font: font,
+          lineHeight: lineHeight,
           color: updatedElement.strokeColor,
           opacity: updatedElement.opacity / 100,
           filter: "var(--theme-filter)",
