@@ -5099,20 +5099,20 @@ class App extends React.Component<AppProps, AppState> {
     // };
 
     const updateElement = (nextDoc: JSONContent, isDeleted: boolean) => {
-    const { width, height } = measureTiptapDoc(nextDoc);
-    this.scene.replaceAllElements(
-      this.scene.getElementsIncludingDeleted().map((_el) =>
-        _el.id === element.id && isScratchpadElement(_el)
-          ? newElementWith(_el, {
-              tiptapDoc: nextDoc,
-              width,
-              height,
-              isDeleted: isDeleted ?? _el.isDeleted,
-            })
-          : _el,
-      ),
-    );
-  };
+      const { width, height } = measureTiptapDoc(nextDoc);
+      this.scene.replaceAllElements(
+        this.scene.getElementsIncludingDeleted().map((_el) =>
+          _el.id === element.id && isScratchpadElement(_el)
+            ? newElementWith(_el, {
+                tiptapDoc: nextDoc,
+                width,
+                height,
+                isDeleted: isDeleted ?? _el.isDeleted,
+              })
+            : _el,
+        ),
+      );
+    };
 
     scratchpadWysiwyg({
       id: element.id,

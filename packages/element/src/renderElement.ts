@@ -817,31 +817,30 @@ export const renderElement = (
       break;
     }
     case "scratchpad": {
-      // `element.tiptapDoc` contains Tiptap JSON describing
-      // segments with style marks (font, color, size).
-      // Convert each text node to a string and style info.
-      const segments = parseTiptapDoc(element.tiptapDoc);
+      const lines = parseTiptapDoc(element.tiptapDoc);
 
       context.save();
-      // apply base font for the element
       context.textAlign = "left";
       context.textBaseline = "top";
 
-      let cursorX = 0;
       let cursorY = 0;
-
-      segments.forEach((seg) => {
-        const fontString = getFontString({
-          fontSize: seg.fontSize,
-          fontFamily: seg.fontFamily,
-        });
-        context.font = fontString;
-        context.fillStyle = seg.color;
-
-        context.fillText(seg.text, cursorX, cursorY);
-        cursorX += measureText(seg.text, fontString, getLineHeight(seg.fontFamily))
-          .width;
-      });
+      for (const line of lines) {
+        let cursorX = 0;
+        let lineHeight = 0;
+        for (const seg of line) {
+          const fontString = getFontString({
+            fontSize: seg.fontSize,
+            fontFamily: seg.fontFamily,
+          });
+          context.font = fontString;
+          context.fillStyle = seg.color;
+          context.fillText(seg.text, cursorX, cursorY);
+          const metrics = measureText(seg.text, fontString, getLineHeight(seg.fontFamily));
+          cursorX += metrics.width;
+          lineHeight = Math.max(lineHeight, metrics.height);
+        }
+        cursorY += lineHeight;
+      }
 
       context.restore();
       break;
