@@ -152,12 +152,18 @@ export const scratchpadWysiwyg = ({
         let coordX = updatedElement.x;
         let coordY = updatedElement.y;
 
+        const font = getFontString({
+          fontFamily: updatedElement.fontFamily,
+          fontSize: updatedElement.fontSize,
+        });
+
         const [viewportX, viewportY] = getViewportCoords(coordX, coordY);
         Object.assign(editable.style, {
           left: `${viewportX}px`,
           top: `${viewportY}px`,
           width: `${width}px`,
           height: `${height}px`,
+          font: font,
           color: updatedElement.strokeColor,
           opacity: updatedElement.opacity / 100,
           filter: "var(--theme-filter)",
@@ -363,6 +369,13 @@ export const scratchpadWysiwyg = ({
         if (autoSelect) {
           ed.commands.focus();
         }
+        ed.chain()
+          .setMark('textStyle', {
+              fontFamily: app.state.currentItemFontFamily,
+              fontSize: app.state.currentItemFontSize,
+            })
+            .setColor(element.strokeColor)
+            .run();
       }
     }, [ed]);
 

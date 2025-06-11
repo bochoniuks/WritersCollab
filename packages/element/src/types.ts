@@ -237,7 +237,8 @@ export type ExcalidrawScratchpadElement = _ExcalidrawElementBase & Readonly<{
 
   containerId: ExcalidrawGenericElement["id"] | null;
   autoResize: boolean;             // new property
-
+  fontFamily: FontFamilyValues;
+  fontSize: number;
 }>;
 
 export type Ordered<TElement extends ExcalidrawElement> = TElement & {

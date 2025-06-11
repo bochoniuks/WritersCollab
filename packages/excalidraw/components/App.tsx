@@ -5437,33 +5437,32 @@ class App extends React.Component<AppProps, AppState> {
         shouldBindToContainer = true;
       }
     }
-    let existingTextElement: NonDeleted<ExcalidrawTextElement> 
-        | NonDeleted<ExcalidrawScratchpadElement> 
+    let existingTextElement: NonDeleted<ExcalidrawTextElement>
         | null =
       null;
 
     const selectedElements = this.scene.getSelectedElements(this.state);
 
     if (selectedElements.length === 1) {
-      if (isScratchpadElement(selectedElements[0])) {
+      if (isTextElement(selectedElements[0])) {
         existingTextElement = selectedElements[0];
       } else if (container) {
         const bound = getBoundTextElement(
           selectedElements[0],
           this.scene.getNonDeletedElementsMap(),
         );
-        if (bound && isScratchpadElement(bound)) {
+        if (bound && isTextElement(bound)) {
           existingTextElement = bound;
         }
       } else {
         const el = this.getTextElementAtPosition(sceneX, sceneY);
-        if (el && isScratchpadElement(el)) {
+        if (el && isTextElement(el)) {
           existingTextElement = el as NonDeleted<ExcalidrawTextElement>;
         }
       }
     } else {
       const el = this.getTextElementAtPosition(sceneX, sceneY);
-      if (el && isScratchpadElement(el)) {
+      if (el && isTextElement(el)) {
         existingTextElement = el as NonDeleted<ExcalidrawTextElement>;
       }
     }
@@ -5739,6 +5738,8 @@ class App extends React.Component<AppProps, AppState> {
         roughness: this.state.currentItemRoughness,
         opacity: this.state.currentItemOpacity,
         tiptapDoc: { type: "doc", content: [] },
+        fontFamily: this.state.currentItemFontFamily,
+        fontSize: this.state.currentItemFontSize,
         containerId: shouldBindToContainer ? container?.id : undefined,
         groupIds: container?.groupIds ?? [],
         angle: container
