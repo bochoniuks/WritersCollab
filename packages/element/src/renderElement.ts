@@ -820,6 +820,10 @@ export const renderElement = (
       const lines = parseTiptapDoc(element.tiptapDoc);
 
       context.save();
+      context.translate(
+        element.x + appState.scrollX,
+        element.y + appState.scrollY,
+      );                      // position at element.x/y
       context.textAlign = "left";
       context.textBaseline = "top";
 

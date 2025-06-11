@@ -99,7 +99,8 @@ export class Renderer {
         // (it's rendered on remote only)
         if (
           !editingTextElement ||
-          editingTextElement.type !== "text" ||
+          (editingTextElement.type !== "text" &&
+           editingTextElement.type !== "scratchpad") ||
           element.id !== editingTextElement.id
         ) {
           elementsMap.set(element.id, element);

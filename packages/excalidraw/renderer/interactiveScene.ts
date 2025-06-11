@@ -31,6 +31,7 @@ import {
   isLinearElement,
   isLineElement,
   isTextElement,
+  isScratchpadElement
 } from "@excalidraw/element";
 
 import { renderSelectionElement } from "@excalidraw/element";
@@ -789,7 +790,8 @@ const _renderInteractiveScene = ({
 
   if (
     appState.editingTextElement &&
-    isTextElement(appState.editingTextElement)
+    (isTextElement(appState.editingTextElement) || 
+     isScratchpadElement(appState.editingTextElement))
   ) {
     const textElement = allElementsMap.get(appState.editingTextElement.id) as
       | ExcalidrawTextElement
@@ -1020,7 +1022,8 @@ const _renderInteractiveScene = ({
         !appState.viewModeEnabled &&
         showBoundingBox &&
         // do not show transform handles when text is being edited
-        !isTextElement(appState.editingTextElement) &&
+        (!isTextElement(appState.editingTextElement) || 
+         !isScratchpadElement(appState.editingTextElement)) &&
         // do not show transform handles when image is being cropped
         !appState.croppingElementId
       ) {
