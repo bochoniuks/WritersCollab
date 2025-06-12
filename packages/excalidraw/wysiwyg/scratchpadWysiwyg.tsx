@@ -69,7 +69,7 @@ import type { Editor } from "@tiptap/core";
 
 import type App from "../components/App";
 import type { AppState } from "../types";
-import { measureTiptapDoc } from "@excalidraw/element/parseTiptapDoc";
+import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 
 const getTransform = (
   width: number,
@@ -151,10 +151,21 @@ export const scratchpadWysiwyg = ({
 
     if (isScratchpadElement(updatedElement)) {
         // compute size from the scratchpad document
-        const { width, height } = measureTiptapDoc(updatedElement.tiptapDoc, {
-          fontFamily: updatedElement.fontFamily,
-          fontSize: updatedElement.fontSize,
-        });
+
+        // const { width, height } = measureTiptapDoc(updatedElement.tiptapDoc, {
+        //   fontFamily: updatedElement.fontFamily,
+        //   fontSize: updatedElement.fontSize,
+        // });
+
+        const { width, height } = measureTiptapDocWithWidth(
+          updatedElement.originalTiptapDoc,
+          updatedElement.width,
+          {
+            fontFamily: updatedElement.fontFamily,
+            fontSize: updatedElement.fontSize,
+          },
+        );
+
         let coordX = updatedElement.x;
         let coordY = updatedElement.y;
 

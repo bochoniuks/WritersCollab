@@ -5,6 +5,7 @@ import type { FontFamilyValues } from "@excalidraw/element/types";
 
 import type { JSONContent } from "@tiptap/core";
 import { measureText } from "./textMeasurements";
+import { parseTokens } from "./textWrapping";
 
 export type TiptapSegment = {
   text: string;
@@ -27,6 +28,120 @@ export type TiptapLine = TiptapSegment[];
 //   }
 //   return { width, height };
 // };
+
+// export const wrapTiptapDoc = (
+//     doc: JSONContent,
+//     maxWidth: number,
+//     opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {}
+//   ): JSONContent => {
+//     const lines = parseTiptapDoc(doc, opts);
+//     const result: JSONContent = { type: "doc", content: [] };
+//     const paragraph = () => ({ type: "paragraph", content: [] as JSONContent[] });
+
+//     let current = paragraph();
+
+//     lines.forEach((line, lineIndex) => {
+//       let lineWidth = 0;
+
+//       line.forEach(seg => {
+//         const tokens = parseTokens(seg.text);
+//         tokens.forEach(tok => {
+//           const font = getFontString({
+//             fontFamily: seg.fontFamily,
+//             fontSize: seg.fontSize,
+//           });
+//           const tokWidth = measureText(tok, font, getLineHeight(seg.fontFamily)).width;
+//           if (lineWidth + tokWidth > maxWidth && lineWidth !== 0) {
+//             current.content!.push({ type: "hardBreak" });
+//             lineWidth = 0;
+//           }
+//           current.content!.push({
+//             type: "text",
+//             text: tok,
+//             marks: [
+//               {
+//                 type: "textStyle",
+//                 attrs: {
+//                   fontFamily: seg.fontFamily,
+//                   fontSize: seg.fontSize,
+//                   color: seg.color,
+//                 },
+//               },
+//             ],
+//           });
+//           lineWidth += tokWidth;
+//         });
+//       });
+
+//       if (lineIndex !== lines.length - 1) {
+//         result.content!.push(current);
+//         current = paragraph();
+//       }
+//     });
+
+//     result.content!.push(current);
+//     return result;
+//   };
+
+export const wrapTiptapDoc = (
+  doc: JSONContent,
+  maxWidth: number,
+  opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {},
+) => {
+  const lines = parseTiptapDoc(doc, opts);
+  const result: JSONContent = { type: "doc", content: [] };
+  const newParagraph = () => ({ type: "paragraph", content: [] as JSONContent[] });
+
+  let current = newParagraph();
+  let width = 0;
+
+  for (const line of lines) {
+    for (const seg of line) {
+      const tokens = parseTokens(seg.text);
+      for (const token of tokens) {
+        const font = getFontString({
+          fontFamily: seg.fontFamily,
+          fontSize: seg.fontSize,
+        });
+        const w = measureText(token, font, getLineHeight(seg.fontFamily)).width;
+
+        if (width && width + w > maxWidth) {
+          current.content!.push({ type: "hardBreak" });
+          width = 0;
+        }
+
+        current.content!.push({
+          type: "text",
+          text: token,
+          marks: [
+            {
+              type: "textStyle",
+              attrs: {
+                fontFamily: seg.fontFamily,
+                fontSize: seg.fontSize,
+                color: seg.color,
+              },
+            },
+          ],
+        });
+
+        width += w;
+      }
+    }
+
+    result.content!.push(current);
+    current = newParagraph();
+    width = 0;
+  }
+
+  return result;
+};
+
+export const measureTiptapDocWithWidth = (
+  doc: JSONContent,
+  maxWidth: number,
+  opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {},
+) => measureTiptapDoc(wrapTiptapDoc(doc, maxWidth, opts), opts);
 
 export const measureTiptapDoc = (
     doc: JSONContent,

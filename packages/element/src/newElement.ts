@@ -262,6 +262,7 @@ export const newScratchpadElement = (
   const scratchpadElementProps: ExcalidrawScratchpadElement = {
     ..._newElementBase<ExcalidrawScratchpadElement>("scratchpad", opts),
     tiptapDoc,
+    originalTiptapDoc: tiptapDoc,
     changeHistory: [],
     width: metrics.width,
     height: metrics.height,

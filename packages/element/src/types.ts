@@ -232,6 +232,7 @@ export type ExcalidrawScratchpadElement = _ExcalidrawElementBase & Readonly<{
   type: "scratchpad";
   // Tiptap’s JSON document representing the rich text
   tiptapDoc: JSONContent;
+  originalTiptapDoc: JSONContent;  // source doc used when rewrapping
   // optional history of edits if change‑tracking will be implemented
   changeHistory?: ChangeEntry[];
 

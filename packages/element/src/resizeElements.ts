@@ -53,6 +53,7 @@ import {
   isImageElement,
   isLinearElement,
   isTextElement,
+  isScratchpadElement
 } from "./typeChecks";
 
 import { isInGroup } from "./groups";
@@ -67,6 +68,7 @@ import type {
 import type {
   ExcalidrawLinearElement,
   ExcalidrawTextElement,
+  ExcalidrawScratchpadElement,
   NonDeletedExcalidrawElement,
   NonDeleted,
   ExcalidrawElement,
@@ -75,6 +77,7 @@ import type {
   ElementsMap,
   ExcalidrawElbowArrowElement,
 } from "./types";
+import { measureTiptapDoc, wrapTiptapDoc } from "./parseTiptapDoc";
 
 // Returns true when transform (resizing/rotation) happened
 export const transformElements = (
@@ -106,6 +109,18 @@ export const transformElements = (
       }
     } else if (isTextElement(element) && transformHandleType) {
       resizeSingleTextElement(
+        originalElements,
+        element,
+        scene,
+        transformHandleType,
+        shouldResizeFromCenter,
+        pointerX,
+        pointerY,
+      );
+      updateBoundElements(element, scene);
+      return true;
+    } else if (isScratchpadElement(element) && transformHandleType) {
+      resizeSingleScratchpadElement(
         originalElements,
         element,
         scene,
@@ -508,6 +523,138 @@ const resizeSingleTextElement = (
     scene.mutateElement(element, resizedElement);
   }
 };
+
+const resizeSingleScratchpadElement = (
+  originalElements: PointerDownState["originalElements"],
+  element: NonDeleted<ExcalidrawScratchpadElement>,
+  scene: Scene,
+  transformHandleType: TransformHandleDirection,
+  shouldResizeFromCenter: boolean,
+  pointerX: number,
+  pointerY: number,
+) => {
+  if (!transformHandleType.includes("e") &&
+      !transformHandleType.includes("w")) {
+    // fall back to generic element resizing for purely vertical or
+    // corner handles
+    const { nextWidth, nextHeight } =
+      getNextSingleWidthAndHeightFromPointer(
+        element,
+        originalElements.get(element.id)!,
+        transformHandleType,
+        pointerX,
+        pointerY,
+        { shouldMaintainAspectRatio: false,
+          shouldResizeFromCenter },
+      );
+
+    resizeSingleElement(
+      nextWidth,
+      nextHeight,
+      element,
+      originalElements.get(element.id)!,
+      originalElements,
+      scene,
+      transformHandleType,
+      { shouldMaintainAspectRatio: false,
+        shouldResizeFromCenter },
+    );
+    return;
+  }
+
+  // horizontally‑influencing handle → wrap text
+  const stateAtStart = originalElements.get(element.id)!;
+  const [x1, y1, x2, y2] = getResizedElementAbsoluteCoords(
+    stateAtStart,
+    stateAtStart.width,
+    stateAtStart.height,
+    true,
+  );
+  const startTopLeft = pointFrom<GlobalPoint>(x1, y1);
+  const startBottomRight = pointFrom<GlobalPoint>(x2, y2);
+  const startCenter = pointCenter(startTopLeft, startBottomRight);
+
+  const rotatedPointer = pointRotateRads(
+    pointFrom(pointerX, pointerY),
+    startCenter,
+    -stateAtStart.angle as Radians,
+  );
+
+  const [esx1, , esx2] = getResizedElementAbsoluteCoords(
+    element,
+    element.width,
+    element.height,
+    true,
+  );
+  const boundsCurrentWidth = esx2 - esx1;
+  const atStartBoundsWidth = startBottomRight[0] - startTopLeft[0];
+
+  let scaleX = atStartBoundsWidth / boundsCurrentWidth;
+  if (transformHandleType.includes("e")) {
+    scaleX = (rotatedPointer[0] - startTopLeft[0]) / boundsCurrentWidth;
+  }
+  if (transformHandleType.includes("w")) {
+    scaleX = (startBottomRight[0] - rotatedPointer[0]) / boundsCurrentWidth;
+  }
+
+  const newWidth = element.width * scaleX;
+  const wrapped = wrapTiptapDoc(
+    element.tiptapDoc,
+    Math.abs(newWidth),
+    { fontFamily: element.fontFamily,
+      fontSize: element.fontSize,
+      color: element.strokeColor },
+  );
+  const metrics = measureTiptapDoc(wrapped, {
+    fontFamily: element.fontFamily,
+    fontSize: element.fontSize,
+  });
+
+  const [newBoundsX1, newBoundsY1, newBoundsX2, newBoundsY2] =
+    getResizedElementAbsoluteCoords(
+      stateAtStart,
+      newWidth,
+      metrics.height,
+      true,
+    );
+  const newBoundsWidth = newBoundsX2 - newBoundsX1;
+  const newBoundsHeight = newBoundsY2 - newBoundsY1;
+
+  let newTopLeft = [...startTopLeft] as [number, number];
+  if (["n", "w", "nw"].includes(transformHandleType)) {
+    newTopLeft = [
+      startBottomRight[0] - Math.abs(newBoundsWidth),
+      startTopLeft[1],
+    ];
+  }
+  const angle = stateAtStart.angle;
+  const rotatedTopLeft = pointRotateRads(
+    pointFromPair(newTopLeft),
+    startCenter,
+    angle,
+  );
+  const newCenter = pointFrom(
+    newTopLeft[0] + Math.abs(newBoundsWidth) / 2,
+    newTopLeft[1] + Math.abs(newBoundsHeight) / 2,
+  );
+  const rotatedNewCenter = pointRotateRads(newCenter, startCenter, angle);
+  newTopLeft = pointRotateRads(
+    rotatedTopLeft,
+    rotatedNewCenter,
+    -angle as Radians,
+  );
+
+  scene.mutateElement(element, {
+    width: Math.abs(newWidth),
+    height: Math.abs(metrics.height),
+    x: newTopLeft[0],
+    y: newTopLeft[1],
+    tiptapDoc: wrapped,
+    autoResize: false,
+  });
+};
+
+
 
 const rotateMultipleElements = (
   originalElements: PointerDownState["originalElements"],
@@ -1365,6 +1512,7 @@ export const resizeMultipleElements = (
         (item) =>
           item.latest.angle !== 0 ||
           isTextElement(item.latest) ||
+          isScratchpadElement(item.latest) ||
           isInGroup(item.latest),
       );
 
@@ -1400,7 +1548,7 @@ export const resizeMultipleElements = (
 
     for (const { orig, latest } of targetElements) {
       // bounded text elements are updated along with their container elements
-      if (isTextElement(orig) && isBoundToContainer(orig)) {
+      if ((isTextElement(orig) || isScratchpadElement(orig)) && isBoundToContainer(orig)) {
         continue;
       }
 
@@ -1480,8 +1628,8 @@ export const resizeMultipleElements = (
         ];
       }
 
-      if (isTextElement(orig)) {
-        const metrics = measureFontSizeFromWidth(orig, elementsMap, width);
+      if (isTextElement(orig) || isScratchpadElement(orig)) {
+        const metrics = measureFontSizeFromWidth(orig as ExcalidrawTextElement, elementsMap, width);
         if (!metrics) {
           return;
         }
