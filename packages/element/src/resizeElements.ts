@@ -562,8 +562,7 @@ const resizeSingleScratchpadElement = (
   //   return;
   // }
 
-  if (!transformHandleType.includes("e") &&
-      !transformHandleType.includes("w")) {
+  if (transformHandleType !== "e" && transformHandleType !== "w") {
     const elementsMap = scene.getNonDeletedElementsMap();
     const [x1, y1, x2, y2, cx, cy] =
       getElementAbsoluteCoords(element, elementsMap);
@@ -597,10 +596,28 @@ const resizeSingleScratchpadElement = (
       return;
     }
 
+    // const nextWidth = element.width * scale;
+    // const nextHeight = element.height * scale;
+
+    // const scaledDoc = scaleTiptapDoc(element.originalTiptapDoc, scale);
+
     const nextWidth = element.width * scale;
-    const nextHeight = element.height * scale;
 
     const scaledDoc = scaleTiptapDoc(element.originalTiptapDoc, scale);
+    const wrapped = wrapTiptapDoc(
+      scaledDoc,
+      Math.abs(nextWidth),
+      {
+        fontFamily: element.fontFamily,
+        fontSize: newFontSize,
+        color: element.strokeColor,
+      },
+    );
+    const metrics = measureTiptapDoc(wrapped, {
+      fontFamily: element.fontFamily,
+      fontSize: newFontSize,
+    });
+    const nextHeight = metrics.height;
 
     let newTopLeft = pointFrom<GlobalPoint>(x1, y1);
     const startTopLeft = pointFrom<GlobalPoint>(x1, y1);
@@ -660,7 +677,7 @@ const resizeSingleScratchpadElement = (
       height: nextHeight,
       x: nextX,
       y: nextY,
-      tiptapDoc: scaledDoc,
+      tiptapDoc: wrapped,
       originalTiptapDoc: scaledDoc,
     });
     return;
