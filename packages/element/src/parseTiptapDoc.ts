@@ -52,11 +52,21 @@ export const measureTiptapDoc = (
   for (const line of lines) {
     let lineWidth = 0;
     let lineHeight = 0;
-    for (const seg of line) {
-      const font = getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize });
-      const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));
-      lineWidth += metrics.width;
-      lineHeight = Math.max(lineHeight, metrics.height);
+    if (line.length === 0) {
+      // empty paragraph → use default font metrics
+      const metrics = measureText(
+        "",
+        getFontString({ fontFamily: defaultFontFamily, fontSize: defaultFontSize }),
+        getLineHeight(defaultFontFamily),
+      );
+      lineHeight = metrics.height;
+    } else {
+      for (const seg of line) {
+        const font = getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize });
+        const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));
+        lineWidth += metrics.width;
+        lineHeight = Math.max(lineHeight, metrics.height);
+      }
     }
     width = Math.max(width, lineWidth);
     height += lineHeight;
@@ -82,10 +92,10 @@ export const parseTiptapDoc = (
   let current: TiptapLine = [];
 
   const pushLine = () => {
-    if (current.length) {
+    // if (current.length) {
       lines.push(current);
       current = [];
-    }
+    // }
   };
 
   const visit = (node: JSONContent, style: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {}) => {

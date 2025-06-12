@@ -677,7 +677,19 @@ body.excalidraw-cursor-resize * {
       margin-top: 0rem;
     }
   }
+
+  /* remove default paragraph margins inside the scratchpad editor */
+  .excalidraw-wysiwyg .ProseMirror {
+    font: inherit;
+    line-height: inherit;
+  }
+
+  .excalidraw-wysiwyg .ProseMirror p {
+    margin-block-start: 0;
+    margin-block-end: 0;
+  }
 }
+
 
 .ErrorSplash.excalidraw {
   min-height: 100vh;
@@ -760,4 +772,6 @@ body.excalidraw-cursor-resize * {
     letter-spacing: 0.6px;
     font-family: "Assistant";
   }
+
+  
 }
