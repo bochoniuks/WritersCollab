@@ -33,9 +33,8 @@ export const measureTiptapDoc = (
     opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {}) => {
         const defaultFontFamily = opts.fontFamily ?? DEFAULT_FONT_FAMILY;
         const defaultFontSize = opts.fontSize ?? DEFAULT_FONT_SIZE;
-        const defaultColor = opts.color ?? COLOR_PALETTE.black;
 
-  const lines = parseTiptapDoc(doc);
+  const lines = parseTiptapDoc(doc, opts);
 
   if (lines.length === 0 || (lines.length === 1 && lines[0].length === 0)) {
     // empty document → minimal line height

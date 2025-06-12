@@ -830,6 +830,13 @@ export const renderElement = (
         element.x + appState.scrollX,
         element.y + appState.scrollY,
       );                      // position at element.x/y
+
+      // console.log(
+      //   "render scratchpad",
+      //   element.id,
+      //   "→ canvas", element.x + appState.scrollX, element.y + appState.scrollY,
+      // );
+      
       context.textAlign = "left";
       context.textBaseline = "top";
 

@@ -165,18 +165,21 @@ export const scratchpadWysiwyg = ({
 
         const lineHeight = getLineHeight(updatedElement.fontFamily);
 
-        const offsetPx = getVerticalOffset(
-          updatedElement.fontFamily,
-          updatedElement.fontSize,
-          getLineHeightInPx(updatedElement.fontSize, lineHeight),
-        );
-
         const [viewportX, viewportY] = getViewportCoords(coordX, coordY);
+
+        // console.log(
+        //   "edit scratchpad",
+        //   updatedElement.id,
+        //   "→ viewport", viewportX, viewportY
+        // );
+
         Object.assign(editable.style, {
           left: `${viewportX}px`,
-          top: `${viewportY - offsetPx}px`,
+          top: `${viewportY-3}px`, //<-TODO: I have to add this -3 to avoid vertical shifting 
+                                   // when switching to edit mode. Need to research 
+                                   // why and fix it properly
           width: `${width}px`,
-          height: `${height - offsetPx}px`,
+          height: `${height}px`,
           font: font,
           lineHeight: lineHeight,
           color: updatedElement.strokeColor,
@@ -337,11 +340,6 @@ export const scratchpadWysiwyg = ({
     wordBreak = "break-word";
   }
   const lineHeight = getLineHeight(element.fontFamily);
-  const offsetPx = getVerticalOffset(
-    element.fontFamily,
-    element.fontSize,
-    getLineHeightInPx(element.fontSize, lineHeight),
-  );
 
   Object.assign(editable.style, {
     position: "absolute",
@@ -362,8 +360,8 @@ export const scratchpadWysiwyg = ({
     whiteSpace,
     overflowWrap: "break-word",
     boxSizing: "content-box",
-    lineHeight,
-    top: `${getViewportCoords(element.x, element.y)[1] - offsetPx}px`,
+    lineHeight: lineHeight,
+    top: `${getViewportCoords(element.x, element.y)[1]}px`,
   });
   updateWysiwygStyle();
 

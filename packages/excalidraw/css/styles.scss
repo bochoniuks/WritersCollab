@@ -687,6 +687,11 @@ body.excalidraw-cursor-resize * {
     padding: 0;
     margin: 0;
     border: none;
+    outline: none;                /* remove blue border */
+  }
+
+  .excalidraw-wysiwyg .ProseMirror:focus {
+    outline: none;                /* ensure no focus ring */
   }
 
   .excalidraw-wysiwyg .ProseMirror p {
