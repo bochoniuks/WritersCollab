@@ -137,6 +137,36 @@ export const wrapTiptapDoc = (
   return result;
 };
 
+export const scaleTiptapDoc = (
+  doc: JSONContent,
+  factor: number,
+): JSONContent => {
+  const visit = (node: JSONContent): JSONContent => {
+    const newNode: JSONContent = { ...node };
+
+    if (Array.isArray(newNode.marks)) {
+      newNode.marks = newNode.marks.map((mark) => {
+        if (mark.type === "textStyle" && mark.attrs?.fontSize) {
+          const size = parseFloat(mark.attrs.fontSize);
+          return {
+            ...mark,
+            attrs: { ...mark.attrs, fontSize: String(size * factor) },
+          };
+        }
+        return mark;
+      });
+    }
+
+    if (Array.isArray(newNode.content)) {
+      newNode.content = newNode.content.map(visit);
+    }
+    return newNode;
+  };
+
+  return visit(doc);
+};
+
+
 export const measureTiptapDocWithWidth = (
   doc: JSONContent,
   maxWidth: number,

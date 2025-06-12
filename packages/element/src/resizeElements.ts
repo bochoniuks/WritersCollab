@@ -77,7 +77,7 @@ import type {
   ElementsMap,
   ExcalidrawElbowArrowElement,
 } from "./types";
-import { measureTiptapDoc, wrapTiptapDoc } from "./parseTiptapDoc";
+import { measureTiptapDoc, scaleTiptapDoc, wrapTiptapDoc } from "./parseTiptapDoc";
 
 // Returns true when transform (resizing/rotation) happened
 export const transformElements = (
@@ -533,32 +533,136 @@ const resizeSingleScratchpadElement = (
   pointerX: number,
   pointerY: number,
 ) => {
+  // if (!transformHandleType.includes("e") &&
+  //     !transformHandleType.includes("w")) {
+  //   // fall back to generic element resizing for purely vertical or
+  //   // corner handles
+  //   const { nextWidth, nextHeight } =
+  //     getNextSingleWidthAndHeightFromPointer(
+  //       element,
+  //       originalElements.get(element.id)!,
+  //       transformHandleType,
+  //       pointerX,
+  //       pointerY,
+  //       { shouldMaintainAspectRatio: false,
+  //         shouldResizeFromCenter },
+  //     );
+
+  //   resizeSingleElement(
+  //     nextWidth,
+  //     nextHeight,
+  //     element,
+  //     originalElements.get(element.id)!,
+  //     originalElements,
+  //     scene,
+  //     transformHandleType,
+  //     { shouldMaintainAspectRatio: false,
+  //       shouldResizeFromCenter },
+  //   );
+  //   return;
+  // }
+
   if (!transformHandleType.includes("e") &&
       !transformHandleType.includes("w")) {
-    // fall back to generic element resizing for purely vertical or
-    // corner handles
-    const { nextWidth, nextHeight } =
-      getNextSingleWidthAndHeightFromPointer(
-        element,
-        originalElements.get(element.id)!,
-        transformHandleType,
-        pointerX,
-        pointerY,
-        { shouldMaintainAspectRatio: false,
-          shouldResizeFromCenter },
-      );
-
-    resizeSingleElement(
-      nextWidth,
-      nextHeight,
-      element,
-      originalElements.get(element.id)!,
-      originalElements,
-      scene,
-      transformHandleType,
-      { shouldMaintainAspectRatio: false,
-        shouldResizeFromCenter },
+    const elementsMap = scene.getNonDeletedElementsMap();
+    const [x1, y1, x2, y2, cx, cy] =
+      getElementAbsoluteCoords(element, elementsMap);
+    const [rotX, rotY] = pointRotateRads(
+      pointFrom(pointerX, pointerY),
+      pointFrom(cx, cy),
+      -element.angle as Radians,
     );
+
+    let scaleX = 0, scaleY = 0;
+    if (transformHandleType.includes("e")) {
+      scaleX = (rotX - x1) / (x2 - x1);
+    }
+    if (transformHandleType.includes("w")) {
+      scaleX = (x2 - rotX) / (x2 - x1);
+    }
+    if (transformHandleType.includes("n")) {
+      scaleY = (y2 - rotY) / (y2 - y1);
+    }
+    if (transformHandleType.includes("s")) {
+      scaleY = (rotY - y1) / (y2 - y1);
+    }
+
+    const scale = Math.max(scaleX, scaleY);
+    if (scale <= 0) {
+      return;
+    }
+
+    const newFontSize = element.fontSize * scale;
+    if (newFontSize < MIN_FONT_SIZE) {
+      return;
+    }
+
+    const nextWidth = element.width * scale;
+    const nextHeight = element.height * scale;
+
+    const scaledDoc = scaleTiptapDoc(element.originalTiptapDoc, scale);
+
+    let newTopLeft = pointFrom<GlobalPoint>(x1, y1);
+    const startTopLeft = pointFrom<GlobalPoint>(x1, y1);
+    const startBottomRight = pointFrom<GlobalPoint>(x2, y2);
+    const startCenter = pointCenter(startTopLeft, startBottomRight);
+
+    if (["n", "w", "nw"].includes(transformHandleType)) {
+      newTopLeft = pointFrom<GlobalPoint>(
+        startBottomRight[0] - Math.abs(nextWidth),
+        startBottomRight[1] - Math.abs(nextHeight),
+      );
+    }
+    if (transformHandleType === "ne") {
+      const bottomLeft = [startTopLeft[0], startBottomRight[1]];
+      newTopLeft = pointFrom<GlobalPoint>(
+        bottomLeft[0],
+        bottomLeft[1] - Math.abs(nextHeight),
+      );
+    }
+    if (transformHandleType === "sw") {
+      const topRight = [startBottomRight[0], startTopLeft[1]];
+      newTopLeft = pointFrom<GlobalPoint>(
+        topRight[0] - Math.abs(nextWidth),
+        topRight[1],
+      );
+    }
+
+    if (["s", "n"].includes(transformHandleType)) {
+      newTopLeft[0] = startCenter[0] - nextWidth / 2;
+    }
+    if (["e", "w"].includes(transformHandleType)) {
+      newTopLeft[1] = startCenter[1] - nextHeight / 2;
+    }
+
+    if (shouldResizeFromCenter) {
+      newTopLeft[0] = startCenter[0] - Math.abs(nextWidth) / 2;
+      newTopLeft[1] = startCenter[1] - Math.abs(nextHeight) / 2;
+    }
+
+    const angle = element.angle;
+    const rotatedTopLeft = pointRotateRads(newTopLeft, pointFrom(cx, cy), angle);
+    const newCenter = pointFrom<GlobalPoint>(
+      newTopLeft[0] + Math.abs(nextWidth) / 2,
+      newTopLeft[1] + Math.abs(nextHeight) / 2,
+    );
+    const rotatedNewCenter = pointRotateRads(newCenter, pointFrom(cx, cy), angle);
+    newTopLeft = pointRotateRads(
+      rotatedTopLeft,
+      rotatedNewCenter,
+      -angle as Radians,
+    );
+    const [nextX, nextY] = newTopLeft;
+
+    scene.mutateElement(element, {
+      fontSize: newFontSize,
+      width: nextWidth,
+      height: nextHeight,
+      x: nextX,
+      y: nextY,
+      tiptapDoc: scaledDoc,
+      originalTiptapDoc: scaledDoc,
+    });
     return;
   }
 
@@ -599,7 +703,7 @@ const resizeSingleScratchpadElement = (
 
   const newWidth = element.width * scaleX;
   const wrapped = wrapTiptapDoc(
-    element.tiptapDoc,
+    element.originalTiptapDoc,
     Math.abs(newWidth),
     { fontFamily: element.fontFamily,
       fontSize: element.fontSize,
