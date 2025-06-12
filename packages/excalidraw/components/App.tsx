@@ -5108,6 +5108,7 @@ class App extends React.Component<AppProps, AppState> {
           _el.id === element.id && isScratchpadElement(_el)
             ? newElementWith(_el, {
                 tiptapDoc: nextDoc,
+                originalTiptapDoc: nextDoc,
                 width,
                 height,
                 isDeleted: isDeleted ?? _el.isDeleted,

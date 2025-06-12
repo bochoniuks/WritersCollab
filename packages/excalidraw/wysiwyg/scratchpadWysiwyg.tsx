@@ -157,7 +157,7 @@ export const scratchpadWysiwyg = ({
         //   fontSize: updatedElement.fontSize,
         // });
 
-        const { width, height } = measureTiptapDocWithWidth(
+        const { height } = measureTiptapDocWithWidth(
           updatedElement.originalTiptapDoc,
           updatedElement.width,
           {
@@ -165,6 +165,7 @@ export const scratchpadWysiwyg = ({
             fontSize: updatedElement.fontSize,
           },
         );
+        const width = updatedElement.width;
 
         let coordX = updatedElement.x;
         let coordY = updatedElement.y;
