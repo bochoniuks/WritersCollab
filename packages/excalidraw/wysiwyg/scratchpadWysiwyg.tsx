@@ -15,9 +15,11 @@ import {
   getFontFamilyString,
   isTestEnv,
   getLineHeight,
+  getVerticalOffset,
 } from "@excalidraw/common";
 
 import {
+  getLineHeightInPx,
   isScratchpadElement,
   originalContainerCache,
   updateOriginalContainerCache,
@@ -163,12 +165,18 @@ export const scratchpadWysiwyg = ({
 
         const lineHeight = getLineHeight(updatedElement.fontFamily);
 
+        const offsetPx = getVerticalOffset(
+          updatedElement.fontFamily,
+          updatedElement.fontSize,
+          getLineHeightInPx(updatedElement.fontSize, lineHeight),
+        );
+
         const [viewportX, viewportY] = getViewportCoords(coordX, coordY);
         Object.assign(editable.style, {
           left: `${viewportX}px`,
-          top: `${viewportY}px`,
+          top: `${viewportY - offsetPx}px`,
           width: `${width}px`,
-          height: `${height}px`,
+          height: `${height - offsetPx}px`,
           font: font,
           lineHeight: lineHeight,
           color: updatedElement.strokeColor,
@@ -328,6 +336,13 @@ export const scratchpadWysiwyg = ({
     whiteSpace = "pre-wrap";
     wordBreak = "break-word";
   }
+  const lineHeight = getLineHeight(element.fontFamily);
+  const offsetPx = getVerticalOffset(
+    element.fontFamily,
+    element.fontSize,
+    getLineHeightInPx(element.fontSize, lineHeight),
+  );
+
   Object.assign(editable.style, {
     position: "absolute",
     display: "inline-block",
@@ -347,6 +362,8 @@ export const scratchpadWysiwyg = ({
     whiteSpace,
     overflowWrap: "break-word",
     boxSizing: "content-box",
+    lineHeight,
+    top: `${getViewportCoords(element.x, element.y)[1] - offsetPx}px`,
   });
   updateWysiwygStyle();
 

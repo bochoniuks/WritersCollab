@@ -682,6 +682,11 @@ body.excalidraw-cursor-resize * {
   .excalidraw-wysiwyg .ProseMirror {
     font: inherit;
     line-height: inherit;
+
+    /* avoid shifting the editable area vertically */
+    padding: 0;
+    margin: 0;
+    border: none;
   }
 
   .excalidraw-wysiwyg .ProseMirror p {
