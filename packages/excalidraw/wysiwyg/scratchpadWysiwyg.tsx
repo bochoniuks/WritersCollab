@@ -172,6 +172,8 @@ export const scratchpadWysiwyg = ({
         //   updatedElement.id,
         //   "→ viewport", viewportX, viewportY
         // );
+        
+        const editorMaxHeight = (appState.height - viewportY) / appState.zoom.value;
 
         Object.assign(editable.style, {
           left: `${viewportX}px`,
@@ -185,6 +187,15 @@ export const scratchpadWysiwyg = ({
           color: updatedElement.strokeColor,
           opacity: updatedElement.opacity / 100,
           filter: "var(--theme-filter)",
+          transform: getTransform(
+            width,
+            height,
+            updatedElement.angle,
+            appState,
+            width,
+            editorMaxHeight,
+          ),
+          maxHeight: `${editorMaxHeight}px`,
         });
         app.scene.mutateElement(updatedElement, { x: coordX, y: coordY });
       } 
