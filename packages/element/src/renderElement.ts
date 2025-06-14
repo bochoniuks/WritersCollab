@@ -69,6 +69,7 @@ import type {
   ExcalidrawFrameLikeElement,
   NonDeletedSceneElementsMap,
   ElementsMap,
+  FontString,
 } from "./types";
 
 import type { StrokeOptions } from "perfect-freehand";
@@ -845,10 +846,11 @@ export const renderElement = (
         let cursorX = 0;
         let lineHeight = 0;
         for (const seg of line) {
-          const fontString = getFontString({
+          const base = getFontString({
             fontSize: seg.fontSize,
             fontFamily: seg.fontFamily,
           });
+          const fontString = `${base} ${seg.fontWeight}` as FontString;
           context.font = fontString;
           context.fillStyle = seg.color;
           context.fillText(seg.text, cursorX, cursorY);

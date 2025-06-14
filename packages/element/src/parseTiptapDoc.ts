@@ -1,7 +1,7 @@
 // packages/element/src/parseTiptapDoc.ts
 import { COLOR_PALETTE, DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, getFontString, getLineHeight } from "@excalidraw/common";
 
-import type { FontFamilyValues } from "@excalidraw/element/types";
+import type { FontFamilyValues, FontString } from "@excalidraw/element/types";
 
 import type { JSONContent } from "@tiptap/core";
 import { measureText } from "./textMeasurements";
@@ -12,6 +12,7 @@ export type TiptapSegment = {
   fontFamily: FontFamilyValues; // use numeric font-family values
   fontSize: number;
   color: string;
+  fontWeight: string;
 };
 
 export type TiptapLine = TiptapSegment[];
@@ -206,8 +207,11 @@ export const measureTiptapDoc = (
       lineHeight = metrics.height;
     } else {
       for (const seg of line) {
-        const font = getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize });
+        const base = getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize });
+        const font = `${base} ${seg.fontWeight} ` as FontString;
         const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));
+        // const font = getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize });
+        // const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));
         lineWidth += metrics.width;
         lineHeight = Math.max(lineHeight, metrics.height);
       }
@@ -242,7 +246,7 @@ export const parseTiptapDoc = (
     // }
   };
 
-  const visit = (node: JSONContent, style: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {}) => {
+  const visit = (node: JSONContent, style: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string; fontWeight?: string } = {}) => {
     if (!node) {
       return;
     }
@@ -252,6 +256,10 @@ export const parseTiptapDoc = (
           if (mark.attrs.fontFamily) style.fontFamily = mark.attrs.fontFamily;
           if (mark.attrs.fontSize) style.fontSize = parseFloat(mark.attrs.fontSize);
           if (mark.attrs.color) style.color = mark.attrs.color;
+          if (mark.attrs.fontWeight) style.fontWeight = mark.attrs.fontWeight;
+        }
+        if (mark.type === "bold") {
+          style.fontWeight = "700";
         }
         if (mark.type === "color" && mark.attrs?.color) {
           style.color = mark.attrs.color;
@@ -265,6 +273,7 @@ export const parseTiptapDoc = (
         fontFamily: style.fontFamily || defaultFontFamily,
         fontSize: style.fontSize || defaultFontSize,
         color: style.color || defaultColor,
+        fontWeight: style.fontWeight || "normal",
       });
     } else if (node.type === "hardBreak") {
       pushLine();

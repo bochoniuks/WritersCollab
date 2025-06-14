@@ -5,6 +5,8 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
+import FontFamily from "@tiptap/extension-font-family";
+import FontSize from "tiptap-extension-font-size";
 
 import {
   KEYS,
@@ -395,7 +397,7 @@ export const scratchpadWysiwyg = ({
 
   const ScratchpadEditor = () => {
     const ed = useEditor({
-      extensions: [StarterKit, TextStyle, Color],
+      extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize],
       content: prevDoc,
       onUpdate: ({ editor: ed }) => {
         const doc = ed.getJSON();
@@ -418,6 +420,7 @@ export const scratchpadWysiwyg = ({
           .setMark('textStyle', {
               fontFamily: app.state.currentItemFontFamily,
               fontSize: app.state.currentItemFontSize,
+              fontWeight: "normal",
             })
             .setColor(element.strokeColor)
             .run();

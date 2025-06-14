@@ -85,5 +85,9 @@
   },
   "resolutions": {
     "strip-ansi": "6.0.1"
+  },
+  "dependencies": {
+    "@tiptap/extension-font-family": "2.14.0",
+    "tiptap-extension-font-size": "1.2.0"
   }
 }
