@@ -208,7 +208,7 @@ export const measureTiptapDoc = (
     } else {
       for (const seg of line) {
         const base = getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize });
-        const font = `${seg.fontWeight} ${base}` as FontString;
+        const font = `${base} ${seg.fontWeight} ` as FontString;
         const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));
         // const font = getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize });
         // const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));

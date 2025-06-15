@@ -850,7 +850,7 @@ export const renderElement = (
             fontSize: seg.fontSize,
             fontFamily: seg.fontFamily,
           });
-          const fontString = `${seg.fontWeight} ${base}` as FontString;
+          const fontString = `${base} ${seg.fontWeight}` as FontString;
           context.font = fontString;
           context.fillStyle = seg.color;
           context.fillText(seg.text, cursorX, cursorY);
