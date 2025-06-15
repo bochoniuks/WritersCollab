@@ -70,6 +70,7 @@ import type { Editor } from "@tiptap/core";
 import type App from "../components/App";
 import type { AppState } from "../types";
 import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
+import { EditorJotaiProvider, editorJotaiStore } from "../editor-jotai";
 
 const getTransform = (
   width: number,
@@ -428,7 +429,12 @@ export const scratchpadWysiwyg = ({
   };
 
   const root = createRoot(editable);
-  root.render(<ScratchpadEditor />);
+  // root.render(<ScratchpadEditor />);
+  root.render(
+  <EditorJotaiProvider store={editorJotaiStore}>
+    <ScratchpadEditor />
+  </EditorJotaiProvider>
+);
 
   editable.onkeydown = (event) => {
     if (!event.shiftKey && actionZoomIn.keyTest(event)) {
