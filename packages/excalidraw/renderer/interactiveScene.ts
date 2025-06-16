@@ -62,6 +62,7 @@ import type {
   ExcalidrawFrameLikeElement,
   ExcalidrawImageElement,
   ExcalidrawLinearElement,
+  ExcalidrawScratchpadElement,
   ExcalidrawTextElement,
   GroupId,
   NonDeleted,
@@ -699,7 +700,7 @@ const renderCropHandles = (
 };
 
 const renderTextBox = (
-  text: NonDeleted<ExcalidrawTextElement>,
+  text: NonDeleted<ExcalidrawTextElement | ExcalidrawScratchpadElement>,
   context: CanvasRenderingContext2D,
   appState: InteractiveCanvasAppState,
   selectionColor: InteractiveCanvasRenderConfig["selectionColor"],
@@ -795,14 +796,10 @@ const _renderInteractiveScene = ({
   ) {
     const textElement = allElementsMap.get(appState.editingTextElement.id) as
       | ExcalidrawTextElement
+      | ExcalidrawScratchpadElement
       | undefined;
-    if (textElement && !textElement.autoResize) {
-      renderTextBox(
-        textElement,
-        context,
-        appState,
-        renderConfig.selectionColor,
-      );
+    if (textElement && (isScratchpadElement(textElement) || !textElement.autoResize)) {
+      renderTextBox(textElement, context, appState, renderConfig.selectionColor);
     }
   }
 

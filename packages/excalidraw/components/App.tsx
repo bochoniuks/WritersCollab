@@ -532,7 +532,7 @@ import type {
 } from "../types";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
-import { measureTiptapDoc } from "@excalidraw/element/parseTiptapDoc";
+import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 
 const AppContext = React.createContext<AppClassProperties>(null!);
 const AppPropsContext = React.createContext<AppProps>(null!);
@@ -5099,10 +5099,26 @@ class App extends React.Component<AppProps, AppState> {
     // };
 
     const updateElement = (nextDoc: JSONContent, isDeleted: boolean) => {
-      const { width, height } = measureTiptapDoc(nextDoc, {
-        fontFamily: element.fontFamily,
-        fontSize: element.fontSize,
-      });
+      // const { width, height } = measureTiptapDoc(nextDoc, {
+      //   fontFamily: element.fontFamily,
+      //   fontSize: element.fontSize,
+      // });
+
+      let width = element.width;
+      let height: number;
+
+      if (element.autoResize) {
+        ({ width, height } = measureTiptapDoc(nextDoc, {
+          fontFamily: element.fontFamily,
+          fontSize: element.fontSize,
+        }));
+      } else {
+        ({ height } = measureTiptapDocWithWidth(nextDoc, element.width, {
+          fontFamily: element.fontFamily,
+          fontSize: element.fontSize,
+        }));
+      }
+        
       this.scene.replaceAllElements(
         this.scene.getElementsIncludingDeleted().map((_el) =>
           _el.id === element.id && isScratchpadElement(_el)

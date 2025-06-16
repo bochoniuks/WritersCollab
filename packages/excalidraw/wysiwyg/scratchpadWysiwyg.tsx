@@ -163,7 +163,8 @@ export const scratchpadWysiwyg = ({
 
     if (isScratchpadElement(updatedElement)) {
         // compute size from the scratchpad document
-
+        console.log(updatedElement.tiptapDoc)
+        console.log(updatedElement.originalTiptapDoc)
         const { height } = measureTiptapDocWithWidth(
           updatedElement.originalTiptapDoc,
           updatedElement.width,
