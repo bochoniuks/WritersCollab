@@ -168,6 +168,9 @@ export const scratchpadWysiwyg = ({
         );
         const width = updatedElement.width;
 
+        const safeWidth = Number.isFinite(width) ? width : DEFAULT_WIDTH;
+        const safeHeight = Number.isFinite(height) ? height : DEFAULT_HEIGHT;
+
         let coordX = updatedElement.x;
         let coordY = updatedElement.y;
 
@@ -193,19 +196,19 @@ export const scratchpadWysiwyg = ({
           top: `${viewportY-3}px`, //<-TODO: I have to add this -3 to avoid vertical shifting 
                                    // when switching to edit mode. Need to research 
                                    // why and fix it properly
-          width: `${width}px`,
-          height: `${height}px`,
+          width: `${safeWidth}px`,
+          height: `${safeHeight}px`,
           font: font,
           lineHeight: lineHeight,
           color: updatedElement.strokeColor,
           opacity: updatedElement.opacity / 100,
           filter: "var(--theme-filter)",
           transform: getTransform(
-            width,
-            height,
+            safeWidth,
+            safeHeight,
             updatedElement.angle,
             appState,
-            width,
+            safeWidth,
             editorMaxHeight,
           ),
           maxHeight: `${editorMaxHeight}px`,
@@ -395,17 +398,42 @@ export const scratchpadWysiwyg = ({
   const changeHistory = [...(element.changeHistory || [])];
 
   const ScratchpadEditor = () => {
+    // const ed = useEditor({
+    //   extensions: [StarterKit, TextStyle, Color],
+    //   content: prevDoc,
+    //   onUpdate: ({ editor: ed }) => {
+    //     const doc = ed.getJSON();
+    //     console.log(doc)
+    //     if (onChange) {
+    //       onChange(doc);
+    //     }
+    //     changeHistory.push({ from: prevDoc, to: doc, timestamp: Date.now() });
+    //     prevDoc = doc;
+    //     updateWysiwygStyle();
+    //   },
+    // });
+
     const ed = useEditor({
       extensions: [StarterKit, TextStyle, Color],
       content: prevDoc,
+      editorProps: {
+        attributes: {
+          style: `font-family:${app.state.currentItemFontFamily};
+                  font-size:${app.state.currentItemFontSize}px;
+                  color:${element.strokeColor};`,
+        },
+      },
       onUpdate: ({ editor: ed }) => {
         const doc = ed.getJSON();
-        if (onChange) {
-          onChange(doc);
-        }
+        console.log(doc);
+        onChange?.(doc);
         changeHistory.push({ from: prevDoc, to: doc, timestamp: Date.now() });
         prevDoc = doc;
         updateWysiwygStyle();
+      },
+      onBlur: ({ editor: ed }) => {
+        // remove temporary style attributes when leaving the editor
+        ed.view.dom.removeAttribute("style");
       },
     });
 
@@ -415,13 +443,13 @@ export const scratchpadWysiwyg = ({
         if (autoSelect) {
           ed.commands.focus();
         }
-        ed.chain()
-          .setMark('textStyle', {
-              fontFamily: app.state.currentItemFontFamily,
-              fontSize: app.state.currentItemFontSize,
-            })
-            .setColor(element.strokeColor)
-            .run();
+        // ed.chain()
+        //   .setMark('textStyle', {
+        //       fontFamily: app.state.currentItemFontFamily,
+        //       fontSize: app.state.currentItemFontSize,
+        //     })
+        //     .setColor(element.strokeColor)
+        //     .run();
       }
     }, [ed]);
 
@@ -556,6 +584,10 @@ export const scratchpadWysiwyg = ({
     unbindUpdate();
     unbindOnScroll();
 
+    if (editor) {
+      editor.view.dom.removeAttribute("style");
+    }
+    
     root.unmount();
     editable.remove();
   };

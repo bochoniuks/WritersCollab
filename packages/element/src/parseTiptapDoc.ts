@@ -1,5 +1,5 @@
 // packages/element/src/parseTiptapDoc.ts
-import { COLOR_PALETTE, DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, getFontString, getLineHeight } from "@excalidraw/common";
+import { COLOR_PALETTE, DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, FONT_FAMILY, getFontString, getLineHeight, normalizeColor } from "@excalidraw/common";
 
 import type { FontFamilyValues } from "@excalidraw/element/types";
 
@@ -249,15 +249,34 @@ export const parseTiptapDoc = (
     if (node.marks) {
       node.marks.forEach(mark => {
         if (mark.type === "textStyle" && mark.attrs) {
-          if (mark.attrs.fontFamily) style.fontFamily = mark.attrs.fontFamily;
-          if (mark.attrs.fontSize) style.fontSize = parseFloat(mark.attrs.fontSize);
-          if (mark.attrs.color) style.color = mark.attrs.color;
+          if (mark.attrs.fontFamily) {
+            const id = FONT_FAMILY[mark.attrs.fontFamily as keyof typeof FONT_FAMILY];
+            if (id) style.fontFamily = id;
+          }
+          if (mark.attrs.fontSize) {
+            const size = parseFloat(mark.attrs.fontSize);
+            if (Number.isFinite(size)) style.fontSize = size;
+          }
+          if (mark.attrs.color) {
+            style.color = normalizeColor(mark.attrs.color);
+          }
         }
         if (mark.type === "color" && mark.attrs?.color) {
-          style.color = mark.attrs.color;
+          style.color = normalizeColor(mark.attrs.color);
         }
       });
+    //   node.marks.forEach(mark => {
+    //     if (mark.type === "textStyle" && mark.attrs) {
+    //       if (mark.attrs.fontFamily) style.fontFamily = mark.attrs.fontFamily;
+    //       if (mark.attrs.fontSize) style.fontSize = parseFloat(mark.attrs.fontSize);
+    //       if (mark.attrs.color) style.color = mark.attrs.color;
+    //     }
+    //     if (mark.type === "color" && mark.attrs?.color) {
+    //       style.color = mark.attrs.color;
+    //     }
+    //   });
     }
+    
 
     if (node.type === "text") {
         current.push({

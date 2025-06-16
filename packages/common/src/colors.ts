@@ -171,3 +171,14 @@ export const rgbToHex = (r: number, g: number, b: number) =>
   `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 
 // -----------------------------------------------------------------------------
+
+export const normalizeColor = (color: string): string => {
+  const match = color
+    .trim()
+    .match(/^rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)(?:,\\s*\\d*(?:\\.\\d+)?)?\\)$/);
+  if (match) {
+    const [, r, g, b] = match;
+    return rgbToHex(Number(r), Number(g), Number(b));
+  }
+  return color;
+};
