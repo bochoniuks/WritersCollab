@@ -16,6 +16,7 @@ import {
   isTestEnv,
   getLineHeight,
   getVerticalOffset,
+  FONT_FAMILY,
 } from "@excalidraw/common";
 
 import {
@@ -396,7 +397,7 @@ export const scratchpadWysiwyg = ({
   // let editor: Editor | null = null;
   let prevDoc = element.tiptapDoc;
   const changeHistory = [...(element.changeHistory || [])];
-
+  
   const ScratchpadEditor = () => {
     // const ed = useEditor({
     //   extensions: [StarterKit, TextStyle, Color],
@@ -413,6 +414,11 @@ export const scratchpadWysiwyg = ({
     //   },
     // });
 
+    // utilities to convert font id to name
+    const fontName = Object.entries(FONT_FAMILY)
+      .find(([_, id]) => id === app.state.currentItemFontFamily)?.[0];
+
+      
     const ed = useEditor({
       extensions: [StarterKit, TextStyle, Color],
       content: prevDoc,
@@ -421,15 +427,26 @@ export const scratchpadWysiwyg = ({
           style: `font-family:${app.state.currentItemFontFamily};
                   font-size:${app.state.currentItemFontSize}px;
                   color:${element.strokeColor};`,
-        },
-      },
+            },
+          },
       onUpdate: ({ editor: ed }) => {
+        console.log(ed);
         const doc = ed.getJSON();
         console.log(doc);
         onChange?.(doc);
         changeHistory.push({ from: prevDoc, to: doc, timestamp: Date.now() });
         prevDoc = doc;
         updateWysiwygStyle();
+      },
+      onSelectionUpdate: ({ editor }) => {
+        editor.chain()
+          .focus()
+          .setMark("textStyle", {
+            fontFamily: fontName,
+            fontSize: String(app.state.currentItemFontSize),
+          })
+          .setColor(element.strokeColor)
+          .run();
       },
       onBlur: ({ editor: ed }) => {
         // remove temporary style attributes when leaving the editor
@@ -438,20 +455,21 @@ export const scratchpadWysiwyg = ({
     });
 
     useEffect(() => {
-      if (ed) {
+      if (ed && fontName) {
         editor = ed as Editor;
         if (autoSelect) {
           ed.commands.focus();
         }
-        // ed.chain()
-        //   .setMark('textStyle', {
-        //       fontFamily: app.state.currentItemFontFamily,
-        //       fontSize: app.state.currentItemFontSize,
-        //     })
-        //     .setColor(element.strokeColor)
-        //     .run();
+         ed.chain()
+          .focus()
+          .setMark("textStyle", {
+            fontFamily: fontName,
+            fontSize: String(app.state.currentItemFontSize),
+          })
+          .setColor(element.strokeColor)
+          .run();
       }
-    }, [ed]);
+    }, [ed,fontName]);
 
     return <EditorContent editor={ed} />;
   };
