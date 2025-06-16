@@ -245,6 +245,9 @@ export const newScratchpadElement = (
     containerId?: ExcalidrawTextContainer["id"] | null;
     fontFamily?: FontFamilyValues;
     fontSize?: number;
+    width?: number;
+    height?: number;
+    autoResize?: boolean;
   },
 ): NonDeleted<ExcalidrawScratchpadElement> => {
   const fontFamily = opts.fontFamily ?? DEFAULT_FONT_FAMILY;
@@ -259,15 +262,26 @@ export const newScratchpadElement = (
     getLineHeight(fontFamily),
   );
 
+  let { width, height } = opts;
+  if (width == null || height == null) {
+    const metrics = measureText(
+      "",
+      getFontString({ fontFamily, fontSize }),
+      getLineHeight(fontFamily),
+    );
+    width ??= metrics.width;
+    height ??= metrics.height;
+  }
+
   const scratchpadElementProps: ExcalidrawScratchpadElement = {
-    ..._newElementBase<ExcalidrawScratchpadElement>("scratchpad", opts),
+    ..._newElementBase<ExcalidrawScratchpadElement>("scratchpad", {...opts, width, height}),
     tiptapDoc,
     originalTiptapDoc: tiptapDoc,
+    containerId: opts.containerId || null,
     changeHistory: [],
+    autoResize: opts.autoResize ?? true,
     width: metrics.width,
     height: metrics.height,
-    containerId: opts.containerId || null,
-    autoResize: true,
     fontFamily,
     fontSize,
   };

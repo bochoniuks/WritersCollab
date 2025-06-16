@@ -102,6 +102,8 @@ import {
   randomInteger,
   CLASSES,
   Emitter,
+  DEFAULT_SCRATCHPAD_WIDTH_RATIO,
+  DEFAULT_SCRATCHPAD_HEIGHT_RATIO,
 } from "@excalidraw/common";
 
 import { getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
@@ -5729,11 +5731,17 @@ class App extends React.Component<AppProps, AppState> {
       y: sceneY,
     });
 
+    const defaultWidth = this.state.width * DEFAULT_SCRATCHPAD_WIDTH_RATIO;
+    const defaultHeight = this.state.height * DEFAULT_SCRATCHPAD_HEIGHT_RATIO;
+
+
     const element =
       existingTextElement ||
       newScratchpadElement({
         x: parentCenterPosition ? parentCenterPosition.elementCenterX : sceneX,
         y: parentCenterPosition ? parentCenterPosition.elementCenterY : sceneY,
+        width: defaultWidth,
+        height: defaultHeight,
         strokeColor: this.state.currentItemStrokeColor,
         backgroundColor: this.state.currentItemBackgroundColor,
         fillStyle: this.state.currentItemFillStyle,
