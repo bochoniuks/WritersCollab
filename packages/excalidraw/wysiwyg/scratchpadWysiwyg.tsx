@@ -179,8 +179,11 @@ export const scratchpadWysiwyg = ({
         );
         const width = updatedElement.width;
 
-        const safeWidth = Number.isFinite(width) ? width : DEFAULT_WIDTH;
-        const safeHeight = Number.isFinite(height) ? height : DEFAULT_HEIGHT;
+        // const safeWidth = Number.isFinite(width) ? width : DEFAULT_WIDTH;
+        // const safeHeight = Number.isFinite(height) ? height : DEFAULT_HEIGHT;
+        //TODO: Create the DEFAULT_WIDTH and DEFAULT_HEIGHT
+        const safeWidth = width;
+        const safeHeight = height;
 
         let coordX = updatedElement.x;
         let coordY = updatedElement.y;
