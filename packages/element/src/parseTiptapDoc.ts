@@ -1,7 +1,7 @@
 // packages/element/src/parseTiptapDoc.ts
 import { COLOR_PALETTE, DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, FONT_FAMILY, getFontString, getLineHeight, normalizeColor } from "@excalidraw/common";
 
-import type { FontFamilyValues } from "@excalidraw/element/types";
+import type { FontFamilyValues, FontString } from "@excalidraw/element/types";
 
 import type { JSONContent } from "@tiptap/core";
 import { measureText } from "./textMeasurements";
@@ -21,72 +21,6 @@ export type TiptapSegment = {
 
 export type TiptapLine = TiptapSegment[];
 
-// packages/element/src/parseTiptapDoc.ts
-// export const measureTiptapDoc = (doc: JSONContent) => {
-//   const segments = parseTiptapDoc(doc);
-//   let width = 0, height = 0;
-//   for (const seg of segments) {
-//     const font = getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize });
-//     const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));
-//     width += metrics.width;
-//     height = Math.max(height, metrics.height);
-//   }
-//   return { width, height };
-// };
-
-// export const wrapTiptapDoc = (
-//     doc: JSONContent,
-//     maxWidth: number,
-//     opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {}
-//   ): JSONContent => {
-//     const lines = parseTiptapDoc(doc, opts);
-//     const result: JSONContent = { type: "doc", content: [] };
-//     const paragraph = () => ({ type: "paragraph", content: [] as JSONContent[] });
-
-//     let current = paragraph();
-
-//     lines.forEach((line, lineIndex) => {
-//       let lineWidth = 0;
-
-//       line.forEach(seg => {
-//         const tokens = parseTokens(seg.text);
-//         tokens.forEach(tok => {
-//           const font = getFontString({
-//             fontFamily: seg.fontFamily,
-//             fontSize: seg.fontSize,
-//           });
-//           const tokWidth = measureText(tok, font, getLineHeight(seg.fontFamily)).width;
-//           if (lineWidth + tokWidth > maxWidth && lineWidth !== 0) {
-//             current.content!.push({ type: "hardBreak" });
-//             lineWidth = 0;
-//           }
-//           current.content!.push({
-//             type: "text",
-//             text: tok,
-//             marks: [
-//               {
-//                 type: "textStyle",
-//                 attrs: {
-//                   fontFamily: seg.fontFamily,
-//                   fontSize: seg.fontSize,
-//                   color: seg.color,
-//                 },
-//               },
-//             ],
-//           });
-//           lineWidth += tokWidth;
-//         });
-//       });
-
-//       if (lineIndex !== lines.length - 1) {
-//         result.content!.push(current);
-//         current = paragraph();
-//       }
-//     });
-
-//     result.content!.push(current);
-//     return result;
-//   };
 
 export const wrapTiptapDoc = (
   doc: JSONContent,
@@ -108,7 +42,7 @@ export const wrapTiptapDoc = (
           fontFamily: seg.fontFamily,
           fontSize: seg.fontSize,
         })}`;
-        const w = measureText(token, font, getLineHeight(seg.fontFamily)).width;
+        const w = measureText(token, font as FontString, getLineHeight(seg.fontFamily)).width;
 
         if (width && width + w > maxWidth) {
           current.content!.push({ type: "hardBreak" });
@@ -219,7 +153,7 @@ export const measureTiptapDoc = (
     } else {
       for (const seg of line) {
         const font = `${seg.italic ? "italic " : ""}${seg.bold ? "bold " : ""}${getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize })}`;
-        const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));
+        const metrics = measureText(seg.text, font as FontString, getLineHeight(seg.fontFamily));
         lineWidth += metrics.width;
         lineHeight = Math.max(lineHeight, metrics.height);
       }

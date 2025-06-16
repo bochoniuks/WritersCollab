@@ -26,7 +26,7 @@ import {
   isTestEnv,
   getLineHeight,
   getVerticalOffset,
-  FONT_FAMILY,
+  FONT_FAMILY
 } from "@excalidraw/common";
 
 import {
@@ -80,7 +80,7 @@ import type { Editor } from "@tiptap/core";
 
 import type App from "../components/App";
 import type { AppState } from "../types";
-import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
+import { measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 import { EditorJotaiProvider, editorJotaiStore } from "../editor-jotai";
 
 const getTransform = (
@@ -164,11 +164,6 @@ export const scratchpadWysiwyg = ({
     if (isScratchpadElement(updatedElement)) {
         // compute size from the scratchpad document
 
-        // const { width, height } = measureTiptapDoc(updatedElement.tiptapDoc, {
-        //   fontFamily: updatedElement.fontFamily,
-        //   fontSize: updatedElement.fontSize,
-        // });
-
         const { height } = measureTiptapDocWithWidth(
           updatedElement.originalTiptapDoc,
           updatedElement.width,
@@ -178,6 +173,7 @@ export const scratchpadWysiwyg = ({
           },
         );
         const width = updatedElement.width;
+        
 
         // const safeWidth = Number.isFinite(width) ? width : DEFAULT_WIDTH;
         // const safeHeight = Number.isFinite(height) ? height : DEFAULT_HEIGHT;
@@ -457,9 +453,9 @@ export const scratchpadWysiwyg = ({
             },
           },
       onUpdate: ({ editor: ed }) => {
-        console.log(ed);
+        // console.log(ed);
         const doc = ed.getJSON();
-        console.log(doc);
+        // console.log(doc);
         onChange?.(doc);
         changeHistory.push({ from: prevDoc, to: doc, timestamp: Date.now() });
         prevDoc = doc;
