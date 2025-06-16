@@ -4,7 +4,17 @@ import { createRoot } from "react-dom/client";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextStyle from "@tiptap/extension-text-style";
+import FontFamily from "@tiptap/extension-font-family";
+import FontSize from "tiptap-extension-font-size";
 import Color from "@tiptap/extension-color";
+import Bold from "@tiptap/extension-bold";
+import Italic from "@tiptap/extension-italic";
+import Strike from "@tiptap/extension-strike";
+import Underline from "@tiptap/extension-underline";
+import Highlight from "@tiptap/extension-highlight";
+import TextAlign from "@tiptap/extension-text-align";
+import Typography from "@tiptap/extension-typography";
+import Link from "@tiptap/extension-link";
 
 import {
   KEYS,
@@ -16,7 +26,7 @@ import {
   isTestEnv,
   getLineHeight,
   getVerticalOffset,
-  FONT_FAMILY,
+  FONT_FAMILY
 } from "@excalidraw/common";
 
 import {
@@ -70,7 +80,7 @@ import type { Editor } from "@tiptap/core";
 
 import type App from "../components/App";
 import type { AppState } from "../types";
-import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
+import { measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 import { EditorJotaiProvider, editorJotaiStore } from "../editor-jotai";
 
 const getTransform = (
@@ -154,11 +164,6 @@ export const scratchpadWysiwyg = ({
     if (isScratchpadElement(updatedElement)) {
         // compute size from the scratchpad document
 
-        // const { width, height } = measureTiptapDoc(updatedElement.tiptapDoc, {
-        //   fontFamily: updatedElement.fontFamily,
-        //   fontSize: updatedElement.fontSize,
-        // });
-
         const { height } = measureTiptapDocWithWidth(
           updatedElement.originalTiptapDoc,
           updatedElement.width,
@@ -168,9 +173,13 @@ export const scratchpadWysiwyg = ({
           },
         );
         const width = updatedElement.width;
+        
 
-        const safeWidth = Number.isFinite(width) ? width : DEFAULT_WIDTH;
-        const safeHeight = Number.isFinite(height) ? height : DEFAULT_HEIGHT;
+        // const safeWidth = Number.isFinite(width) ? width : DEFAULT_WIDTH;
+        // const safeHeight = Number.isFinite(height) ? height : DEFAULT_HEIGHT;
+        //TODO: Create the DEFAULT_WIDTH and DEFAULT_HEIGHT
+        const safeWidth = width;
+        const safeHeight = height;
 
         let coordX = updatedElement.x;
         let coordY = updatedElement.y;
@@ -420,7 +429,21 @@ export const scratchpadWysiwyg = ({
 
       
     const ed = useEditor({
-      extensions: [StarterKit, TextStyle, Color],
+      extensions: [
+        StarterKit,
+        TextStyle,
+        FontFamily,
+        FontSize,
+        Color,
+        Bold,
+        Italic,
+        Strike,
+        Underline,
+        Highlight,
+        TextAlign.configure({ types: ["heading", "paragraph"] }),
+        Typography,
+        Link,
+      ],
       content: prevDoc,
       editorProps: {
         attributes: {
@@ -430,9 +453,9 @@ export const scratchpadWysiwyg = ({
             },
           },
       onUpdate: ({ editor: ed }) => {
-        console.log(ed);
+        // console.log(ed);
         const doc = ed.getJSON();
-        console.log(doc);
+        // console.log(doc);
         onChange?.(doc);
         changeHistory.push({ from: prevDoc, to: doc, timestamp: Date.now() });
         prevDoc = doc;

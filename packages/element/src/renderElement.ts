@@ -845,14 +845,28 @@ export const renderElement = (
         let cursorX = 0;
         let lineHeight = 0;
         for (const seg of line) {
-          const fontString = getFontString({
+          const fontString = `${seg.italic ? "italic " : ""}${seg.bold ? "bold " : ""}${getFontString({
             fontSize: seg.fontSize,
             fontFamily: seg.fontFamily,
-          });
+          })}`;
           context.font = fontString;
+          const metrics = measureText(seg.text, fontString, getLineHeight(seg.fontFamily));
+
+          if (seg.highlight) {
+            context.fillStyle = seg.highlight;
+            context.fillRect(cursorX, cursorY, metrics.width, metrics.height);
+          }
+
           context.fillStyle = seg.color;
           context.fillText(seg.text, cursorX, cursorY);
-          const metrics = measureText(seg.text, fontString, getLineHeight(seg.fontFamily));
+
+          if (seg.underline) {
+            context.fillRect(cursorX, cursorY + metrics.height - 1, metrics.width, 1);
+          }
+          if (seg.strike) {
+            context.fillRect(cursorX, cursorY + metrics.height / 2, metrics.width, 1);
+          }
+
           cursorX += metrics.width;
           lineHeight = Math.max(lineHeight, metrics.height);
         }
