@@ -339,7 +339,7 @@ export const newTextElement = (
   const fontFamily = opts.fontFamily || DEFAULT_FONT_FAMILY;
   const fontSize = opts.fontSize || DEFAULT_FONT_SIZE;
   const lineHeight = opts.lineHeight || getLineHeight(fontFamily);
-  const text = normalizeText(opts.text);
+  let text = normalizeText(opts.text);
   const metrics = measureText(
     text,
     getFontString({ fontFamily, fontSize }),
@@ -347,9 +347,27 @@ export const newTextElement = (
   );
   const textAlign = opts.textAlign || DEFAULT_TEXT_ALIGN;
   const verticalAlign = opts.verticalAlign || DEFAULT_VERTICAL_ALIGN;
+  const autoResize = opts.autoResize ?? true;
+  const fontString = getFontString({ fontFamily, fontSize });
+  
+
+  let width = metrics.width;
+  let height = metrics.height;
+
+  if (!autoResize) {
+    width = opts.width ?? metrics.width;
+    // wrap to the provided width
+    text = wrapText(text, fontString, width);
+    const wrapped = measureText(text, fontString, lineHeight);
+    height = opts.height ?? wrapped.height;
+  } else {
+    width = metrics.width;
+    height = metrics.height;
+  }
+
   const offsets = getTextElementPositionOffsets(
     { textAlign, verticalAlign },
-    metrics,
+    { width, height },
   );
 
   const textElementProps: ExcalidrawTextElement = {
@@ -361,11 +379,11 @@ export const newTextElement = (
     verticalAlign,
     x: opts.x - offsets.x,
     y: opts.y - offsets.y,
-    width: metrics.width,
-    height: metrics.height,
+    width,
+    height,
     containerId: opts.containerId || null,
     originalText: opts.originalText ?? text,
-    autoResize: opts.autoResize ?? true,
+    autoResize,
     lineHeight,
   };
 
