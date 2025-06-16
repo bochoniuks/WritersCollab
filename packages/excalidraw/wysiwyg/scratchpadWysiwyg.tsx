@@ -4,7 +4,17 @@ import { createRoot } from "react-dom/client";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextStyle from "@tiptap/extension-text-style";
+import FontFamily from "@tiptap/extension-font-family";
+import FontSize from "tiptap-extension-font-size";
 import Color from "@tiptap/extension-color";
+import Bold from "@tiptap/extension-bold";
+import Italic from "@tiptap/extension-italic";
+import Strike from "@tiptap/extension-strike";
+import Underline from "@tiptap/extension-underline";
+import Highlight from "@tiptap/extension-highlight";
+import TextAlign from "@tiptap/extension-text-align";
+import Typography from "@tiptap/extension-typography";
+import Link from "@tiptap/extension-link";
 
 import {
   KEYS,
@@ -420,7 +430,21 @@ export const scratchpadWysiwyg = ({
 
       
     const ed = useEditor({
-      extensions: [StarterKit, TextStyle, Color],
+      extensions: [
+        StarterKit,
+        TextStyle,
+        FontFamily,
+        FontSize,
+        Color,
+        Bold,
+        Italic,
+        Strike,
+        Underline,
+        Highlight,
+        TextAlign.configure({ types: ["heading", "paragraph"] }),
+        Typography,
+        Link,
+      ],
       content: prevDoc,
       editorProps: {
         attributes: {
