@@ -16,72 +16,6 @@ export type TiptapSegment = {
 
 export type TiptapLine = TiptapSegment[];
 
-// packages/element/src/parseTiptapDoc.ts
-// export const measureTiptapDoc = (doc: JSONContent) => {
-//   const segments = parseTiptapDoc(doc);
-//   let width = 0, height = 0;
-//   for (const seg of segments) {
-//     const font = getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize });
-//     const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));
-//     width += metrics.width;
-//     height = Math.max(height, metrics.height);
-//   }
-//   return { width, height };
-// };
-
-// export const wrapTiptapDoc = (
-//     doc: JSONContent,
-//     maxWidth: number,
-//     opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {}
-//   ): JSONContent => {
-//     const lines = parseTiptapDoc(doc, opts);
-//     const result: JSONContent = { type: "doc", content: [] };
-//     const paragraph = () => ({ type: "paragraph", content: [] as JSONContent[] });
-
-//     let current = paragraph();
-
-//     lines.forEach((line, lineIndex) => {
-//       let lineWidth = 0;
-
-//       line.forEach(seg => {
-//         const tokens = parseTokens(seg.text);
-//         tokens.forEach(tok => {
-//           const font = getFontString({
-//             fontFamily: seg.fontFamily,
-//             fontSize: seg.fontSize,
-//           });
-//           const tokWidth = measureText(tok, font, getLineHeight(seg.fontFamily)).width;
-//           if (lineWidth + tokWidth > maxWidth && lineWidth !== 0) {
-//             current.content!.push({ type: "hardBreak" });
-//             lineWidth = 0;
-//           }
-//           current.content!.push({
-//             type: "text",
-//             text: tok,
-//             marks: [
-//               {
-//                 type: "textStyle",
-//                 attrs: {
-//                   fontFamily: seg.fontFamily,
-//                   fontSize: seg.fontSize,
-//                   color: seg.color,
-//                 },
-//               },
-//             ],
-//           });
-//           lineWidth += tokWidth;
-//         });
-//       });
-
-//       if (lineIndex !== lines.length - 1) {
-//         result.content!.push(current);
-//         current = paragraph();
-//       }
-//     });
-
-//     result.content!.push(current);
-//     return result;
-//   };
 
 export const wrapTiptapDoc = (
   doc: JSONContent,
@@ -118,7 +52,7 @@ export const wrapTiptapDoc = (
               type: "textStyle",
               attrs: {
                 fontFamily: seg.fontFamily,
-                fontSize: seg.fontSize,
+                fontSize: `${seg.fontSize}px`,
                 color: seg.color,
               },
             },
@@ -150,7 +84,7 @@ export const scaleTiptapDoc = (
           const size = parseFloat(mark.attrs.fontSize);
           return {
             ...mark,
-            attrs: { ...mark.attrs, fontSize: String(size * factor) },
+            attrs: { ...mark.attrs, fontSize: `${size * factor}px` },
           };
         }
         return mark;
