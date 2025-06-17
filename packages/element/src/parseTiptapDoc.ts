@@ -223,8 +223,9 @@ const parseFontFamily = (value: string): FontFamilyValues => {
   if (!Number.isNaN(num)) {
     return num as FontFamilyValues;
   }
-  if (value in FONT_FAMILY) {
-    return FONT_FAMILY[value as keyof typeof FONT_FAMILY];
+  const firstName = value.split(",")[0].trim().replace(/^['"]|['"]$/g, "");
+  if (firstName in FONT_FAMILY) {
+    return FONT_FAMILY[firstName as keyof typeof FONT_FAMILY];
   }
   return DEFAULT_FONT_FAMILY;
 };
