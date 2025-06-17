@@ -857,11 +857,22 @@ export const renderElement = (
           const fontString = getFontString({
             fontSize: seg.fontSize,
             fontFamily: seg.fontFamily,
+            fontWeight: seg.fontWeight,
+            fontStyle: seg.fontStyle,
           });
           context.font = fontString;
           context.fillStyle = seg.color;
           context.fillText(seg.text, cursorX, cursorY+baselineOffset);
           const metrics = measureText(seg.text, fontString, getLineHeight(seg.fontFamily));
+          if (seg.strike) {
+            const strikeY = cursorY + baselineOffset - seg.fontSize * 0.3;
+            context.beginPath();
+            context.strokeStyle = seg.color;
+            context.lineWidth = Math.max(1, seg.fontSize / 16);
+            context.moveTo(cursorX, strikeY);
+            context.lineTo(cursorX + metrics.width, strikeY);
+            context.stroke();
+          }
           cursorX += metrics.width;
           // lineHeight = Math.max(lineHeight, metrics.height);
         }
