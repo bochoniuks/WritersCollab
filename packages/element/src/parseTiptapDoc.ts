@@ -3,7 +3,7 @@ import { COLOR_PALETTE, DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, FONT_FAMILY, get
 
 import type { FontFamilyValues } from "@excalidraw/element/types";
 
-import type { JSONContent } from "@tiptap/core";
+import type { JSONContent, Mark } from "@tiptap/core";
 import { measureText } from "./textMeasurements";
 import { parseTokens } from "./textWrapping";
 
@@ -12,6 +12,9 @@ export type TiptapSegment = {
   fontFamily: FontFamilyValues; // use numeric font-family values
   fontSize: number;
   color: string;
+  fontWeight?: string; // e.g. "bold"
+  fontStyle?: string;  // e.g. "italic"
+  strike?: boolean;
 };
 
 export type TiptapLine = TiptapSegment[];
@@ -36,6 +39,8 @@ export const wrapTiptapDoc = (
         const font = getFontString({
           fontFamily: seg.fontFamily,
           fontSize: seg.fontSize,
+          fontWeight: seg.fontWeight,
+          fontStyle: seg.fontStyle,
         });
         const w = measureText(token, font, getLineHeight(seg.fontFamily)).width;
 
@@ -48,10 +53,7 @@ export const wrapTiptapDoc = (
           Object.entries(FONT_FAMILY).find(([, id]) => id === seg.fontFamily)?.[0] ??
           "Excalifont";
           
-        current.content!.push({
-          type: "text",
-          text: token,
-          marks: [
+        const marks:JSONContent = [
             {
               type: "textStyle",
               attrs: {
@@ -60,7 +62,23 @@ export const wrapTiptapDoc = (
                 color: seg.color,
               },
             },
-          ],
+          ]
+
+        if (seg.fontWeight === "bold") {
+          marks.push({ type: "bold" });
+        }
+        if (seg.fontStyle === "italic") {
+          marks.push({ type: "italic" });
+        }
+        if (seg.strike) {
+          marks.push({ type: "strike" });
+        }
+
+
+        current.content!.push({
+          type: "text",
+          text: token,
+          marks: marks as Mark[],
         });
 
         width += w;
@@ -191,18 +209,47 @@ export const parseTiptapDoc = (
     // }
   };
 
-  const visit = (node: JSONContent, style: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {}) => {
+  const visit = (
+    node: JSONContent,
+    style: {
+      fontFamily?: FontFamilyValues;
+      fontSize?: number;
+      color?: string;
+      fontWeight?: string;
+      fontStyle?: string;
+      strike?: boolean;
+    } = {},
+  ) => {
     if (!node) {
       return;
     }
     if (node.marks) {
-      node.marks.forEach(mark => {
+      node.marks.forEach((mark) => {
         if (mark.type === "textStyle" && mark.attrs) {
           if (mark.attrs.fontFamily) {
             style.fontFamily = parseFontFamily(mark.attrs.fontFamily);
           }
-          if (mark.attrs.fontSize) style.fontSize = parseFloat(mark.attrs.fontSize);
-          if (mark.attrs.color) style.color = mark.attrs.color;
+          if (mark.attrs.fontSize) {
+            style.fontSize = parseFloat(mark.attrs.fontSize);
+          }
+          if (mark.attrs.color) {
+            style.color = mark.attrs.color;
+          }
+          if (mark.attrs.fontWeight) {
+            style.fontWeight = mark.attrs.fontWeight;
+          }
+          if (mark.attrs.fontStyle) {
+            style.fontStyle = mark.attrs.fontStyle;
+          }
+        }
+        if (mark.type === "bold") {
+          style.fontWeight = "bold";
+        }
+        if (mark.type === "italic") {
+          style.fontStyle = "italic";
+        }
+        if (mark.type === "strike") {
+          style.strike = true;
         }
         if (mark.type === "color" && mark.attrs?.color) {
           style.color = mark.attrs.color;
@@ -216,6 +263,9 @@ export const parseTiptapDoc = (
         fontFamily: style.fontFamily || defaultFontFamily,
         fontSize: style.fontSize || defaultFontSize,
         color: style.color || defaultColor,
+        fontWeight: style.fontWeight,
+        fontStyle: style.fontStyle,
+        strike: style.strike,
       });
     } else if (node.type === "hardBreak") {
       pushLine();
@@ -236,55 +286,3 @@ export const parseTiptapDoc = (
   return lines;
 };
 
-
-// export const parseTiptapDoc = (doc: JSONContent): TiptapSegment[] => {
-//   const segments: TiptapSegment[] = [];
-
-//   const visit = (
-//     node: JSONContent,
-//     style: {
-//       fontFamily?: FontFamilyValues;
-//       fontSize?: number;
-//       color?: string;
-//     } = {},
-//   ) => {
-//     if (!node) {
-//       return;
-//     }
-//     // if this node stores style marks, merge them into the current style
-//     if (node.marks) {
-//       node.marks.forEach((mark) => {
-//         if (mark.type === "textStyle" && mark.attrs) {
-//           if (mark.attrs.fontFamily) {
-//             style.fontFamily = mark.attrs.fontFamily;
-//           }
-//           if (mark.attrs.fontSize) {
-//             style.fontSize = parseFloat(mark.attrs.fontSize);
-//           }
-//           if (mark.attrs.color) {
-//             style.color = mark.attrs.color;
-//           }
-//         }
-//         if (mark.type === "color" && mark.attrs?.color) {
-//           style.color = mark.attrs.color;
-//         }
-//       });
-//     }
-
-//     if (node.type === "text") {
-//       segments.push({
-//         text: node.text ?? "",
-//         fontFamily: style.fontFamily || DEFAULT_FONT_FAMILY,
-//         fontSize: style.fontSize || DEFAULT_FONT_SIZE,
-//         color: style.color || "black",
-//       });
-//     }
-
-//     if (Array.isArray(node.content)) {
-//       node.content.forEach((child) => visit({ ...child }, { ...style }));
-//     }
-//   };
-
-//   visit(doc);
-//   return segments;
-// };
