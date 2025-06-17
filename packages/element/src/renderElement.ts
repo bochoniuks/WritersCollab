@@ -836,25 +836,23 @@ export const renderElement = (
       context.rotate(element.angle);
       context.translate(-shiftX, -shiftY); // position at element.x/y
       
-      // context.save();
-      // context.translate(
-      //   element.x + appState.scrollX,
-      //   element.y + appState.scrollY,
-      // );                      // position at element.x/y
-
-      // console.log(
-      //   "render scratchpad",
-      //   element.id,
-      //   "→ canvas", element.x + appState.scrollX, element.y + appState.scrollY,
-      // );
-      
       context.textAlign = "left";
-      context.textBaseline = "top";
+      context.textBaseline = "alphabetic";
 
       let cursorY = 0;
       for (const line of lines) {
+        let baselineOffset = 0;
+        let bottomGap = 0;
+
+        for (const seg of line) {
+          const lineHeightPx = getLineHeightInPx(seg.fontSize, getLineHeight(seg.fontFamily));
+          const verticalOffset = getVerticalOffset(seg.fontFamily, seg.fontSize, lineHeightPx);
+          baselineOffset = Math.max(baselineOffset, verticalOffset);
+          bottomGap = Math.max(bottomGap, lineHeightPx - verticalOffset);
+        }
+        
         let cursorX = 0;
-        let lineHeight = 0;
+        // let lineHeight = 0;
         for (const seg of line) {
           const fontString = getFontString({
             fontSize: seg.fontSize,
@@ -862,12 +860,13 @@ export const renderElement = (
           });
           context.font = fontString;
           context.fillStyle = seg.color;
-          context.fillText(seg.text, cursorX, cursorY);
+          context.fillText(seg.text, cursorX, cursorY+baselineOffset);
           const metrics = measureText(seg.text, fontString, getLineHeight(seg.fontFamily));
           cursorX += metrics.width;
-          lineHeight = Math.max(lineHeight, metrics.height);
+          // lineHeight = Math.max(lineHeight, metrics.height);
         }
-        cursorY += lineHeight;
+        // cursorY += lineHeight;
+        cursorY += baselineOffset + bottomGap;
       }
 
       context.restore();
