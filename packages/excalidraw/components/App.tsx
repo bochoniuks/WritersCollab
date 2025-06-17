@@ -5190,7 +5190,7 @@ class App extends React.Component<AppProps, AppState> {
       autoSelect: !this.device.isTouchScreen,
     });
     this.deselectElements();
-    updateElement(element.tiptapDoc, false);
+    updateElement(element.tiptapDoc, false, false);
   }
 
   private deselectElements() {
@@ -5600,16 +5600,21 @@ class App extends React.Component<AppProps, AppState> {
             id: element.id,
             canvas: this.canvas,
             excalidrawContainer: this.excalidrawContainerRef.current,
-            getViewportCoords: (x, y) =>
-              sceneCoordsToViewportCoords({ sceneX: x, sceneY: y }, this.state),
-            element,
+            getViewportCoords: (x, y) => {
+              const { x: vx, y: vy } = sceneCoordsToViewportCoords(
+                { sceneX: x, sceneY: y },
+                this.state,
+              );
+              return [vx - this.state.offsetLeft, vy - this.state.offsetTop];
+            },
+            element: element as ExcalidrawScratchpadElement,
             app: this,
             onChange: withBatchedUpdates((nextDoc) => {
               this.scene.replaceAllElements(
-                this.scene.getElementsIncludingDeleted().map((el) =>
-                  el.id === element.id && isScratchpadElement(el)
-                    ? newElementWith(el, { tiptapDoc: nextDoc })
-                    : el,
+                this.scene.getElementsIncludingDeleted().map((_el) =>
+                  isScratchpadElement(_el) && _el.id === element.id
+                    ? newElementWith(_el, { tiptapDoc: nextDoc })
+                    : _el,
                 ),
               );
             }),
@@ -6567,7 +6572,7 @@ class App extends React.Component<AppProps, AppState> {
         this.setState({ showHyperlinkPopup: "info" });
       } else if (
         this.state.activeTool.type === "text" ||
-        this.state.activeTool.type === "scratchpad"
+        (this.state.activeTool.type as ToolType) === "scratchpad"
       ) {
         setCursor(
           this.interactiveCanvas,
