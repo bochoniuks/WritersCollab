@@ -249,7 +249,7 @@ export const parseTiptapDoc = (
     if (node.marks) {
       node.marks.forEach(mark => {
         if (mark.type === "textStyle" && mark.attrs) {
-          if (mark.attrs.fontFamily) style.fontFamily = mark.attrs.fontFamily;
+          if (mark.attrs.fontFamily) style.fontFamily = parseInt(mark.attrs.fontFamily, 10);
           if (mark.attrs.fontSize) style.fontSize = parseFloat(mark.attrs.fontSize);
           if (mark.attrs.color) style.color = mark.attrs.color;
         }
