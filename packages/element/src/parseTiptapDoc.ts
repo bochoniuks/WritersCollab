@@ -1,5 +1,5 @@
 // packages/element/src/parseTiptapDoc.ts
-import { COLOR_PALETTE, DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, getFontString, getLineHeight } from "@excalidraw/common";
+import { COLOR_PALETTE, DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, FONT_FAMILY, getFontString, getLineHeight } from "@excalidraw/common";
 
 import type { FontFamilyValues } from "@excalidraw/element/types";
 
@@ -218,6 +218,16 @@ export const measureTiptapDoc = (
   return { width, height };
 };
 
+const parseFontFamily = (value: string): FontFamilyValues => {
+  const num = parseInt(value, 10);
+  if (!Number.isNaN(num)) {
+    return num as FontFamilyValues;
+  }
+  if (value in FONT_FAMILY) {
+    return FONT_FAMILY[value as keyof typeof FONT_FAMILY];
+  }
+  return DEFAULT_FONT_FAMILY;
+};
 
 
 /**
@@ -249,7 +259,9 @@ export const parseTiptapDoc = (
     if (node.marks) {
       node.marks.forEach(mark => {
         if (mark.type === "textStyle" && mark.attrs) {
-          if (mark.attrs.fontFamily) style.fontFamily = parseInt(mark.attrs.fontFamily, 10);
+          if (mark.attrs.fontFamily) {
+            style.fontFamily = parseFontFamily(mark.attrs.fontFamily);
+          }
           if (mark.attrs.fontSize) style.fontSize = parseFloat(mark.attrs.fontSize);
           if (mark.attrs.color) style.color = mark.attrs.color;
         }

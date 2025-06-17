@@ -417,14 +417,24 @@ export const scratchpadWysiwyg = ({
         if (autoSelect) {
           ed.commands.focus();
         }
-        ed.chain()
-          .setFontFamily(String(app.state.currentItemFontFamily))
-          .setMark('textStyle', {
+        // ed.chain()
+        //   .setFontFamily(String(app.state.currentItemFontFamily))
+        //   .setMark('textStyle', {
+        //       fontFamily: app.state.currentItemFontFamily,
+        //       fontSize: app.state.currentItemFontSize,
+        //     })
+        //     .setColor(element.strokeColor)
+        //     .run();
+        const chain = ed.chain();
+        if (!prevDoc?.content?.length) {
+          chain
+            .setFontFamily(String(app.state.currentItemFontFamily))
+            .setMark('textStyle', {
               fontFamily: app.state.currentItemFontFamily,
               fontSize: app.state.currentItemFontSize,
-            })
-            .setColor(element.strokeColor)
-            .run();
+            });
+        }
+        chain.setColor(element.strokeColor).run();
       }
     }, [ed]);
 
