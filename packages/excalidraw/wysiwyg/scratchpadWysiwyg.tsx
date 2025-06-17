@@ -160,6 +160,7 @@ export const scratchpadWysiwyg = ({
         return;
       }
       const elementsMap = app.scene.getNonDeletedElementsMap();
+    
 
     if (isScratchpadElement(updatedElement)) {
         // compute size from the scratchpad document
@@ -325,7 +326,7 @@ export const scratchpadWysiwyg = ({
       height *= 1.05;
 
       const font = getFontString(updatedTextElement);
-
+      const { textAlign, verticalAlign } = updatedTextElement;
       // Make sure text editor height doesn't go beyond viewport
       const editorMaxHeight =
         (appState.height - viewportY) / appState.zoom.value;

@@ -35,6 +35,9 @@ export const APP_NAME = "Excalidraw";
 // don't unintentionally create text elements that are wrapped to a few chars
 // (happens a lot with fast clicks with the text tool)
 export const TEXT_AUTOWRAP_THRESHOLD = 36; // px
+export const DEFAULT_SCRATCHPAD_WIDTH_RATIO = 0.2;
+export const DEFAULT_SCRATCHPAD_HEIGHT_RATIO = 0.15;
+
 export const DRAGGING_THRESHOLD = 10; // px
 export const LINE_CONFIRM_THRESHOLD = 8; // px
 export const ELEMENT_SHIFT_TRANSLATE_AMOUNT = 5;

@@ -825,11 +825,22 @@ export const renderElement = (
         color: element.strokeColor,
       });
 
+      const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
+      const cx = (x1 + x2) / 2 + appState.scrollX;
+      const cy = (y1 + y2) / 2 + appState.scrollY;
+      const shiftX = (x2 - x1) / 2 - (element.x - x1);
+      const shiftY = (y2 - y1) / 2 - (element.y - y1);
+
       context.save();
-      context.translate(
-        element.x + appState.scrollX,
-        element.y + appState.scrollY,
-      );                      // position at element.x/y
+      context.translate(cx, cy);
+      context.rotate(element.angle);
+      context.translate(-shiftX, -shiftY); // position at element.x/y
+      
+      // context.save();
+      // context.translate(
+      //   element.x + appState.scrollX,
+      //   element.y + appState.scrollY,
+      // );                      // position at element.x/y
 
       // console.log(
       //   "render scratchpad",

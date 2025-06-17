@@ -270,7 +270,7 @@ export const parseTiptapDoc = (
     if (Array.isArray(node.content)) {
       node.content.forEach((child, idx) => {
         visit({ ...child }, { ...style });
-        if (node.type === "paragraph" && idx === node.content.length - 1) {
+        if (node.type === "paragraph" && idx === node.content!.length - 1) {
           pushLine();
         }
       });

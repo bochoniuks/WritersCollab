@@ -2,6 +2,7 @@ import {
   TEXT_AUTOWRAP_THRESHOLD,
   getGridPoint,
   getFontString,
+  getLineHeight,
 } from "@excalidraw/common";
 
 import type {
@@ -23,6 +24,7 @@ import {
   isElbowArrow,
   isFrameLikeElement,
   isImageElement,
+  isScratchpadElement,
   isTextElement,
 } from "./typeChecks";
 
@@ -260,14 +262,18 @@ export const dragNewElement = ({
 
   let textAutoResize = null;
 
-  if (isTextElement(newElement)) {
+  if (isTextElement(newElement) || isScratchpadElement(newElement)) {
     height = newElement.height;
+    const lineHeight = isScratchpadElement(newElement)
+      ? getLineHeight(newElement.fontFamily)
+      : newElement.lineHeight;
+      
     const minWidth = getMinTextElementWidth(
       getFontString({
         fontSize: newElement.fontSize,
         fontFamily: newElement.fontFamily,
       }),
-      newElement.lineHeight,
+      lineHeight,
     );
     width = Math.max(width, minWidth);
 

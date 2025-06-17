@@ -102,6 +102,8 @@ import {
   randomInteger,
   CLASSES,
   Emitter,
+  DEFAULT_SCRATCHPAD_WIDTH_RATIO,
+  DEFAULT_SCRATCHPAD_HEIGHT_RATIO,
 } from "@excalidraw/common";
 
 import { getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
@@ -532,7 +534,7 @@ import type {
 } from "../types";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
-import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
+import { measureTiptapDoc, measureTiptapDocWithWidth, wrapTiptapDoc } from "@excalidraw/element/parseTiptapDoc";
 
 const AppContext = React.createContext<AppClassProperties>(null!);
 const AppPropsContext = React.createContext<AppProps>(null!);
@@ -5098,32 +5100,34 @@ class App extends React.Component<AppProps, AppState> {
     //   );
     // };
 
-    const updateElement = (nextDoc: JSONContent, isDeleted: boolean) => {
-      // const { width, height } = measureTiptapDoc(nextDoc, {
-      //   fontFamily: element.fontFamily,
-      //   fontSize: element.fontSize,
-      // });
-
+    const updateElement = (nextDoc: JSONContent, isDeleted: boolean, wrapDoc: boolean) => {
       let width = element.width;
       let height: number;
+      let doc = nextDoc;
 
       if (element.autoResize) {
-        ({ width, height } = measureTiptapDoc(nextDoc, {
+        ({ width, height } = measureTiptapDoc(doc, {
           fontFamily: element.fontFamily,
           fontSize: element.fontSize,
         }));
       } else {
-        ({ height } = measureTiptapDocWithWidth(nextDoc, element.width, {
+        if (wrapDoc) {
+          doc = wrapTiptapDoc(doc, element.width, {
+            fontFamily: element.fontFamily,
+            fontSize: element.fontSize,
+            color: element.strokeColor,
+          });
+        }
+        ({ height } = measureTiptapDocWithWidth(doc, element.width, {
           fontFamily: element.fontFamily,
           fontSize: element.fontSize,
         }));
       }
-        
       this.scene.replaceAllElements(
         this.scene.getElementsIncludingDeleted().map((_el) =>
           _el.id === element.id && isScratchpadElement(_el)
             ? newElementWith(_el, {
-                tiptapDoc: nextDoc,
+                tiptapDoc: doc,
                 originalTiptapDoc: nextDoc,
                 width,
                 height,
@@ -5145,14 +5149,14 @@ class App extends React.Component<AppProps, AppState> {
         return [vx - this.state.offsetLeft, vy - this.state.offsetTop];
       },
       onChange: withBatchedUpdates((nextDoc) => {
-        updateElement(nextDoc, false);
+        updateElement(nextDoc, false, false);
         if (isNonDeletedElement(element)) {
           updateBoundElements(element, this.scene);
         }
       }),
       onSubmit: withBatchedUpdates(({ viaKeyboard, nextDoc }) => {
         const isDeleted = !nextDoc.content?.length;
-        updateElement(nextDoc, isDeleted);
+        updateElement(nextDoc, isDeleted, true);
         if (!isDeleted && viaKeyboard) {
           const elId = element.containerId ?? element.id;
           flushSync(() => {
@@ -5186,7 +5190,7 @@ class App extends React.Component<AppProps, AppState> {
       autoSelect: !this.device.isTouchScreen,
     });
     this.deselectElements();
-    updateElement(element.tiptapDoc, false);
+    updateElement(element.tiptapDoc, false, false);
   }
 
   private deselectElements() {
@@ -5591,43 +5595,9 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     if (autoEdit || existingTextElement || container) {
-      if (isScratchpadElement(element)) {
-          scratchpadWysiwyg({
-            id: element.id,
-            canvas: this.canvas,
-            excalidrawContainer: this.excalidrawContainerRef.current,
-            getViewportCoords: (x, y) =>
-              sceneCoordsToViewportCoords({ sceneX: x, sceneY: y }, this.state),
-            element,
-            app: this,
-            onChange: withBatchedUpdates((nextDoc) => {
-              this.scene.replaceAllElements(
-                this.scene.getElementsIncludingDeleted().map((el) =>
-                  el.id === element.id && isScratchpadElement(el)
-                    ? newElementWith(el, { tiptapDoc: nextDoc })
-                    : el,
-                ),
-              );
-            }),
-            onSubmit: withBatchedUpdates(({ viaKeyboard, nextDoc }) => {
-              this.scene.replaceAllElements(
-                this.scene.getElementsIncludingDeleted().map((el) =>
-                  el.id === element.id && isScratchpadElement(el)
-                    ? newElementWith(el, { tiptapDoc: nextDoc })
-                    : el,
-                ),
-              );
-              flushSync(() =>
-                this.setState({ newElement: null, editingTextElement: null }),
-              );
-              this.focusContainer();
-            }),
-          });
-        } else {
-          this.handleTextWysiwyg(element, {
-            isExistingElement: !!existingTextElement,
-          });
-      }
+        this.handleTextWysiwyg(element, {
+          isExistingElement: !!existingTextElement,
+        });
     } else {
       this.setState({
         newElement: element,
@@ -5745,11 +5715,17 @@ class App extends React.Component<AppProps, AppState> {
       y: sceneY,
     });
 
+    const defaultWidth = this.state.width * DEFAULT_SCRATCHPAD_WIDTH_RATIO;
+    const defaultHeight = this.state.height * DEFAULT_SCRATCHPAD_HEIGHT_RATIO;
+
+
     const element =
       existingTextElement ||
       newScratchpadElement({
         x: parentCenterPosition ? parentCenterPosition.elementCenterX : sceneX,
         y: parentCenterPosition ? parentCenterPosition.elementCenterY : sceneY,
+        width: defaultWidth,
+        height: defaultHeight,
         strokeColor: this.state.currentItemStrokeColor,
         backgroundColor: this.state.currentItemBackgroundColor,
         fillStyle: this.state.currentItemFillStyle,
@@ -6557,7 +6533,7 @@ class App extends React.Component<AppProps, AppState> {
         this.setState({ showHyperlinkPopup: "info" });
       } else if (
         this.state.activeTool.type === "text" ||
-        this.state.activeTool.type === "scratchpad"
+        (this.state.activeTool.type as ToolType) === "scratchpad"
       ) {
         setCursor(
           this.interactiveCanvas,
