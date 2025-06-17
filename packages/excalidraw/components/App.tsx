@@ -5595,48 +5595,9 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     if (autoEdit || existingTextElement || container) {
-      if (isScratchpadElement(element)) {
-          scratchpadWysiwyg({
-            id: element.id,
-            canvas: this.canvas,
-            excalidrawContainer: this.excalidrawContainerRef.current,
-            getViewportCoords: (x, y) => {
-              const { x: vx, y: vy } = sceneCoordsToViewportCoords(
-                { sceneX: x, sceneY: y },
-                this.state,
-              );
-              return [vx - this.state.offsetLeft, vy - this.state.offsetTop];
-            },
-            element: element as ExcalidrawScratchpadElement,
-            app: this,
-            onChange: withBatchedUpdates((nextDoc) => {
-              this.scene.replaceAllElements(
-                this.scene.getElementsIncludingDeleted().map((_el) =>
-                  isScratchpadElement(_el) && _el.id === element.id
-                    ? newElementWith(_el, { tiptapDoc: nextDoc })
-                    : _el,
-                ),
-              );
-            }),
-            onSubmit: withBatchedUpdates(({ viaKeyboard, nextDoc }) => {
-              this.scene.replaceAllElements(
-                this.scene.getElementsIncludingDeleted().map((el) =>
-                  el.id === element.id && isScratchpadElement(el)
-                    ? newElementWith(el, { tiptapDoc: nextDoc })
-                    : el,
-                ),
-              );
-              flushSync(() =>
-                this.setState({ newElement: null, editingTextElement: null }),
-              );
-              this.focusContainer();
-            }),
-          });
-        } else {
-          this.handleTextWysiwyg(element, {
-            isExistingElement: !!existingTextElement,
-          });
-      }
+        this.handleTextWysiwyg(element, {
+          isExistingElement: !!existingTextElement,
+        });
     } else {
       this.setState({
         newElement: element,
