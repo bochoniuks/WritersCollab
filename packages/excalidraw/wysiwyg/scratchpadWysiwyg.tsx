@@ -17,6 +17,7 @@ import {
   isTestEnv,
   getLineHeight,
   getVerticalOffset,
+  FONT_FAMILY,
 } from "@excalidraw/common";
 
 import {
@@ -426,10 +427,14 @@ export const scratchpadWysiwyg = ({
         //     })
         //     .setColor(element.strokeColor)
         //     .run();
+        const currentFontName =
+          Object.entries(FONT_FAMILY).find(([, id]) => id === app.state.currentItemFontFamily)?.[0];
+
+          
         const chain = ed.chain();
         if (!prevDoc?.content?.length) {
           chain
-            .setFontFamily(String(app.state.currentItemFontFamily))
+            .setFontFamily(currentFontName ?? "Excalifont")
             .setFontSize(`${app.state.currentItemFontSize}px`);
             // .setMark('textStyle', {
             //   fontFamily: app.state.currentItemFontFamily,
