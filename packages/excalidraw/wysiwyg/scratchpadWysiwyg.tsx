@@ -193,13 +193,11 @@ export const scratchpadWysiwyg = ({
 
         Object.assign(editable.style, {
           left: `${viewportX}px`,
-          top: `${viewportY-3}px`, //<-TODO: I have to add this -3 to avoid vertical shifting 
-                                   // when switching to edit mode. Need to research 
-                                   // why and fix it properly
+          top: `${viewportY}px`, 
           width: `${width}px`,
           height: `${height}px`,
-          font: font,
-          lineHeight: lineHeight,
+          // font: font,
+          // lineHeight: lineHeight,
           color: updatedElement.strokeColor,
           opacity: updatedElement.opacity / 100,
           filter: "var(--theme-filter)",
@@ -319,9 +317,9 @@ export const scratchpadWysiwyg = ({
       const editorMaxHeight =
         (appState.height - viewportY) / appState.zoom.value;
       Object.assign(editable.style, {
-        font,
+        // font,
         // must be defined *after* font ¯\_(ツ)_/¯
-        lineHeight: updatedTextElement.lineHeight,
+        // lineHeight: updatedTextElement.lineHeight,
         width: `${width}px`,
         height: `${height}px`,
         left: `${viewportX}px`,
@@ -387,7 +385,7 @@ export const scratchpadWysiwyg = ({
     whiteSpace,
     overflowWrap: "break-word",
     boxSizing: "content-box",
-    lineHeight: lineHeight,
+    // lineHeight: lineHeight,
     top: `${getViewportCoords(element.x, element.y)[1]}px`,
   });
   updateWysiwygStyle();

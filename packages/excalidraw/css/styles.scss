@@ -681,7 +681,8 @@ body.excalidraw-cursor-resize * {
   /* remove default paragraph margins inside the scratchpad editor */
   .excalidraw-wysiwyg .ProseMirror {
     font: inherit;
-    line-height: inherit;
+    // line-height: inherit;
+    line-height: 1.25;             // new default
 
     /* avoid shifting the editable area vertically */
     padding: 0;
