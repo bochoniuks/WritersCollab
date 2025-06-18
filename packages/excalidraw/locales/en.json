@@ -277,7 +277,8 @@
       "embeddable": "Embeddable elements cannot be added to the library.",
       "iframe": "IFrame elements cannot be added to the library.",
       "image": "Support for adding images to the library coming soon!",
-      "scratchpad": "Support for adding scratchpads to the library coming soon!"
+      "scratchpad": "Support for adding scratchpads to the library coming soon!",
+      "page": "Support for adding pages to the library coming soon!"
     },
     "asyncPasteFailedOnRead": "Couldn't paste (couldn't read from system clipboard).",
     "asyncPasteFailedOnParse": "Couldn't paste.",
@@ -307,7 +308,8 @@
     "extraTools": "More tools",
     "mermaidToExcalidraw": "Mermaid to Excalidraw",
     "convertElementType": "Toggle shape type",
-    "scratchpad": "Scratchpad"
+    "scratchpad": "Scratchpad",
+    "page": "Page"
   },
   "element": {
     "rectangle": "Rectangle",
@@ -324,7 +326,8 @@
     "embeddable": "Web Embed",
     "selection": "Selection",
     "iframe": "IFrame",
-    "scratchpad": "Scratchpad"
+    "scratchpad": "Scratchpad",
+    "page": "Page"
   },
   "headings": {
     "canvasActions": "Canvas actions",

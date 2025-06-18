@@ -91,6 +91,7 @@ export const AllowedExcalidrawActiveTools: Record<
   lasso: true,
   text: true,
   scratchpad: true,
+  page: true,
   rectangle: true,
   diamond: true,
   ellipse: true,

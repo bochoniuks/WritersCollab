@@ -350,13 +350,27 @@ export const ScratchpadIcon = createIcon(
     strokeLinejoin="round"
     stroke="currentColor"
   >
-    <path d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z" /><path d="M9 7l6 0" /><path d="M9 11l6 0" /><path d="M9 15l4 0" />
+    <path d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z" />
+    <path d="M9 7l6 0" />
+    <path d="M9 11l6 0" />
+    <path d="M9 15l4 0" />
   </g>,
-  tablerIconProps
-)
+  tablerIconProps,
+);
 
+export const PageIcon = createIcon(
+  <g
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    stroke="currentColor"
+  >
+    <path d="M4 4h12l4 4v12H4z" />
+    <path d="M16 4v4h4" />
+  </g>,
+  tablerIconProps,
+);
 
- 
 // tabler-icons: arrow-narrow-right
 export const ArrowIcon = createIcon(
   <g strokeWidth="1.5">
