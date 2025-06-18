@@ -5733,8 +5733,8 @@ class App extends React.Component<AppProps, AppState> {
           : (0 as Radians),
         frameId: topLayerFrame ? topLayerFrame.id : null,
         backgroundImage: this.state.currentScratchpadBackground,
-        margin: this.state.currentScratchpadMargin,
-        pageSize: this.state.currentScratchpadPageSize,
+        margin: {top: 10, bottom: 10, left: 10, right: 10},
+        pageSize: "A4"
       });
 
     if (!existingTextElement && shouldBindToContainer && container) {
