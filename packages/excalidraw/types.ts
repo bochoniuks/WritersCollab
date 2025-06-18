@@ -3,6 +3,7 @@ import type {
   UserIdleState,
   throttleRAF,
   MIME_TYPES,
+  ScratchpadPageSize,
 } from "@excalidraw/common";
 
 import type { SuggestedBinding } from "@excalidraw/element";
@@ -342,6 +343,14 @@ export interface AppState {
   currentHoveredFontFamily: FontFamilyValues | null;
   currentItemRoundness: StrokeRoundness;
   currentItemArrowType: "sharp" | "round" | "elbow";
+
+  // default options for newly created scratchpads
+  currentScratchpadBackground: string | null;
+  currentScratchpadMargin: { top: number; right: number; bottom: number; left: number };
+  currentScratchpadPageSize: ScratchpadPageSize | null;
+
+
+
   viewBackgroundColor: string;
   scrollX: number;
   scrollY: number;

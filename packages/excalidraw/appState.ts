@@ -41,6 +41,11 @@ export const getDefaultAppState = (): Omit<
     currentItemStrokeStyle: DEFAULT_ELEMENT_PROPS.strokeStyle,
     currentItemStrokeWidth: DEFAULT_ELEMENT_PROPS.strokeWidth,
     currentItemTextAlign: DEFAULT_TEXT_ALIGN,
+    
+    currentScratchpadBackground: null,
+    currentScratchpadMargin: { top: 0, right: 0, bottom: 0, left: 0 },
+    currentScratchpadPageSize: null,
+
     currentHoveredFontFamily: null,
     cursorButton: "up",
     activeEmbeddable: null,
@@ -166,6 +171,9 @@ const APP_STATE_STORAGE_CONF = (<
   currentItemRoughness: { browser: true, export: false, server: false },
   currentItemStartArrowhead: { browser: true, export: false, server: false },
   currentItemStrokeColor: { browser: true, export: false, server: false },
+  currentScratchpadBackground: { browser: true, export: false, server: false },
+  currentScratchpadMargin: { browser: true, export: false, server: false },
+  currentScratchpadPageSize: { browser: true, export: false, server: false },
   currentItemStrokeStyle: { browser: true, export: false, server: false },
   currentItemStrokeWidth: { browser: true, export: false, server: false },
   currentItemTextAlign: { browser: true, export: false, server: false },
