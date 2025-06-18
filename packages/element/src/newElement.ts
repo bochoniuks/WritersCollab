@@ -10,6 +10,8 @@ import {
   getFontString,
   getUpdatedTimestamp,
   getLineHeight,
+  ScratchpadPageSize,
+  SCRATCHPAD_PAGE_SIZES,
 } from "@excalidraw/common";
 
 import type { JSONContent } from "@tiptap/core";
@@ -248,6 +250,9 @@ export const newScratchpadElement = (
     width?: number;
     height?: number;
     autoResize?: boolean;
+    backgroundImage?: string | null;
+    margin?: { top: number; right: number; bottom: number; left: number };
+    pageSize?: ScratchpadPageSize | null;
   },
 ): NonDeleted<ExcalidrawScratchpadElement> => {
   const fontFamily = opts.fontFamily ?? DEFAULT_FONT_FAMILY;
@@ -263,7 +268,11 @@ export const newScratchpadElement = (
   );
 
   let { width, height } = opts;
-  if (width == null || height == null) {
+  if (opts.pageSize) {
+    const size = SCRATCHPAD_PAGE_SIZES[opts.pageSize];
+    width = size.width;
+    height = size.height;
+  } else if (width == null || height == null) {
     const metrics = measureText(
       "",
       getFontString({ fontFamily, fontSize }),
@@ -284,44 +293,13 @@ export const newScratchpadElement = (
     height: metrics.height,
     fontFamily,
     fontSize,
+    backgroundImage: opts.backgroundImage ?? null,
+    margin: opts.margin ?? { top: 0, right: 0, bottom: 0, left: 0 },
+    pageSize: opts.pageSize ?? null,
   };
 
   return newElementWith(scratchpadElementProps, {});
 };
-
-// export const newScratchpadElement = (
-//   opts: ElementConstructorOpts & { 
-//     tiptapDoc?: JSONContent;
-//     containerId?: ExcalidrawTextContainer["id"] | null;
-//   },
-// ): NonDeleted<ExcalidrawScratchpadElement> => {
-//   const tiptapDoc: JSONContent =
-//     opts.tiptapDoc ?? { type: "doc", content: [] };
-
-//   const metrics = measureText(
-//     "", // initial empty text
-//     getFontString({ fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }),
-//     getLineHeight(DEFAULT_FONT_FAMILY),
-//   );
-
-//   const scratchpadElementProps: ExcalidrawScratchpadElement = {
-//     ..._newElementBase<ExcalidrawScratchpadElement>("scratchpad", opts),
-//     tiptapDoc,
-//     changeHistory: [],
-//     width: metrics.width,
-//     height: metrics.height,
-//     containerId: opts.containerId || null,
-//     autoResize: true,              // initialise
-//   };
-
-//   // pass a value already typed as ExcalidrawScratchpadElement
-//   const scratchpadElement: ExcalidrawScratchpadElement = newElementWith(
-//     scratchpadElementProps,
-//     {},
-//   );
-
-//   return scratchpadElement;
-// };
 
 export const newTextElement = (
   opts: {

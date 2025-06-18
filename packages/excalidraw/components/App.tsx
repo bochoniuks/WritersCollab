@@ -104,6 +104,7 @@ import {
   Emitter,
   DEFAULT_SCRATCHPAD_WIDTH_RATIO,
   DEFAULT_SCRATCHPAD_HEIGHT_RATIO,
+  SCRATCHPAD_PAGE_SIZES,
 } from "@excalidraw/common";
 
 import { getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
@@ -5670,11 +5671,6 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
-    // const fontFamily =
-    //   existingTextElement?.fontFamily || this.state.currentItemFontFamily;
-
-    // const lineHeight =
-    //   existingTextElement?.lineHeight || getLineHeight(fontFamily);
     const fontSize = this.state.currentItemFontSize;
 
     if (
@@ -5683,23 +5679,7 @@ class App extends React.Component<AppProps, AppState> {
       container &&
       !isArrowElement(container)
     ) {
-      // const fontString = {
-      //   fontSize,
-      //   fontFamily,
-      // };
-      // const minWidth = getApproxMinLineWidth(
-      //   getFontString(fontString),
-      //   lineHeight,
-      // );
-      // const minHeight = getApproxMinLineHeight(fontSize, lineHeight);
-      // const newHeight = Math.max(container.height, minHeight);
-      // const newWidth = Math.max(container.width, minWidth);
-      // this.scene.mutateElement(container, {
-      //   height: newHeight,
-      //   width: newWidth,
-      // });
-      // sceneX = container.x + newWidth / 2;
-      // sceneY = container.y + newHeight / 2;
+      
       if (parentCenterPosition) {
         parentCenterPosition = this.getTextWysiwygSnappedToCenterPosition(
           sceneX,
@@ -5718,14 +5698,22 @@ class App extends React.Component<AppProps, AppState> {
     const defaultWidth = this.state.width * DEFAULT_SCRATCHPAD_WIDTH_RATIO;
     const defaultHeight = this.state.height * DEFAULT_SCRATCHPAD_HEIGHT_RATIO;
 
+    let width = defaultWidth;
+    let height = defaultHeight;
+
+    if (this.state.currentScratchpadPageSize) {
+      const size = SCRATCHPAD_PAGE_SIZES[this.state.currentScratchpadPageSize];
+      width = size.width;
+      height = size.height;
+    }
 
     const element =
       existingTextElement ||
       newScratchpadElement({
         x: parentCenterPosition ? parentCenterPosition.elementCenterX : sceneX,
         y: parentCenterPosition ? parentCenterPosition.elementCenterY : sceneY,
-        width: defaultWidth,
-        height: defaultHeight,
+        width,
+        height,
         strokeColor: this.state.currentItemStrokeColor,
         backgroundColor: this.state.currentItemBackgroundColor,
         fillStyle: this.state.currentItemFillStyle,
@@ -5744,6 +5732,9 @@ class App extends React.Component<AppProps, AppState> {
             : container.angle
           : (0 as Radians),
         frameId: topLayerFrame ? topLayerFrame.id : null,
+        backgroundImage: this.state.currentScratchpadBackground,
+        margin: this.state.currentScratchpadMargin,
+        pageSize: this.state.currentScratchpadPageSize,
       });
 
     if (!existingTextElement && shouldBindToContainer && container) {

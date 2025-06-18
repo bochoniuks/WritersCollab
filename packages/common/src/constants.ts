@@ -38,6 +38,12 @@ export const TEXT_AUTOWRAP_THRESHOLD = 36; // px
 export const DEFAULT_SCRATCHPAD_WIDTH_RATIO = 0.2;
 export const DEFAULT_SCRATCHPAD_HEIGHT_RATIO = 0.15;
 
+export const SCRATCHPAD_PAGE_SIZES = {
+  A4: { width: 794, height: 1123 },      // approx. 210×297 mm @96 dpi
+  Letter: { width: 816, height: 1056 },  // 8.5×11 in @96 dpi
+} as const;
+export type ScratchpadPageSize = keyof typeof SCRATCHPAD_PAGE_SIZES;
+
 export const DRAGGING_THRESHOLD = 10; // px
 export const LINE_CONFIRM_THRESHOLD = 8; // px
 export const ELEMENT_SHIFT_TRANSLATE_AMOUNT = 5;

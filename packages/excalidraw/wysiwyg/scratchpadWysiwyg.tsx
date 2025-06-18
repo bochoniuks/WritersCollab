@@ -154,22 +154,19 @@ export const scratchpadWysiwyg = ({
     
 
     if (isScratchpadElement(updatedElement)) {
-        // compute size from the scratchpad document
 
-        // const { width, height } = measureTiptapDoc(updatedElement.tiptapDoc, {
-        //   fontFamily: updatedElement.fontFamily,
-        //   fontSize: updatedElement.fontSize,
-        // });
+        const contentWidth = updatedElement.width - updatedElement.margin.left - updatedElement.margin.right;
+        const contentHeight = updatedElement.height - updatedElement.margin.top - updatedElement.margin.bottom;
 
         const { height } = measureTiptapDocWithWidth(
           updatedElement.originalTiptapDoc,
-          updatedElement.width,
+          contentWidth,
           {
             fontFamily: updatedElement.fontFamily,
             fontSize: updatedElement.fontSize,
           },
         );
-        const width = updatedElement.width;
+        const width = contentWidth
 
         let coordX = updatedElement.x;
         let coordY = updatedElement.y;
@@ -372,20 +369,21 @@ export const scratchpadWysiwyg = ({
     minHeight: "1em",
     backfaceVisibility: "hidden",
     margin: 0,
-    padding: 0,
+    padding: `${element.margin.top}px ${element.margin.right}px ${element.margin.bottom}px ${element.margin.left}px`,
     border: 0,
     outline: 0,
     resize: "none",
-    background: "transparent",
     overflow: "hidden",
     // must be specified because in dark mode canvas creates a stacking context
     zIndex: "var(--zIndex-wysiwyg)",
     wordBreak,
     // prevent line wrapping (`whitespace: nowrap` doesn't work on FF)
     whiteSpace,
+    background: element.backgroundImage
+      ? `url(${element.backgroundImage}) no-repeat center / contain`
+      : "transparent",
     overflowWrap: "break-word",
     boxSizing: "content-box",
-    // lineHeight: lineHeight,
     top: `${getViewportCoords(element.x, element.y)[1]}px`,
   });
   updateWysiwygStyle();

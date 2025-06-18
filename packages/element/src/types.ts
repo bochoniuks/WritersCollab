@@ -4,6 +4,7 @@ import type { JSONContent } from "@tiptap/core";
 import type {
   FONT_FAMILY,
   ROUNDNESS,
+  ScratchpadPageSize,
   TEXT_ALIGN,
   THEME,
   VERTICAL_ALIGN,
@@ -240,6 +241,11 @@ export type ExcalidrawScratchpadElement = _ExcalidrawElementBase & Readonly<{
   autoResize: boolean;             // new property
   fontFamily: FontFamilyValues;
   fontSize: number;
+
+  // new optional features
+  backgroundImage: string | null;        // URL or data URI
+  margin: { top: number; right: number; bottom: number; left: number };
+  pageSize: ScratchpadPageSize | null;   // e.g. "A4", "Letter"
 }>;
 
 export type Ordered<TElement extends ExcalidrawElement> = TElement & {
