@@ -59,6 +59,8 @@ import { getCornerRadius } from "./shapes";
 
 import { ShapeCache } from "./ShapeCache";
 
+import { parseTiptapDoc } from "./parseTiptapDoc";
+
 import type {
   ExcalidrawElement,
   ExcalidrawTextElement,
@@ -73,7 +75,6 @@ import type {
 
 import type { StrokeOptions } from "perfect-freehand";
 import type { RoughCanvas } from "roughjs/bin/canvas";
-import { parseTiptapDoc } from "./parseTiptapDoc";
 
 // using a stronger invert (100% vs our regular 93%) and saturate
 // as a temp hack to make images in dark theme look closer to original
@@ -816,7 +817,8 @@ export const renderElement = (
 
       break;
     }
-    case "scratchpad": {
+    case "scratchpad":
+    case "page": {
       // const lines = parseTiptapDoc(element.tiptapDoc);
 
       const lines = parseTiptapDoc(element.tiptapDoc, {
@@ -835,7 +837,7 @@ export const renderElement = (
       context.translate(cx, cy);
       context.rotate(element.angle);
       context.translate(-shiftX, -shiftY); // position at element.x/y
-      
+
       context.textAlign = "left";
       context.textBaseline = "alphabetic";
 
@@ -845,12 +847,19 @@ export const renderElement = (
         let bottomGap = 0;
 
         for (const seg of line) {
-          const lineHeightPx = getLineHeightInPx(seg.fontSize, getLineHeight(seg.fontFamily));
-          const verticalOffset = getVerticalOffset(seg.fontFamily, seg.fontSize, lineHeightPx);
+          const lineHeightPx = getLineHeightInPx(
+            seg.fontSize,
+            getLineHeight(seg.fontFamily),
+          );
+          const verticalOffset = getVerticalOffset(
+            seg.fontFamily,
+            seg.fontSize,
+            lineHeightPx,
+          );
           baselineOffset = Math.max(baselineOffset, verticalOffset);
           bottomGap = Math.max(bottomGap, lineHeightPx - verticalOffset);
         }
-        
+
         let cursorX = 0;
         // let lineHeight = 0;
         for (const seg of line) {
@@ -862,8 +871,12 @@ export const renderElement = (
           });
           context.font = fontString;
           context.fillStyle = seg.color;
-          context.fillText(seg.text, cursorX, cursorY+baselineOffset);
-          const metrics = measureText(seg.text, fontString, getLineHeight(seg.fontFamily));
+          context.fillText(seg.text, cursorX, cursorY + baselineOffset);
+          const metrics = measureText(
+            seg.text,
+            fontString,
+            getLineHeight(seg.fontFamily),
+          );
           if (seg.strike) {
             const strikeY = cursorY + baselineOffset - seg.fontSize * 0.3;
             context.beginPath();

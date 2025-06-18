@@ -6,12 +6,13 @@ import {
   ArrowIcon,
   TextIcon,
   ScratchpadIcon,
+  PageIcon,
   DiamondIcon,
   EllipseIcon,
   LineIcon,
   FreedrawIcon,
   ImageIcon,
-  EraserIcon
+  EraserIcon,
 } from "./icons";
 
 export const SHAPES = [
@@ -90,6 +91,13 @@ export const SHAPES = [
     value: "scratchpad",
     key: KEYS.S, // choose an appropriate shortcut
     numericKey: KEYS["3"], // adjust if another number is free
+    fillable: false,
+  },
+  {
+    icon: PageIcon,
+    value: "page",
+    key: KEYS.G,
+    numericKey: null,
     fillable: false,
   },
 ] as const;

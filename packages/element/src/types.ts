@@ -1,5 +1,4 @@
 import type { LocalPoint, Radians } from "@excalidraw/math";
-import type { JSONContent } from "@tiptap/core";
 
 import type {
   FONT_FAMILY,
@@ -15,6 +14,8 @@ import type {
   Merge,
   ValueOf,
 } from "@excalidraw/common/utility-types";
+
+import type { JSONContent } from "@tiptap/core";
 
 export type ChartType = "bar" | "line";
 export type FillStyle = "hachure" | "cross-hatch" | "solid" | "zigzag";
@@ -215,6 +216,7 @@ export type ExcalidrawElement =
   | ExcalidrawIframeElement
   | ExcalidrawEmbeddableElement
   | ExcalidrawScratchpadElement
+  | ExcalidrawPageElement;
 
 export type ExcalidrawNonSelectionElement = Exclude<
   ExcalidrawElement,
@@ -222,25 +224,33 @@ export type ExcalidrawNonSelectionElement = Exclude<
 >;
 
 export interface ChangeEntry {
-  from: JSONContent;    // previous state of the edited fragment
-  to: JSONContent;      // new state after the edit
-  timestamp: number;    // Unix epoch or Date.now()
-  approved?: boolean;   // mark when a reviewer accepts the change
+  from: JSONContent; // previous state of the edited fragment
+  to: JSONContent; // new state after the edit
+  timestamp: number; // Unix epoch or Date.now()
+  approved?: boolean; // mark when a reviewer accepts the change
 }
 
-export type ExcalidrawScratchpadElement = _ExcalidrawElementBase & Readonly<{
-  type: "scratchpad";
-  // Tiptap’s JSON document representing the rich text
-  tiptapDoc: JSONContent;
-  originalTiptapDoc: JSONContent;  // source doc used when rewrapping
-  // optional history of edits if change‑tracking will be implemented
-  changeHistory?: ChangeEntry[];
+export type ExcalidrawScratchpadElement = _ExcalidrawElementBase &
+  Readonly<{
+    type: "scratchpad";
+    // Tiptap’s JSON document representing the rich text
+    tiptapDoc: JSONContent;
+    originalTiptapDoc: JSONContent; // source doc used when rewrapping
+    // optional history of edits if change‑tracking will be implemented
+    changeHistory?: ChangeEntry[];
 
-  containerId: ExcalidrawGenericElement["id"] | null;
-  autoResize: boolean;             // new property
-  fontFamily: FontFamilyValues;
-  fontSize: number;
-}>;
+    containerId: ExcalidrawGenericElement["id"] | null;
+    autoResize: boolean; // new property
+    fontFamily: FontFamilyValues;
+    fontSize: number;
+  }>;
+
+export type ExcalidrawPageElement = ExcalidrawScratchpadElement &
+  Readonly<{
+    type: "page";
+    margin: { top: number; right: number; bottom: number; left: number };
+    backgroundImage: string | null;
+  }>;
 
 export type Ordered<TElement extends ExcalidrawElement> = TElement & {
   index: FractionalIndex;

@@ -10,9 +10,9 @@ import {
   getFontString,
   getUpdatedTimestamp,
   getLineHeight,
+  DEFAULT_PAGE_WIDTH,
+  DEFAULT_PAGE_HEIGHT,
 } from "@excalidraw/common";
-
-import type { JSONContent } from "@tiptap/core";
 
 import type { Radians } from "@excalidraw/math";
 
@@ -28,6 +28,8 @@ import { normalizeText, measureText } from "./textMeasurements";
 import { wrapText } from "./textWrapping";
 
 import { isLineElement } from "./typeChecks";
+
+import type { JSONContent } from "@tiptap/core";
 
 import type {
   ExcalidrawElement,
@@ -50,7 +52,8 @@ import type {
   ExcalidrawArrowElement,
   ExcalidrawElbowArrowElement,
   ExcalidrawLineElement,
-  ExcalidrawScratchpadElement
+  ExcalidrawScratchpadElement,
+  ExcalidrawPageElement,
 } from "./types";
 
 export type ElementConstructorOpts = MarkOptional<
@@ -253,8 +256,7 @@ export const newScratchpadElement = (
   const fontFamily = opts.fontFamily ?? DEFAULT_FONT_FAMILY;
   const fontSize = opts.fontSize ?? DEFAULT_FONT_SIZE;
 
-  const tiptapDoc: JSONContent =
-    opts.tiptapDoc ?? { type: "doc", content: [] };
+  const tiptapDoc: JSONContent = opts.tiptapDoc ?? { type: "doc", content: [] };
 
   const metrics = measureText(
     "",
@@ -274,7 +276,11 @@ export const newScratchpadElement = (
   }
 
   const scratchpadElementProps: ExcalidrawScratchpadElement = {
-    ..._newElementBase<ExcalidrawScratchpadElement>("scratchpad", {...opts, width, height}),
+    ..._newElementBase<ExcalidrawScratchpadElement>("scratchpad", {
+      ...opts,
+      width,
+      height,
+    }),
     tiptapDoc,
     originalTiptapDoc: tiptapDoc,
     containerId: opts.containerId || null,
@@ -289,8 +295,33 @@ export const newScratchpadElement = (
   return newElementWith(scratchpadElementProps, {});
 };
 
+export const newPageElement = (
+  opts: ElementConstructorOpts & {
+    tiptapDoc?: JSONContent;
+    containerId?: ExcalidrawTextContainer["id"] | null;
+    fontFamily?: FontFamilyValues;
+    fontSize?: number;
+    width?: number;
+    height?: number;
+    margin?: { top: number; right: number; bottom: number; left: number };
+    backgroundImage?: string | null;
+  },
+): NonDeleted<ExcalidrawPageElement> => {
+  const element = newScratchpadElement({
+    ...opts,
+    width: opts.width ?? DEFAULT_PAGE_WIDTH,
+    height: opts.height ?? DEFAULT_PAGE_HEIGHT,
+  }) as ExcalidrawPageElement;
+
+  return newElementWith(element, {
+    type: "page",
+    margin: opts.margin ?? { top: 40, right: 40, bottom: 40, left: 40 },
+    backgroundImage: opts.backgroundImage ?? null,
+  });
+};
+
 // export const newScratchpadElement = (
-//   opts: ElementConstructorOpts & { 
+//   opts: ElementConstructorOpts & {
 //     tiptapDoc?: JSONContent;
 //     containerId?: ExcalidrawTextContainer["id"] | null;
 //   },
@@ -349,7 +380,6 @@ export const newTextElement = (
   const verticalAlign = opts.verticalAlign || DEFAULT_VERTICAL_ALIGN;
   const autoResize = opts.autoResize ?? true;
   const fontString = getFontString({ fontFamily, fontSize });
-  
 
   let width = metrics.width;
   let height = metrics.height;

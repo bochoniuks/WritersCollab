@@ -104,6 +104,8 @@ import {
   Emitter,
   DEFAULT_SCRATCHPAD_WIDTH_RATIO,
   DEFAULT_SCRATCHPAD_HEIGHT_RATIO,
+  DEFAULT_PAGE_WIDTH,
+  DEFAULT_PAGE_HEIGHT,
 } from "@excalidraw/common";
 
 import { getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
@@ -136,6 +138,7 @@ import {
   newTextElement,
   refreshTextDimensions,
   newScratchpadElement,
+  newPageElement,
 } from "@excalidraw/element";
 
 import { deepCopyElement, duplicateElements } from "@excalidraw/element";
@@ -162,6 +165,7 @@ import {
   isBindableElement,
   isTextElement,
   isScratchpadElement,
+  isPageElement,
 } from "@excalidraw/element";
 
 import {
@@ -296,6 +300,12 @@ import { Scene } from "@excalidraw/element";
 
 import { Store, CaptureUpdateAction } from "@excalidraw/element";
 
+import {
+  measureTiptapDoc,
+  measureTiptapDocWithWidth,
+  wrapTiptapDoc,
+} from "@excalidraw/element/parseTiptapDoc";
+
 import type { ElementUpdate } from "@excalidraw/element";
 
 import type { LocalPoint, Radians } from "@excalidraw/math";
@@ -326,6 +336,7 @@ import type {
   ExcalidrawElbowArrowElement,
   SceneElementsMap,
   ExcalidrawScratchpadElement,
+  ExcalidrawPageElement,
 } from "@excalidraw/element/types";
 
 import type { Mutable, ValueOf } from "@excalidraw/common/utility-types";
@@ -534,7 +545,6 @@ import type {
 } from "../types";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
-import { measureTiptapDoc, measureTiptapDocWithWidth, wrapTiptapDoc } from "@excalidraw/element/parseTiptapDoc";
 
 const AppContext = React.createContext<AppClassProperties>(null!);
 const AppPropsContext = React.createContext<AppProps>(null!);
@@ -5100,7 +5110,11 @@ class App extends React.Component<AppProps, AppState> {
     //   );
     // };
 
-    const updateElement = (nextDoc: JSONContent, isDeleted: boolean, wrapDoc: boolean) => {
+    const updateElement = (
+      nextDoc: JSONContent,
+      isDeleted: boolean,
+      wrapDoc: boolean,
+    ) => {
       let width = element.width;
       let height: number;
       let doc = nextDoc;
@@ -5209,14 +5223,18 @@ class App extends React.Component<AppProps, AppState> {
     const element = this.getElementAtPosition(x, y, {
       includeBoundTextElement: true,
     });
-    
+
     // if (element && isTextElement(element) && !element.isDeleted) {
     //   return element;
     // }
     // return null;
 
-    return element && (isTextElement(element) || isScratchpadElement(element)) && !element.isDeleted
-      ? (element as NonDeleted<ExcalidrawTextElement | ExcalidrawScratchpadElement>)
+    return element &&
+      (isTextElement(element) || isScratchpadElement(element)) &&
+      !element.isDeleted
+      ? (element as NonDeleted<
+          ExcalidrawTextElement | ExcalidrawScratchpadElement
+        >)
       : null;
   }
 
@@ -5461,9 +5479,7 @@ class App extends React.Component<AppProps, AppState> {
         shouldBindToContainer = true;
       }
     }
-    let existingTextElement: NonDeleted<ExcalidrawTextElement>
-        | null =
-      null;
+    let existingTextElement: NonDeleted<ExcalidrawTextElement> | null = null;
 
     const selectedElements = this.scene.getSelectedElements(this.state);
 
@@ -5491,19 +5507,17 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
-
     const fontFamily = isTextElement(existingTextElement)
       ? existingTextElement.fontFamily
       : this.state.currentItemFontFamily;
     // const fontFamily =
     //   existingTextElement?.fontFamily || this.state.currentItemFontFamily;
-    
+
     const lineHeight = isTextElement(existingTextElement)
       ? existingTextElement.lineHeight
       : getLineHeight(fontFamily);
     // const lineHeight =
     //   existingTextElement?.lineHeight || getLineHeight(fontFamily);
-    const fontSize = this.state.currentItemFontSize;
 
     if (
       !existingTextElement &&
@@ -5595,9 +5609,9 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     if (autoEdit || existingTextElement || container) {
-        this.handleTextWysiwyg(element, {
-          isExistingElement: !!existingTextElement,
-        });
+      this.handleTextWysiwyg(element, {
+        isExistingElement: !!existingTextElement,
+      });
     } else {
       this.setState({
         newElement: element,
@@ -5675,7 +5689,6 @@ class App extends React.Component<AppProps, AppState> {
 
     // const lineHeight =
     //   existingTextElement?.lineHeight || getLineHeight(fontFamily);
-    const fontSize = this.state.currentItemFontSize;
 
     if (
       !existingTextElement &&
@@ -5718,7 +5731,6 @@ class App extends React.Component<AppProps, AppState> {
     const defaultWidth = this.state.width * DEFAULT_SCRATCHPAD_WIDTH_RATIO;
     const defaultHeight = this.state.height * DEFAULT_SCRATCHPAD_HEIGHT_RATIO;
 
-
     const element =
       existingTextElement ||
       newScratchpadElement({
@@ -5750,6 +5762,149 @@ class App extends React.Component<AppProps, AppState> {
       this.scene.mutateElement(container, {
         boundElements: (container.boundElements || []).concat({
           type: "scratchpad",
+          id: element.id,
+        }),
+      });
+    }
+    this.setState({ editingTextElement: element });
+
+    if (!existingTextElement) {
+      if (container && shouldBindToContainer) {
+        const containerIndex = this.scene.getElementIndex(container.id);
+        this.scene.insertElementAtIndex(element, containerIndex + 1);
+      } else {
+        this.scene.insertElement(element);
+      }
+    }
+
+    if (autoEdit || existingTextElement || container) {
+      this.handleScratchpadWysiwyg(element, {
+        isExistingElement: !!existingTextElement,
+      });
+    } else {
+      this.setState({
+        newElement: element,
+        multiElement: null,
+      });
+    }
+  };
+
+  private startPageEditing = ({
+    sceneX,
+    sceneY,
+    insertAtParentCenter = true,
+    container,
+    autoEdit = true,
+  }: {
+    sceneX: number;
+    sceneY: number;
+    insertAtParentCenter?: boolean;
+    container?: ExcalidrawTextContainer | null;
+    autoEdit?: boolean;
+  }) => {
+    let shouldBindToContainer = false;
+
+    let parentCenterPosition =
+      insertAtParentCenter &&
+      this.getTextWysiwygSnappedToCenterPosition(
+        sceneX,
+        sceneY,
+        this.state,
+        container,
+      );
+    if (container && parentCenterPosition) {
+      const boundTextElementToContainer = getBoundTextElement(
+        container,
+        this.scene.getNonDeletedElementsMap(),
+      );
+      if (!boundTextElementToContainer) {
+        shouldBindToContainer = true;
+      }
+    }
+    let existingTextElement: NonDeleted<ExcalidrawPageElement> | null = null;
+
+    const selectedElements = this.scene.getSelectedElements(this.state);
+
+    if (selectedElements.length === 1) {
+      if (isPageElement(selectedElements[0])) {
+        existingTextElement =
+          selectedElements[0] as NonDeleted<ExcalidrawPageElement>;
+      } else if (container) {
+        const bound = getBoundTextElement(
+          selectedElements[0],
+          this.scene.getNonDeletedElementsMap(),
+        );
+        if (bound && isPageElement(bound)) {
+          existingTextElement = bound as NonDeleted<ExcalidrawPageElement>;
+        }
+      } else {
+        const el = this.getTextElementAtPosition(sceneX, sceneY);
+        if (el && isPageElement(el)) {
+          existingTextElement = el as NonDeleted<ExcalidrawPageElement>;
+        }
+      }
+    } else {
+      const el = this.getTextElementAtPosition(sceneX, sceneY);
+      if (el && isPageElement(el)) {
+        existingTextElement = el as NonDeleted<ExcalidrawPageElement>;
+      }
+    }
+
+    if (
+      !existingTextElement &&
+      shouldBindToContainer &&
+      container &&
+      !isArrowElement(container)
+    ) {
+      if (parentCenterPosition) {
+        parentCenterPosition = this.getTextWysiwygSnappedToCenterPosition(
+          sceneX,
+          sceneY,
+          this.state,
+          container,
+        );
+      }
+    }
+
+    const topLayerFrame = this.getTopLayerFrameAtSceneCoords({
+      x: sceneX,
+      y: sceneY,
+    });
+
+    const defaultWidth = DEFAULT_PAGE_WIDTH;
+    const defaultHeight = DEFAULT_PAGE_HEIGHT;
+
+    const element =
+      existingTextElement ||
+      newPageElement({
+        x: parentCenterPosition ? parentCenterPosition.elementCenterX : sceneX,
+        y: parentCenterPosition ? parentCenterPosition.elementCenterY : sceneY,
+        width: defaultWidth,
+        height: defaultHeight,
+        strokeColor: this.state.currentItemStrokeColor,
+        backgroundColor: this.state.currentItemBackgroundColor,
+        fillStyle: this.state.currentItemFillStyle,
+        strokeWidth: this.state.currentItemStrokeWidth,
+        strokeStyle: this.state.currentItemStrokeStyle,
+        roughness: this.state.currentItemRoughness,
+        opacity: this.state.currentItemOpacity,
+        tiptapDoc: { type: "doc", content: [] },
+        fontFamily: this.state.currentItemFontFamily,
+        fontSize: this.state.currentItemFontSize,
+        containerId: shouldBindToContainer ? container?.id : undefined,
+        groupIds: container?.groupIds ?? [],
+        angle: container
+          ? isArrowElement(container)
+            ? (0 as Radians)
+            : container.angle
+          : (0 as Radians),
+        frameId: topLayerFrame ? topLayerFrame.id : null,
+      });
+
+    if (!existingTextElement && shouldBindToContainer && container) {
+      this.scene.mutateElement(container, {
+        boundElements: (container.boundElements || []).concat({
+          type: "page",
           id: element.id,
         }),
       });
@@ -6961,7 +7116,8 @@ class App extends React.Component<AppProps, AppState> {
       this.state.activeTool.type === "selection" ||
       this.state.activeTool.type === "lasso" ||
       this.state.activeTool.type === "text" ||
-      this.state.activeTool.type === "scratchpad" || // new condition
+      this.state.activeTool.type === "scratchpad" ||
+      this.state.activeTool.type === "page" ||
       this.state.activeTool.type === "image";
 
     if (!allowOnPointerDown) {
@@ -6976,6 +7132,8 @@ class App extends React.Component<AppProps, AppState> {
       );
     } else if (this.state.activeTool.type === "scratchpad") {
       this.handleScratchpadOnPointerDown(event, pointerDownState);
+    } else if (this.state.activeTool.type === "page") {
+      this.handlePageOnPointerDown(event, pointerDownState);
     } else if (this.state.activeTool.type === "text") {
       this.handleTextOnPointerDown(event, pointerDownState);
     } else if (
@@ -7918,6 +8076,43 @@ class App extends React.Component<AppProps, AppState> {
       sceneY = element.y + element.height / 2;
     }
     this.startScratchpadEditing({
+      sceneX,
+      sceneY,
+      insertAtParentCenter: !event.altKey,
+      container,
+      autoEdit: false,
+    });
+
+    resetCursor(this.interactiveCanvas);
+    if (!this.state.activeTool.locked) {
+      this.setState({
+        activeTool: updateActiveTool(this.state, { type: "selection" }),
+      });
+    }
+  };
+
+  private handlePageOnPointerDown = (
+    event: React.PointerEvent<HTMLElement>,
+    pointerDownState: PointerDownState,
+  ): void => {
+    if (this.state.editingTextElement) {
+      return;
+    }
+    let sceneX = pointerDownState.origin.x;
+    let sceneY = pointerDownState.origin.y;
+
+    const element = this.getElementAtPosition(sceneX, sceneY, {
+      includeBoundTextElement: true,
+    });
+
+    let container = this.getTextBindableContainerAtPosition(sceneX, sceneY);
+
+    if (hasBoundTextElement(element)) {
+      container = element as ExcalidrawTextContainer;
+      sceneX = element.x + element.width / 2;
+      sceneY = element.y + element.height / 2;
+    }
+    this.startPageEditing({
       sceneX,
       sceneY,
       insertAtParentCenter: !event.altKey,
@@ -9675,8 +9870,7 @@ class App extends React.Component<AppProps, AppState> {
         this.handleTextWysiwyg(newElement, {
           isExistingElement: true,
         });
-      }
-      else if (isScratchpadElement(newElement)) {
+      } else if (isScratchpadElement(newElement)) {
         this.resetCursor();
         this.handleScratchpadWysiwyg(newElement, { isExistingElement: true });
       }

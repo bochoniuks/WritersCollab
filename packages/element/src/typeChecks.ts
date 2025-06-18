@@ -33,6 +33,7 @@ import type {
   ExcalidrawFlowchartNodeElement,
   ExcalidrawLinearElementSubType,
   ExcalidrawScratchpadElement,
+  ExcalidrawPageElement,
 } from "./types";
 
 export const isInitializedImageElement = (
@@ -70,7 +71,12 @@ export const isIframeLikeElement = (
 export const isScratchpadElement = (
   element: ExcalidrawElement | null,
 ): element is ExcalidrawScratchpadElement =>
-  element != null && element.type === "scratchpad";
+  element != null && (element.type === "scratchpad" || element.type === "page");
+
+export const isPageElement = (
+  element: ExcalidrawElement | null,
+): element is ExcalidrawPageElement =>
+  element != null && element.type === "page";
 
 export const isTextElement = (
   element: ExcalidrawElement | null,
@@ -262,6 +268,7 @@ export const isExcalidrawElement = (
     case "magicframe":
     case "image":
     case "scratchpad":
+    case "page":
     case "selection": {
       return true;
     }

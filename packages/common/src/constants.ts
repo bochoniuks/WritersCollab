@@ -37,6 +37,8 @@ export const APP_NAME = "Excalidraw";
 export const TEXT_AUTOWRAP_THRESHOLD = 36; // px
 export const DEFAULT_SCRATCHPAD_WIDTH_RATIO = 0.2;
 export const DEFAULT_SCRATCHPAD_HEIGHT_RATIO = 0.15;
+export const DEFAULT_PAGE_WIDTH = 800;
+export const DEFAULT_PAGE_HEIGHT = 600;
 
 export const DRAGGING_THRESHOLD = 10; // px
 export const LINE_CONFIRM_THRESHOLD = 8; // px
@@ -148,7 +150,7 @@ export const FONT_FAMILY = {
   "Comic Shanns": 8,
   "Liberation Sans": 9,
   Assistant: 10,
-  "Arimo": 11
+  Arimo: 11,
 };
 
 export const FONT_FAMILY_FALLBACKS = {
@@ -425,7 +427,8 @@ export const LIBRARY_DISABLED_TYPES = new Set([
   "iframe",
   "embeddable",
   "image",
-  "scratchpad"
+  "scratchpad",
+  "page",
 ] as const);
 
 // use these constants to easily identify reference sites
@@ -447,6 +450,7 @@ export const TOOL_TYPE = {
   embeddable: "embeddable",
   laser: "laser",
   scratchpad: "scratchpad",
+  page: "page",
 } as const;
 
 export const EDITOR_LS_KEYS = {
