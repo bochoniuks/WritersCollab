@@ -290,7 +290,7 @@ export const newScratchpadElement = (
     originalTiptapDoc: tiptapDoc,
     containerId: opts.containerId || null,
     changeHistory: [],
-    autoResize: opts.autoResize ?? true,
+    autoResize: opts.autoResize ?? !opts.pageSize,
     width,
     height,
     fontFamily,

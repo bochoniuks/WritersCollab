@@ -158,14 +158,17 @@ export const scratchpadWysiwyg = ({
         const contentWidth = updatedElement.width - updatedElement.margin.left - updatedElement.margin.right;
         const contentHeight = updatedElement.height - updatedElement.margin.top - updatedElement.margin.bottom;
 
-        const { height } = measureTiptapDocWithWidth(
-          updatedElement.originalTiptapDoc,
-          contentWidth,
-          {
-            fontFamily: updatedElement.fontFamily,
-            fontSize: updatedElement.fontSize,
-          },
-        );
+        const isEmptyDoc = !updatedElement.originalTiptapDoc.content?.length;
+        const height = isEmptyDoc
+          ? contentHeight
+          : measureTiptapDocWithWidth(
+              updatedElement.originalTiptapDoc,
+              contentWidth,
+              {
+                fontFamily: updatedElement.fontFamily,
+                fontSize: updatedElement.fontSize,
+              },
+            ).height;
         const width = contentWidth
 
         let coordX = updatedElement.x;
