@@ -533,34 +533,10 @@ const resizeSingleScratchpadElement = (
   pointerX: number,
   pointerY: number,
 ) => {
-  // if (!transformHandleType.includes("e") &&
-  //     !transformHandleType.includes("w")) {
-  //   // fall back to generic element resizing for purely vertical or
-  //   // corner handles
-  //   const { nextWidth, nextHeight } =
-  //     getNextSingleWidthAndHeightFromPointer(
-  //       element,
-  //       originalElements.get(element.id)!,
-  //       transformHandleType,
-  //       pointerX,
-  //       pointerY,
-  //       { shouldMaintainAspectRatio: false,
-  //         shouldResizeFromCenter },
-  //     );
-
-  //   resizeSingleElement(
-  //     nextWidth,
-  //     nextHeight,
-  //     element,
-  //     originalElements.get(element.id)!,
-  //     originalElements,
-  //     scene,
-  //     transformHandleType,
-  //     { shouldMaintainAspectRatio: false,
-  //       shouldResizeFromCenter },
-  //   );
-  //   return;
-  // }
+  
+  if (element.pageSize) {
+    return;
+  }
 
   if (transformHandleType !== "e" && transformHandleType !== "w") {
     const elementsMap = scene.getNonDeletedElementsMap();
