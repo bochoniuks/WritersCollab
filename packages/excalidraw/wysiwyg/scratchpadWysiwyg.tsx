@@ -159,16 +159,17 @@ export const scratchpadWysiwyg = ({
         const contentHeight = updatedElement.height - updatedElement.margin.top - updatedElement.margin.bottom;
 
         const isEmptyDoc = !updatedElement.originalTiptapDoc.content?.length;
-        const height = isEmptyDoc
-          ? contentHeight
-          : measureTiptapDocWithWidth(
-              updatedElement.originalTiptapDoc,
-              contentWidth,
-              {
-                fontFamily: updatedElement.fontFamily,
-                fontSize: updatedElement.fontSize,
-              },
-            ).height;
+        const measuredHeight = isEmptyDoc
+            ? contentHeight
+            : measureTiptapDocWithWidth(
+                updatedElement.originalTiptapDoc,
+                contentWidth,
+                {
+                  fontFamily: updatedElement.fontFamily,
+                  fontSize: updatedElement.fontSize,
+                },
+              ).height;
+          const height = updatedElement.autoResize ? measuredHeight : contentHeight;
         const width = contentWidth
 
         let coordX = updatedElement.x;
@@ -383,7 +384,7 @@ export const scratchpadWysiwyg = ({
     // prevent line wrapping (`whitespace: nowrap` doesn't work on FF)
     whiteSpace,
     background: element.backgroundImage
-      ? `url(${element.backgroundImage}) no-repeat center / contain`
+      ? `url(${element.backgroundImage}) no-repeat center / 100% 100%`
       : "transparent",
     overflowWrap: "break-word",
     boxSizing: "content-box",
