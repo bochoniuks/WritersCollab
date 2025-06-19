@@ -166,6 +166,7 @@
     "installPWA": "Install Excalidraw locally (PWA)",
     "autoResize": "Enable text auto-resizing",
     "pageSize": "Page size",       
+    "pageSize_none": "None",
     "imageCropping": "Image cropping",
     "unCroppedDimension": "Uncropped dimension",
     "copyElementLink": "Copy link to object",

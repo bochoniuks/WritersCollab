@@ -1903,6 +1903,9 @@ export const actionChangeScratchpadPageSize = register({
           )
         }
       >
+        <option key="none" value="">
+          {t("labels.pageSize_none")}
+        </option>
         {Object.keys(SCRATCHPAD_PAGE_SIZES).map((key) => (
           <option key={key} value={key}>
             {key}
