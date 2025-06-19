@@ -1886,25 +1886,29 @@ export const actionChangeScratchpadPageSize = register({
   PanelComponent: ({ elements, appState, updateData, app }) => (
     <fieldset>
       <legend>{t("labels.pageSize")}</legend>
-      <RadioSelection
-        group="scratchpad-page-size"
-        options={[
-          // { value: null, text: t("arrowhead_none") },
-          ...Object.keys(SCRATCHPAD_PAGE_SIZES).map((key) => ({
-            value: key as ScratchpadPageSize,
-            text: key,
-            icon: elbowArrowIcon  //TODO: Use the proer ICON here
-          })),
-        ]}
-        value={getFormValue(
-          elements,
-          app,
-          (el) => (isScratchpadElement(el) ? el.pageSize : null),
-          (el) => isScratchpadElement(el),
-          (hasSel) => (hasSel ? null : appState.currentScratchpadPageSize),
-        )}
-        onChange={(val) => updateData(val)}
-      />
+      <select
+        className="dropdown-select"
+        value={
+          getFormValue(
+            elements,
+            app,
+            (el) => (isScratchpadElement(el) ? el.pageSize : null),
+            (el) => isScratchpadElement(el),
+            (hasSel) => (hasSel ? "" : appState.currentScratchpadPageSize ?? "")
+          ) || ""
+        }
+        onChange={(event) =>
+          updateData(
+            (event.currentTarget.value as ScratchpadPageSize) || null
+          )
+        }
+      >
+        {Object.keys(SCRATCHPAD_PAGE_SIZES).map((key) => (
+          <option key={key} value={key}>
+            {key}
+          </option>
+        ))}
+      </select>
     </fieldset>
   ),
 });
