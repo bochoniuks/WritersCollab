@@ -4145,6 +4145,10 @@ class App extends React.Component<AppProps, AppState> {
       }
 
       if (!isInputLike(event.target)) {
+        if (event.key === KEYS.ESCAPE && this.state.isPickingScratchpadBackground) {
+          this.finishScratchpadBackgroundPicker();
+          return;
+        }
         if (
           (event.key === KEYS.ESCAPE || event.key === KEYS.ENTER) &&
           this.state.croppingElementId
@@ -5770,6 +5774,22 @@ class App extends React.Component<AppProps, AppState> {
       this.store.scheduleCapture();
       this.setState({
         croppingElementId: null,
+      });
+    }
+  };
+
+  private startScratchpadBackgroundPicker = (id: ExcalidrawElement["id"]) => {
+    this.setState({
+      isPickingScratchpadBackground: true,
+      scratchpadBackgroundPickerId: id,
+    });
+  };
+
+  private finishScratchpadBackgroundPicker = () => {
+    if (this.state.isPickingScratchpadBackground) {
+      this.setState({
+        isPickingScratchpadBackground: false,
+        scratchpadBackgroundPickerId: null,
       });
     }
   };
@@ -9339,8 +9359,29 @@ class App extends React.Component<AppProps, AppState> {
         activeTool,
         isResizing,
         isRotating,
+        isPickingScratchpadBackground,
+        scratchpadBackgroundPickerId,
         isCropping,
       } = this.state;
+
+      if (isPickingScratchpadBackground) {
+        const scenePoint = viewportCoordsToSceneCoords(
+          { clientX: childEvent.clientX, clientY: childEvent.clientY },
+          this.state,
+        );
+        const hit = this.getElementAtPosition(scenePoint.x, scenePoint.y);
+        if (hit && isImageElement(hit)) {
+          const scratchpad = this.scene
+            .getNonDeletedElementsMap()
+            .get(scratchpadBackgroundPickerId!);
+          const file = hit.fileId && this.files[hit.fileId];
+          if (scratchpad && isScratchpadElement(scratchpad) && file?.dataURL) {
+            this.scene.mutateElement(scratchpad, { backgroundImage: file.dataURL });
+          }
+        }
+        this.finishScratchpadBackgroundPicker();
+        return;
+      }
 
       this.setState((prevState) => ({
         isResizing: false,

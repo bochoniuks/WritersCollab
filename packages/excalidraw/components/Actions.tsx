@@ -214,6 +214,12 @@ export const SelectedShapeActions = ({
       {canChangeScratchpadPageSize(appState, targetElements) &&
         renderAction("changeScratchpadPageSize")}
 
+      {canChangeScratchpadPageSize(appState, targetElements) &&
+        renderAction("changeScratchpadPageSize")}
+
+      {targetElements.some((el) => isScratchpadElement(el)) &&
+        renderAction("selectScratchpadBackground")}
+
       <fieldset>
         <legend>{t("labels.layers")}</legend>
         <div className="buttonList">

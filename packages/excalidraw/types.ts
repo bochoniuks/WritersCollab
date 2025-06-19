@@ -445,6 +445,10 @@ export interface AppState {
   isCropping: boolean;
   croppingElementId: ExcalidrawElement["id"] | null;
 
+  /** picking scratchpad background */
+  isPickingScratchpadBackground: boolean;
+  scratchpadBackgroundPickerId: ExcalidrawElement["id"] | null;
+
   /** null if no search matches found / search closed */
   searchMatches: Readonly<{
     focusedId: ExcalidrawElement["id"] | null;

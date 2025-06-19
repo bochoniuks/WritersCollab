@@ -129,6 +129,7 @@ import {
   ArrowheadCrowfootIcon,
   ArrowheadCrowfootOneIcon,
   ArrowheadCrowfootOneOrManyIcon,
+  ImageIcon,
 } from "../components/icons";
 
 import { Fonts } from "../fonts";
@@ -145,6 +146,7 @@ import { toggleLinePolygonState } from "../../element/src/shapes";
 import { register } from "./register";
 
 import type { AppClassProperties, AppState, Primitive } from "../types";
+import { ToolButton } from "../components/ToolButton";
 
 const FONT_SIZE_RELATIVE_INCREASE_STEP = 0.1;
 
@@ -1913,5 +1915,37 @@ export const actionChangeScratchpadPageSize = register({
         ))}
       </select>
     </fieldset>
+  ),
+});
+
+export const actionSelectScratchpadBackground = register({
+  name: "selectScratchpadBackground",
+  label: "labels.backgroundImage",
+  icon: ImageIcon,
+  trackEvent: false,
+  predicate: (elements, appState) => {
+    const selected = getSelectedElements(elements, appState);
+    return selected.length === 1 && isScratchpadElement(selected[0]);
+  },
+  perform: (elements, appState) => {
+    const [scratchpad] = getSelectedElements(elements, appState);
+    return {
+      elements,
+      appState: {
+        ...appState,
+        isPickingScratchpadBackground: true,
+        scratchpadBackgroundPickerId: scratchpad.id,
+      },
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    };
+  },
+  PanelComponent: ({ updateData }) => (
+    <ToolButton
+      type="button"
+      icon={ImageIcon}
+      title={t("labels.backgroundImage")}
+      aria-label={t("labels.backgroundImage")}
+      onClick={() => updateData(null)}
+    />
   ),
 });

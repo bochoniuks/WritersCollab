@@ -167,6 +167,7 @@
     "autoResize": "Enable text auto-resizing",
     "pageSize": "Page size",       
     "pageSize_none": "None",
+    "backgroundImage": "Background image", 
     "imageCropping": "Image cropping",
     "unCroppedDimension": "Uncropped dimension",
     "copyElementLink": "Copy link to object",

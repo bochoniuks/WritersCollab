@@ -144,7 +144,8 @@ export type ActionName =
   | "toggleLassoTool"
   | "toggleShapeSwitch"
   | "togglePolygon"
-  | "changeScratchpadPageSize";
+  | "changeScratchpadPageSize"
+  | "selectScratchpadBackground";
 
 export type PanelComponentProps = {
   elements: readonly ExcalidrawElement[];
