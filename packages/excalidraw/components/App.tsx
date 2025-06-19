@@ -5088,22 +5088,10 @@ class App extends React.Component<AppProps, AppState> {
     element: ExcalidrawScratchpadElement,
     { isExistingElement = false }: { isExistingElement?: boolean },
   ) {
-    // const updateElement = (nextDoc: JSONContent, isDeleted: boolean) => {
-    //   this.scene.replaceAllElements(
-    //     this.scene.getElementsIncludingDeleted().map((_el) =>
-    //       _el.id === element.id && isScratchpadElement(_el)
-    //         ? newElementWith(_el, {
-    //             tiptapDoc: nextDoc,
-    //             isDeleted: isDeleted ?? _el.isDeleted,
-    //           })
-    //         : _el,
-    //     ),
-    //   );
-    // };
 
     const updateElement = (nextDoc: JSONContent, isDeleted: boolean, wrapDoc: boolean) => {
       let width = element.width;
-      let height: number;
+      let height = element.height;
       let doc = nextDoc;
 
       if (element.autoResize) {
@@ -5119,10 +5107,12 @@ class App extends React.Component<AppProps, AppState> {
             color: element.strokeColor,
           });
         }
-        ({ height } = measureTiptapDocWithWidth(doc, element.width, {
-          fontFamily: element.fontFamily,
-          fontSize: element.fontSize,
-        }));
+        if (!element.pageSize) {
+          ({ height } = measureTiptapDocWithWidth(doc, element.width, {
+            fontFamily: element.fontFamily,
+            fontSize: element.fontSize,
+          }));
+        }
       }
       this.scene.replaceAllElements(
         this.scene.getElementsIncludingDeleted().map((_el) =>
