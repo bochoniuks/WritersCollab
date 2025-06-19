@@ -9,6 +9,7 @@ import {
 } from "@excalidraw/common";
 
 import {
+  isScratchpadElement,
   shouldAllowVerticalAlign,
   suppportsHorizontalAlign,
 } from "@excalidraw/element";
@@ -209,6 +210,9 @@ export const SelectedShapeActions = ({
       )}
 
       {renderAction("changeOpacity")}
+
+      {canChangeScratchpadPageSize(appState, targetElements) &&
+        renderAction("changeScratchpadPageSize")}
 
       <fieldset>
         <legend>{t("labels.layers")}</legend>
@@ -518,3 +522,10 @@ export const FinalizeAction = ({
     {renderAction("finalize", { size: "small" })}
   </div>
 );
+
+export const canChangeScratchpadPageSize = (
+  appState: UIAppState,
+  targetElements: ExcalidrawElement[],
+) =>
+  appState.activeTool.type === "scratchpad" ||
+  targetElements.some((el) => isScratchpadElement(el));

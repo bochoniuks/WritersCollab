@@ -22,9 +22,11 @@ import {
   getLineHeight,
   isTransparent,
   reduceToCommonValue,
+  ScratchpadPageSize,
+  SCRATCHPAD_PAGE_SIZES,
 } from "@excalidraw/common";
 
-import { canBecomePolygon, getNonDeletedElements } from "@excalidraw/element";
+import { canBecomePolygon, getNonDeletedElements, isScratchpadElement } from "@excalidraw/element";
 
 import {
   bindLinearElement,
@@ -1856,4 +1858,53 @@ export const actionChangeArrowType = register({
       </fieldset>
     );
   },
+});
+
+
+export const actionChangeScratchpadPageSize = register({
+  name: "changeScratchpadPageSize",
+  label: "labels.pageSize",
+  trackEvent: false,
+  perform: (elements, appState, pageSize: ScratchpadPageSize | null) => {
+    return {
+      elements: changeProperty(elements, appState, (el) => {
+        if (isScratchpadElement(el)) {
+          const size = pageSize ? SCRATCHPAD_PAGE_SIZES[pageSize] : null;
+          return newElementWith(el, {
+            pageSize,
+            autoResize: !pageSize,
+            width: size ? size.width : el.width,
+            height: size ? size.height : el.height,
+          });
+        }
+        return el;
+      }),
+      appState: { ...appState, currentScratchpadPageSize: pageSize },
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    };
+  },
+  PanelComponent: ({ elements, appState, updateData, app }) => (
+    <fieldset>
+      <legend>{t("labels.pageSize")}</legend>
+      <RadioSelection
+        group="scratchpad-page-size"
+        options={[
+          // { value: null, text: t("arrowhead_none") },
+          ...Object.keys(SCRATCHPAD_PAGE_SIZES).map((key) => ({
+            value: key as ScratchpadPageSize,
+            text: key,
+            icon: elbowArrowIcon  //TODO: Use the proer ICON here
+          })),
+        ]}
+        value={getFormValue(
+          elements,
+          app,
+          (el) => (isScratchpadElement(el) ? el.pageSize : null),
+          (el) => isScratchpadElement(el),
+          (hasSel) => (hasSel ? null : appState.currentScratchpadPageSize),
+        )}
+        onChange={(val) => updateData(val)}
+      />
+    </fieldset>
+  ),
 });
