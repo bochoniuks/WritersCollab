@@ -537,6 +537,7 @@ import type {
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
 import { measureTiptapDoc, measureTiptapDocWithWidth, wrapTiptapDoc } from "@excalidraw/element/parseTiptapDoc";
+import { GROUP_FLAG_CONFIG } from "../groupFlagConfig";
 
 const AppContext = React.createContext<AppClassProperties>(null!);
 const AppPropsContext = React.createContext<AppProps>(null!);
@@ -994,6 +995,18 @@ class App extends React.Component<AppProps, AppState> {
         "*",
       );
     }
+  }
+
+  private isGroupActionAllowed(action: "move" | "resize") {
+    const ids = getSelectedGroupIds(this.state);
+    return ids.every(id => {
+      const flag = this.state.groupFlags[id];
+      const conf = GROUP_FLAG_CONFIG[flag];
+      if (!conf || !conf.active) {
+        return true;
+      }
+      return action === "move" ? conf.movable : conf.resizable;
+    });
   }
 
   private isIframeLikeElementCenter(
@@ -8904,7 +8917,7 @@ class App extends React.Component<AppProps, AppState> {
 
           // when we're editing the name of a frame, we want the user to be
           // able to select and interact with the text input
-          if (!this.state.editingFrame) {
+          if (!this.state.editingFrame  && this.isGroupActionAllowed("move")) {
             dragSelectedElements(
               pointerDownState,
               selectedElements,
@@ -11439,7 +11452,7 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     if (
-      transformElements(
+      this.isGroupActionAllowed("resize") && transformElements(
         pointerDownState.originalElements,
         transformHandleType,
         selectedElements,

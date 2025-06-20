@@ -46,6 +46,7 @@ import { isSomeElementSelected } from "../scene";
 import { register } from "./register";
 
 import type { AppClassProperties, AppState } from "../types";
+import { GROUP_FLAG_CONFIG } from "../groupFlagConfig";
 
 const allElementsInSameGroup = (elements: readonly ExcalidrawElement[]) => {
   if (elements.length >= 2) {
@@ -148,6 +149,9 @@ export const actionGroup = register({
 
     const newGroupId = randomId();
     const flag = formData?.flag || "user";
+    if (!GROUP_FLAG_CONFIG[flag]) {
+      GROUP_FLAG_CONFIG[flag] = { movable: true, resizable: true, active: true };
+    }
     const selectElementIds = arrayToMap(selectedElements);
 
     nextElements = nextElements.map((element) => {
