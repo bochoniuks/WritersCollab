@@ -5912,20 +5912,23 @@ class App extends React.Component<AppProps, AppState> {
         getSelectedGroupIdForElement(hitElement, this.state.selectedGroupIds);
 
       if (selectedGroupId) {
-        this.store.scheduleCapture();
-        this.setState((prevState) => ({
-          ...prevState,
-          ...selectGroupsForSelectedElements(
-            {
-              editingGroupId: selectedGroupId,
-              selectedElementIds: { [hitElement!.id]: true },
-            },
-            this.scene.getNonDeletedElements(),
-            prevState,
-            this,
-          ),
-        }));
-        return;
+        const flag = this.state.groupFlags[selectedGroupId];
+        if (flag !== "internal") {
+          this.store.scheduleCapture();
+          this.setState((prevState) => ({
+            ...prevState,
+            ...selectGroupsForSelectedElements(
+              {
+                editingGroupId: selectedGroupId,
+                selectedElementIds: { [hitElement!.id]: true },
+              },
+              this.scene.getNonDeletedElements(),
+              prevState,
+              this,
+            ),
+          }));
+          return;
+        }
       }
     }
 
@@ -9397,6 +9400,10 @@ class App extends React.Component<AppProps, AppState> {
             groupIds: addToGroup(scratchpad.groupIds, groupId, this.state.editingGroupId),
           });
           this.scene.insertElementAtIndex(copy, this.scene.getElementIndex(scratchpad.id));
+          // mark the new group as internal
+          this.setState((prevState) => ({
+            groupFlags: { ...prevState.groupFlags, [groupId]: "internal" },
+          }));
         }
 
         this.finishScratchpadBackgroundPicker();

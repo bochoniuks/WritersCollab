@@ -188,6 +188,7 @@ type _CommonCanvasAppState = {
   viewModeEnabled: AppState["viewModeEnabled"];
   openDialog: AppState["openDialog"];
   editingGroupId: AppState["editingGroupId"]; // TODO: move to interactive canvas if possible
+  groupFlags: AppState["groupFlags"];
   selectedElementIds: AppState["selectedElementIds"]; // TODO: move to interactive canvas if possible
   frameToHighlight: AppState["frameToHighlight"]; // TODO: move to interactive canvas if possible
   offsetLeft: AppState["offsetLeft"];
@@ -258,6 +259,7 @@ export type ObservedElementsAppState = {
   // Right now it's coupled to `editingLinearElement`, ideally it should not be really needed as we already have selectedElementIds & editingLinearElementId
   selectedLinearElementId: LinearElementEditor["elementId"] | null;
   croppingElementId: AppState["croppingElementId"];
+  groupFlags: AppState["groupFlags"];
   lockedMultiSelections: AppState["lockedMultiSelections"];
   activeLockedId: AppState["activeLockedId"];
 };
@@ -404,6 +406,8 @@ export interface AppState {
   /** group being edited when you drill down to its constituent element
     (e.g. when you double-click on a group's element) */
   editingGroupId: GroupId | null;
+  /** metadata flag for each groupId (e.g. "user" or "internal") */
+  groupFlags: { [groupId: string]: string };
   width: number;
   height: number;
   offsetTop: number;

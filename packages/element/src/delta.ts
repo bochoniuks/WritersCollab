@@ -663,6 +663,14 @@ export class AppStateDelta implements DeltaContainer<AppState> {
             }
 
             break;
+          case "groupFlags": {
+            const prevFlags = prevAppState[key] || {};
+            const nextFlags = nextAppState[key] || {};
+            if (!isShallowEqual(prevFlags, nextFlags)) {
+              visibleDifferenceFlag.value = true;
+            }
+            break;
+          }
           case "lockedMultiSelections": {
             const prevLockedUnits = prevAppState[key] || {};
             const nextLockedUnits = nextAppState[key] || {};
@@ -778,6 +786,7 @@ export class AppStateDelta implements DeltaContainer<AppState> {
       croppingElementId,
       lockedMultiSelections,
       activeLockedId,
+      groupFlags,
       ...standaloneProps
     } = delta as ObservedAppState;
 
@@ -821,6 +830,12 @@ export class AppStateDelta implements DeltaContainer<AppState> {
         inserted,
         "selectedGroupIds",
         (prevValue) => (prevValue ?? false) as ValueOf<T["selectedGroupIds"]>,
+      );
+      Delta.diffObjects(
+        deleted,
+        inserted,
+        "groupFlags",
+        (prevValue) => (prevValue ?? {}) as ValueOf<T["groupFlags"]>,
       );
       Delta.diffObjects(
         deleted,

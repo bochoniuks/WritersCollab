@@ -86,7 +86,7 @@ export const actionGroup = register({
   label: "labels.group",
   icon: (appState) => <GroupIcon theme={appState.theme} />,
   trackEvent: { category: "element" },
-  perform: (elements, appState, _, app) => {
+  perform: (elements, appState, formData, app) => {
     const selectedElements = getRootElements(
       app.scene.getSelectedElements({
         selectedElementIds: appState.selectedElementIds,
@@ -147,6 +147,7 @@ export const actionGroup = register({
     }
 
     const newGroupId = randomId();
+    const flag = formData?.flag || "user";
     const selectElementIds = arrayToMap(selectedElements);
 
     nextElements = nextElements.map((element) => {
@@ -182,6 +183,10 @@ export const actionGroup = register({
     return {
       appState: {
         ...appState,
+        groupFlags: {
+         ...appState.groupFlags,
+         [newGroupId]: flag,
+        },
         ...selectGroup(
           newGroupId,
           { ...appState, selectedGroupIds: {} },
@@ -217,6 +222,9 @@ export const actionUngroup = register({
   perform: (elements, appState, _, app) => {
     const groupIds = getSelectedGroupIds(appState);
     const elementsMap = arrayToMap(elements);
+
+    const nextGroupFlags = { ...appState.groupFlags };
+    groupIds.forEach((id) => delete nextGroupFlags[id]);
 
     if (groupIds.length === 0) {
       return {
@@ -294,7 +302,7 @@ export const actionUngroup = register({
     );
 
     return {
-      appState: { ...appState, ...updateAppState },
+      appState: { ...appState, ...updateAppState, groupFlags: nextGroupFlags },
       elements: nextElements,
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
