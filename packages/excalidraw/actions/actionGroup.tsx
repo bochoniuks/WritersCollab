@@ -220,7 +220,9 @@ export const actionUngroup = register({
   icon: (appState) => <UngroupIcon theme={appState.theme} />,
   trackEvent: { category: "element" },
   perform: (elements, appState, _, app) => {
-    const groupIds = getSelectedGroupIds(appState);
+    const groupIds = getSelectedGroupIds(appState).filter(
+      (id) => appState.groupFlags[id] !== "internal",
+    );
     const elementsMap = arrayToMap(elements);
 
     const nextGroupFlags = { ...appState.groupFlags };
@@ -311,12 +313,19 @@ export const actionUngroup = register({
     event.shiftKey &&
     event[KEYS.CTRL_OR_CMD] &&
     event.key === KEYS.G.toUpperCase(),
-  predicate: (elements, appState) => getSelectedGroupIds(appState).length > 0,
+  predicate: (elements, appState) =>
+    getSelectedGroupIds(appState).some(
+      (id) => appState.groupFlags[id] !== "internal",
+    ),
 
   PanelComponent: ({ elements, appState, updateData }) => (
     <ToolButton
       type="button"
-      hidden={getSelectedGroupIds(appState).length === 0}
+      hidden={
+        !getSelectedGroupIds(appState).some(
+          (id) => appState.groupFlags[id] !== "internal",
+        )
+      }
       icon={<UngroupIcon theme={appState.theme} />}
       onClick={() => updateData(null)}
       title={`${t("labels.ungroup")} — ${getShortcutKey("CtrlOrCmd+Shift+G")}`}
