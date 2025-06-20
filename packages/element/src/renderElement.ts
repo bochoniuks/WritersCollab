@@ -834,11 +834,11 @@ export const renderElement = (
       context.rotate(element.angle);
       context.translate(-shiftX, -shiftY); // position at element.x/y
       
-      if (element.backgroundImage) {
-        const img = new Image();
-        img.src = element.backgroundImage;
-        context.drawImage(img, 0, 0, element.width, element.height);
-      }
+      // if (element.backgroundImage) {
+      //   const img = new Image();
+      //   img.src = element.backgroundImage;
+      //   context.drawImage(img, 0, 0, element.width, element.height);
+      // }
       context.translate(element.margin.left, element.margin.top);
       
       context.textAlign = "left";

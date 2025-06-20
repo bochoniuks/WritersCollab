@@ -377,9 +377,10 @@ export const scratchpadWysiwyg = ({
     wordBreak,
     // prevent line wrapping (`whitespace: nowrap` doesn't work on FF)
     whiteSpace,
-    background: element.backgroundImage
-      ? `url(${element.backgroundImage}) no-repeat center / 100% 100%`
-      : "transparent",
+    // background: element.backgroundImage
+    //   ? `url(${element.backgroundImage}) no-repeat center / 100% 100%`
+    //   : "transparent",
+    background: "transparent",
     overflowWrap: "break-word",
     boxSizing: "content-box",
     top: `${getViewportCoords(element.x, element.y)[1]}px`,

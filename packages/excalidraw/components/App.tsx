@@ -105,9 +105,10 @@ import {
   DEFAULT_SCRATCHPAD_WIDTH_RATIO,
   DEFAULT_SCRATCHPAD_HEIGHT_RATIO,
   SCRATCHPAD_PAGE_SIZES,
+  randomId,
 } from "@excalidraw/common";
 
-import { getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
+import { addToGroup, getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
 
 import {
   bindOrUnbindLinearElements,
@@ -5726,7 +5727,6 @@ class App extends React.Component<AppProps, AppState> {
             : container.angle
           : (0 as Radians),
         frameId: topLayerFrame ? topLayerFrame.id : null,
-        backgroundImage: this.state.currentScratchpadBackground,
         margin: {top: 10, bottom: 10, left: 10, right: 10},
         pageSize: "A4"
       });
@@ -9370,15 +9370,35 @@ class App extends React.Component<AppProps, AppState> {
           this.state,
         );
         const hit = this.getElementAtPosition(scenePoint.x, scenePoint.y);
-        if (hit && isImageElement(hit)) {
-          const scratchpad = this.scene
-            .getNonDeletedElementsMap()
-            .get(scratchpadBackgroundPickerId!);
-          const file = hit.fileId && this.files[hit.fileId];
-          if (scratchpad && isScratchpadElement(scratchpad) && file?.dataURL) {
-            this.scene.mutateElement(scratchpad, { backgroundImage: file.dataURL });
-          }
+        const scratchpad = this.scene
+          .getNonDeletedElementsMap()
+          .get(scratchpadBackgroundPickerId!);
+
+        if (
+          hit &&
+          isImageElement(hit) &&
+          scratchpad &&
+          isScratchpadElement(scratchpad) &&
+          hit.fileId
+        ) {
+          const copy = duplicateElements(this.state.editingGroupId, new Map(), hit);
+          this.scene.mutateElement(copy, {
+            x: scratchpad.x,
+            y: scratchpad.y,
+            width: scratchpad.width,
+            height: scratchpad.height,
+            angle: scratchpad.angle,
+          });
+          const groupId = randomId();
+          this.scene.mutateElement(copy, {
+            groupIds: addToGroup(copy.groupIds, groupId, this.state.editingGroupId),
+          });
+          this.scene.mutateElement(scratchpad, {
+            groupIds: addToGroup(scratchpad.groupIds, groupId, this.state.editingGroupId),
+          });
+          this.scene.insertElementAtIndex(copy, this.scene.getElementIndex(scratchpad.id));
         }
+
         this.finishScratchpadBackgroundPicker();
         return;
       }
