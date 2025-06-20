@@ -108,7 +108,7 @@ import {
   randomId,
 } from "@excalidraw/common";
 
-import { addToGroup, getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
+import { addToGroup, duplicateElement, getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
 
 import {
   bindOrUnbindLinearElements,
@@ -9381,7 +9381,7 @@ class App extends React.Component<AppProps, AppState> {
           isScratchpadElement(scratchpad) &&
           hit.fileId
         ) {
-          const copy = duplicateElements(this.state.editingGroupId, new Map(), hit);
+          const copy = duplicateElement(this.state.editingGroupId, new Map(), hit);
           this.scene.mutateElement(copy, {
             x: scratchpad.x,
             y: scratchpad.y,
@@ -9402,6 +9402,7 @@ class App extends React.Component<AppProps, AppState> {
         this.finishScratchpadBackgroundPicker();
         return;
       }
+
 
       this.setState((prevState) => ({
         isResizing: false,

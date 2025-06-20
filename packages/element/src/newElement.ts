@@ -295,7 +295,7 @@ export const newScratchpadElement = (
     height,
     fontFamily,
     fontSize,
-    backgroundImage: opts.backgroundImage ?? null,
+    backgroundImage: null,
     margin: opts.margin ?? { top: 0, right: 0, bottom: 0, left: 0 },
     pageSize: opts.pageSize ?? null,
   };
