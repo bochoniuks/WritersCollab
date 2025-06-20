@@ -999,11 +999,24 @@ class App extends React.Component<AppProps, AppState> {
 
   private isGroupActionAllowed(action: "move" | "resize") {
     const ids = getSelectedGroupIds(this.state);
-    return ids.every(id => {
+    return ids.every((id) => {
       const flag = this.state.groupFlags[id];
       const conf = GROUP_FLAG_CONFIG[flag];
       if (!conf || !conf.active) {
         return true;
+      }
+
+      if (flag === "internal" && (action === "resize" || action === "move" )) {
+        const els = getElementsInGroup(
+          this.scene.getNonDeletedElements(),
+          id,
+        );
+        const hasFixed = els.some(
+          (el) => isScratchpadElement(el) && el.pageSize,
+        );
+        if (!hasFixed) {
+          return true;
+        }
       }
       return action === "move" ? conf.movable : conf.resizable;
     });

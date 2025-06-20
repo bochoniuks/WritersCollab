@@ -26,7 +26,7 @@ import {
   SCRATCHPAD_PAGE_SIZES,
 } from "@excalidraw/common";
 
-import { canBecomePolygon, getNonDeletedElements, isScratchpadElement } from "@excalidraw/element";
+import { canBecomePolygon, getElementsInGroup, getNonDeletedElements, isImageElement, isScratchpadElement } from "@excalidraw/element";
 
 import {
   bindLinearElement,
@@ -1868,19 +1868,48 @@ export const actionChangeScratchpadPageSize = register({
   label: "labels.pageSize",
   trackEvent: false,
   perform: (elements, appState, pageSize: ScratchpadPageSize | null) => {
-    return {
-      elements: changeProperty(elements, appState, (el) => {
-        if (isScratchpadElement(el)) {
-          const size = pageSize ? SCRATCHPAD_PAGE_SIZES[pageSize] : null;
-          return newElementWith(el, {
-            pageSize,
-            autoResize: !pageSize,
-            width: size ? size.width : el.width,
-            height: size ? size.height : el.height,
-          });
+    let nextElements = changeProperty(elements, appState, (el) => {
+      if (isScratchpadElement(el)) {
+        const size = pageSize ? SCRATCHPAD_PAGE_SIZES[pageSize] : null;
+        return newElementWith(el, {
+          pageSize,
+          autoResize: !pageSize,
+          width: size ? size.width : el.width,
+          height: size ? size.height : el.height,
+        });
+      }
+      return el;
+    });
+
+    const elementsMap = arrayToMap(nextElements);
+    const scratchpads = getSelectedElements(elements, appState).filter(isScratchpadElement);
+
+    for (const scratchpad of scratchpads) {
+      const updated = elementsMap.get(scratchpad.id)!;
+      for (const gid of updated.groupIds) {
+        if (appState.groupFlags[gid] === "internal") {
+          for (const el of getElementsInGroup(elementsMap, gid)) {
+            if (isImageElement(el)) {
+              elementsMap.set(
+                el.id,
+                newElementWith(el, {
+                  x: updated.x,
+                  y: updated.y,
+                  width: updated.width,
+                  height: updated.height,
+                  angle: updated.angle,
+                }),
+              );
+            }
+          }
         }
-        return el;
-      }),
+      }
+    }
+
+    nextElements = Array.from(elementsMap.values());
+
+    return {
+      elements: nextElements,
       appState: { ...appState, currentScratchpadPageSize: pageSize },
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
