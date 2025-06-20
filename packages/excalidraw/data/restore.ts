@@ -17,6 +17,7 @@ import {
   getSizeFromPoints,
   normalizeLink,
   getLineHeight,
+  DEFAULT_FONT_SIZE,
 } from "@excalidraw/common";
 import { getNonDeletedElements, isValidPolygon } from "@excalidraw/element";
 import { normalizeFixedPoint } from "@excalidraw/element";
@@ -297,6 +298,20 @@ const restoreElement = (
       }
 
       return element;
+    case "scratchpad":
+      return restoreElementWithProperties(element, {
+        tiptapDoc: element.tiptapDoc ?? { type: "doc", content: [] },
+        originalTiptapDoc:
+          element.originalTiptapDoc ?? element.tiptapDoc ?? { type: "doc", content: [] },
+        changeHistory: element.changeHistory ?? [],
+        containerId: element.containerId ?? null,
+        autoResize: element.autoResize ?? true,
+        fontFamily: element.fontFamily ?? DEFAULT_FONT_FAMILY,
+        fontSize: element.fontSize ?? DEFAULT_FONT_SIZE,
+        backgroundImage: element.backgroundImage ?? null,
+        margin: element.margin ?? { top: 0, right: 0, bottom: 0, left: 0 },
+        pageSize: element.pageSize ?? null,
+      });
     case "freedraw": {
       return restoreElementWithProperties(element, {
         points: element.points,
