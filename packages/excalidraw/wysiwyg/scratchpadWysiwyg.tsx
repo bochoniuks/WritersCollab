@@ -18,6 +18,7 @@ import {
   getLineHeight,
   getVerticalOffset,
   FONT_FAMILY,
+  SCRATCHPAD_PAGE_SIZES,
 } from "@excalidraw/common";
 
 import {
@@ -156,9 +157,13 @@ export const scratchpadWysiwyg = ({
 
     if (isScratchpadElement(updatedElement)) {
 
-        const contentWidth = updatedElement.width - updatedElement.margin.left - updatedElement.margin.right;
-        const contentHeight = updatedElement.height - updatedElement.margin.top - updatedElement.margin.bottom;
-
+        const { width: pageW, height: pageH } =
+          updatedElement.pageSize
+            ? SCRATCHPAD_PAGE_SIZES[updatedElement.pageSize]
+            : { width: updatedElement.width, height: updatedElement.height };
+      
+        const contentWidth  = pageW - updatedElement.margin.left - updatedElement.margin.right;
+        const contentHeight = pageH - updatedElement.margin.top  - updatedElement.margin.bottom;
         const isEmptyDoc = !updatedElement.originalTiptapDoc.content?.length;
         const measuredHeight = isEmptyDoc
             ? contentHeight

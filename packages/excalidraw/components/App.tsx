@@ -5121,7 +5121,10 @@ class App extends React.Component<AppProps, AppState> {
   ) {
 
     const updateElement = (nextDoc: JSONContent, isDeleted: boolean, wrapDoc: boolean) => {
-      let width = element.width;
+      const page = element.pageSize
+        ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
+        : { width: element.width, height: element.height };
+           let width = element.width;
       let height = element.height;
       let doc = nextDoc;
 
@@ -5139,16 +5142,17 @@ class App extends React.Component<AppProps, AppState> {
           });
         }
         if (element.pageSize) {
-          const contentW = element.width - element.margin.left - element.margin.right;
-          const contentH = element.height - element.margin.top - element.margin.bottom;
+          const contentW = page.width - element.margin.left - element.margin.right;
+          const contentH = page.height - element.margin.top - element.margin.bottom;
           const { height: measured } = measureTiptapDocWithWidth(doc, contentW, {
             fontFamily: element.fontFamily,
             fontSize: element.fontSize,
           });
           const pages = Math.ceil(measured / contentH);
-          height = pages * element.height;
+          height = pages * page.height;
+          width = page.width;
         } else {
-          ({ height } = measureTiptapDocWithWidth(doc, element.width, {
+          ({ height } = measureTiptapDocWithWidth(doc, page.width, {
             fontFamily: element.fontFamily,
             fontSize: element.fontSize,
           }));
