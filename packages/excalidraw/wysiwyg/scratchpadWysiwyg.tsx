@@ -169,8 +169,27 @@ export const scratchpadWysiwyg = ({
                   fontSize: updatedElement.fontSize,
                 },
               ).height;
-        const height = updatedElement.autoResize ? measuredHeight : contentHeight;
+
+        let height = updatedElement.autoResize ? measuredHeight : contentHeight;
         const width = contentWidth
+        
+        if (updatedElement.enablePagination) {
+          const pages = Math.ceil(measuredHeight / contentHeight);
+          height = pages * contentHeight;
+
+          const proseMirrorRoot = editable.querySelector(".ProseMirror");
+          editable.innerHTML = "";
+          for (let i = 0; i < pages; i++) {
+            const page = document.createElement("div");
+            page.className = "scratchpad-page";
+            page.style.width = `${contentWidth}px`;
+            page.style.height = `${contentHeight}px`;
+            editable.appendChild(page);
+          }
+          if (proseMirrorRoot && editable.firstElementChild) {
+            editable.firstElementChild.appendChild(proseMirrorRoot);
+          }
+        }
 
         let coordX = updatedElement.x;
         let coordY = updatedElement.y;
