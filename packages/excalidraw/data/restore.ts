@@ -311,6 +311,7 @@ const restoreElement = (
         backgroundImage: element.backgroundImage ?? null,
         margin: element.margin ?? { top: 0, right: 0, bottom: 0, left: 0 },
         pageSize: element.pageSize ?? null,
+        enablePagination: element.enablePagination ?? false,
       });
     case "freedraw": {
       return restoreElementWithProperties(element, {

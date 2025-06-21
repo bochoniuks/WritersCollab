@@ -147,6 +147,7 @@ import { register } from "./register";
 
 import type { AppClassProperties, AppState, Primitive } from "../types";
 import { ToolButton } from "../components/ToolButton";
+import { Switch } from "../components/Switch";
 
 const FONT_SIZE_RELATIVE_INCREASE_STEP = 0.1;
 
@@ -1914,7 +1915,7 @@ export const actionChangeScratchpadPageSize = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  PanelComponent: ({ elements, appState, updateData, app }) => (
+  PanelComponent: ({ elements, appState, updateData, app, renderAction }) => (
     <fieldset>
       <legend>{t("labels.pageSize")}</legend>
       <select
@@ -1943,8 +1944,52 @@ export const actionChangeScratchpadPageSize = register({
           </option>
         ))}
       </select>
+      {renderAction("toggleScratchpadPagination")}
     </fieldset>
   ),
+});
+
+export const actionToggleScratchpadPagination = register({
+  name: "toggleScratchpadPagination",
+  label: "labels.enablePagination",
+  trackEvent: false,
+  predicate: (elements, appState) => {
+    const [el] = getSelectedElements(elements, appState);
+    return !!el && isScratchpadElement(el);
+  },
+  perform: (elements, appState, enabled: boolean) => {
+    const [el] = getSelectedElements(elements, appState);
+    return {
+      elements: elements.map((item) =>
+        item.id === el.id && isScratchpadElement(item)
+          ? newElementWith(item, { enablePagination: enabled })
+          : item,
+      ),
+      appState,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    };
+  },
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const currentValue =
+      getFormValue(
+        elements,
+        app,
+        (el) => (isScratchpadElement(el) ? el.enablePagination : false),
+        (el) => isScratchpadElement(el),
+        (hasSel) => (hasSel ? undefined : appState.currentScratchpadPagination),
+      ) ?? false;
+
+    return (
+      <label className="checkboxItem">
+        <Switch
+          name="paginationSwitch"
+          checked={currentValue}
+          onChange={(value) => updateData(value)}
+        />
+        {t("labels.enablePagination")}
+      </label>
+    );
+  },
 });
 
 export const actionSelectScratchpadBackground = register({

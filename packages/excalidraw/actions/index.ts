@@ -96,4 +96,5 @@ export { actionToggleCropEditor } from "./actionCropEditor";
 export {
   actionChangeScratchpadPageSize,
   actionSelectScratchpadBackground,
+  actionToggleScratchpadPagination
 } from "./actionProperties";

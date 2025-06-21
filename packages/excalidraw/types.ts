@@ -350,6 +350,7 @@ export interface AppState {
   currentScratchpadBackground: string | null;
   currentScratchpadMargin: { top: number; right: number; bottom: number; left: number };
   currentScratchpadPageSize: ScratchpadPageSize | null;
+  currentScratchpadPagination: boolean;
 
 
 

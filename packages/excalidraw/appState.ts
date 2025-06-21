@@ -45,7 +45,8 @@ export const getDefaultAppState = (): Omit<
     currentScratchpadBackground: null,
     currentScratchpadMargin: { top: 0, right: 0, bottom: 0, left: 0 },
     currentScratchpadPageSize: null,
-
+    currentScratchpadPagination: false,
+    
     currentHoveredFontFamily: null,
     cursorButton: "up",
     activeEmbeddable: null,
@@ -177,6 +178,7 @@ const APP_STATE_STORAGE_CONF = (<
   currentScratchpadBackground: { browser: true, export: false, server: false },
   currentScratchpadMargin: { browser: true, export: false, server: false },
   currentScratchpadPageSize: { browser: true, export: false, server: false },
+  currentScratchpadPagination: { browser: true, export: false, server: false },
   currentItemStrokeStyle: { browser: true, export: false, server: false },
   currentItemStrokeWidth: { browser: true, export: false, server: false },
   currentItemTextAlign: { browser: true, export: false, server: false },

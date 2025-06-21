@@ -169,7 +169,7 @@ export const scratchpadWysiwyg = ({
                   fontSize: updatedElement.fontSize,
                 },
               ).height;
-          const height = updatedElement.autoResize ? measuredHeight : contentHeight;
+        const height = updatedElement.autoResize ? measuredHeight : contentHeight;
         const width = contentWidth
 
         let coordX = updatedElement.x;
