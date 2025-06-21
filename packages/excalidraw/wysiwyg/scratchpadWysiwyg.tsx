@@ -408,7 +408,9 @@ export const scratchpadWysiwyg = ({
     const pageSize = element.pageSize
       ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
       : { width: element.width, height: element.height };
-      
+    
+    console.log(element.pageSize)
+    console.log(pageSize)
     const ed = useEditor({
       extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize,
         Pagination.configure({
