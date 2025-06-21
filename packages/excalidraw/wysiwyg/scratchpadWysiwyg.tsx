@@ -181,7 +181,7 @@ export const scratchpadWysiwyg = ({
         
         if (updatedElement.enablePagination) {
           const pages = Math.ceil(measuredHeight / contentHeight);
-          height = pages * contentHeight;
+          height = pages * pageH;
 
           const root = editorContainer;
           const oldPages = Array.from(editable.querySelectorAll(".scratchpad-page"));
@@ -193,8 +193,8 @@ export const scratchpadWysiwyg = ({
           while (oldPages.length < pages) {
             const page = document.createElement("div");
             page.className = "scratchpad-page";
-            page.style.width = `${contentWidth}px`;
-            page.style.height = `${contentHeight}px`;
+            page.style.width = `${pageW}px`;
+            page.style.height = `${pageH}px`;
             editable.appendChild(page);
             oldPages.push(page);
           }
@@ -210,8 +210,9 @@ export const scratchpadWysiwyg = ({
               wrap.className = "scratchpad-page-content";
               page.appendChild(wrap);
             }
+            wrap.style.width = `${contentWidth}px`;
             wrap.style.height = `${contentHeight}px`;
-            const offset = Math.min(idx * contentHeight, measuredHeight - contentHeight);
+            const offset = idx * contentHeight;
             wrap.style.transform = `translateY(-${offset}px)`;
 
             // first page holds the live editor; others copy its html
