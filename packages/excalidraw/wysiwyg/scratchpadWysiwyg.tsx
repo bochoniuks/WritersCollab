@@ -210,8 +210,9 @@ export const scratchpadWysiwyg = ({
               wrap.className = "scratchpad-page-content";
               page.appendChild(wrap);
             }
-            wrap.style.height = `${measuredHeight}px`;
-            wrap.style.transform = `translateY(-${idx * contentHeight}px)`;
+            wrap.style.height = `${contentHeight}px`;
+            const offset = Math.min(idx * contentHeight, measuredHeight - contentHeight);
+            wrap.style.transform = `translateY(-${offset}px)`;
 
             // first page holds the live editor; others copy its html
             if (idx === 0) {
@@ -220,7 +221,9 @@ export const scratchpadWysiwyg = ({
                 wrap.appendChild(root);
               }
             } else {
-              wrap.innerHTML = root.outerHTML;
+              const clone = root.cloneNode(true) as HTMLElement;
+              wrap.innerHTML = "";
+              wrap.appendChild(clone);
             }
           });
         } else {
@@ -247,7 +250,7 @@ export const scratchpadWysiwyg = ({
         Object.assign(editable.style, {
           left: `${viewportX}px`,
           top: `${viewportY}px`, 
-          width: `${width}px`,
+          width: `${pageW}px`,
           height: `${height}px`,
           // font: font,
           // lineHeight: lineHeight,
@@ -370,9 +373,6 @@ export const scratchpadWysiwyg = ({
       const editorMaxHeight =
         (appState.height - viewportY) / appState.zoom.value;
       Object.assign(editable.style, {
-        // font,
-        // must be defined *after* font ¯\_(ツ)_/¯
-        // lineHeight: updatedTextElement.lineHeight,
         width: `${width}px`,
         height: `${height}px`,
         left: `${viewportX}px`,

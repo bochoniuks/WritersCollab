@@ -1977,16 +1977,28 @@ export const actionToggleScratchpadPagination = register({
   },
   perform: (elements, appState, enabled: boolean) => {
     const [el] = getSelectedElements(elements, appState);
+    // narrow the type first
+    const size =
+      isScratchpadElement(el) && el.pageSize
+        ? SCRATCHPAD_PAGE_SIZES[el.pageSize]
+        : null;
+
     return {
       elements: elements.map((item) =>
         item.id === el.id && isScratchpadElement(item)
-          ? newElementWith(item, { enablePagination: enabled })
+          ? newElementWith(item, {
+              enablePagination: enabled,
+              height:
+                enabled && size
+                  ? Math.ceil(item.height / size.height) * size.height
+                  : item.height,
+            })
           : item,
       ),
       appState,
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
-  },
+},
   PanelComponent: ({ elements, appState, updateData, app }) => {
     const currentValue =
       getFormValue(
