@@ -144,6 +144,7 @@ export const scratchpadWysiwyg = ({
     return false;
   };
 
+  const editorContainer = document.createElement("div");
   const updateWysiwygStyle = () => {
     const appState = app.state;
     const updatedElement = app.scene.getElement(id);
@@ -177,7 +178,7 @@ export const scratchpadWysiwyg = ({
           const pages = Math.ceil(measuredHeight / contentHeight);
           height = pages * contentHeight;
 
-          const root = editable.querySelector(".ProseMirror")!;
+          const root = editorContainer;
           const oldPages = Array.from(editable.querySelectorAll(".scratchpad-page"));
           if (!oldPages.length) {
             editable.innerHTML = "";
@@ -219,11 +220,9 @@ export const scratchpadWysiwyg = ({
           });
         } else {
           // remove pages when pagination turned off
-          const root = editable.querySelector(".ProseMirror");
+          const root = editorContainer;
           editable.innerHTML = "";
-          if (root) {
-            editable.appendChild(root);
-          }
+          editable.appendChild(root);
         }
 
         let coordX = updatedElement.x;
@@ -468,14 +467,6 @@ export const scratchpadWysiwyg = ({
         if (autoSelect) {
           ed.commands.focus();
         }
-        // ed.chain()
-        //   .setFontFamily(String(app.state.currentItemFontFamily))
-        //   .setMark('textStyle', {
-        //       fontFamily: app.state.currentItemFontFamily,
-        //       fontSize: app.state.currentItemFontSize,
-        //     })
-        //     .setColor(element.strokeColor)
-        //     .run();
         const currentFontName =
           Object.entries(FONT_FAMILY).find(([, id]) => id === app.state.currentItemFontFamily)?.[0];
 
@@ -485,10 +476,6 @@ export const scratchpadWysiwyg = ({
           chain
             .setFontFamily(currentFontName ?? "Excalifont")
             .setFontSize(`${app.state.currentItemFontSize}px`);
-            // .setMark('textStyle', {
-            //   fontFamily: app.state.currentItemFontFamily,
-            //   fontSize: app.state.currentItemFontSize,
-            // });
         }
         chain.setColor(element.strokeColor).run();
       }
@@ -497,7 +484,10 @@ export const scratchpadWysiwyg = ({
     return <EditorContent editor={ed} />;
   };
 
-  const root = createRoot(editable);
+
+  editable.appendChild(editorContainer);
+
+  const root = createRoot(editorContainer);
   root.render(<ScratchpadEditor />);
 
   editable.onkeydown = (event) => {
