@@ -177,17 +177,52 @@ export const scratchpadWysiwyg = ({
           const pages = Math.ceil(measuredHeight / contentHeight);
           height = pages * contentHeight;
 
-          const proseMirrorRoot = editable.querySelector(".ProseMirror");
-          editable.innerHTML = "";
-          for (let i = 0; i < pages; i++) {
+          const root = editable.querySelector(".ProseMirror")!;
+          const oldPages = Array.from(editable.querySelectorAll(".scratchpad-page"));
+          if (!oldPages.length) {
+            editable.innerHTML = "";
+          }
+
+          // adjust page count
+          while (oldPages.length < pages) {
             const page = document.createElement("div");
             page.className = "scratchpad-page";
             page.style.width = `${contentWidth}px`;
             page.style.height = `${contentHeight}px`;
             editable.appendChild(page);
+            oldPages.push(page);
           }
-          if (proseMirrorRoot && editable.firstElementChild) {
-            editable.firstElementChild.appendChild(proseMirrorRoot);
+          while (oldPages.length > pages) {
+            oldPages.pop()!.remove();
+          }
+
+          // fill each page with clipped content
+          oldPages.forEach((page, idx) => {
+            let wrap = page.firstElementChild as HTMLDivElement | null;
+            if (!wrap) {
+              wrap = document.createElement("div");
+              wrap.className = "scratchpad-page-content";
+              page.appendChild(wrap);
+            }
+            wrap.style.height = `${measuredHeight}px`;
+            wrap.style.transform = `translateY(-${idx * contentHeight}px)`;
+
+            // first page holds the live editor; others copy its html
+            if (idx === 0) {
+              if (root.parentElement !== wrap) {
+                wrap.innerHTML = "";
+                wrap.appendChild(root);
+              }
+            } else {
+              wrap.innerHTML = root.outerHTML;
+            }
+          });
+        } else {
+          // remove pages when pagination turned off
+          const root = editable.querySelector(".ProseMirror");
+          editable.innerHTML = "";
+          if (root) {
+            editable.appendChild(root);
           }
         }
 

@@ -148,6 +148,7 @@ import { register } from "./register";
 import type { AppClassProperties, AppState, Primitive } from "../types";
 import { ToolButton } from "../components/ToolButton";
 import { Switch } from "../components/Switch";
+import { measureTiptapDocWithWidth, wrapTiptapDoc } from "@excalidraw/element/parseTiptapDoc";
 
 const FONT_SIZE_RELATIVE_INCREASE_STEP = 0.1;
 
@@ -1872,11 +1873,28 @@ export const actionChangeScratchpadPageSize = register({
     let nextElements = changeProperty(elements, appState, (el) => {
       if (isScratchpadElement(el)) {
         const size = pageSize ? SCRATCHPAD_PAGE_SIZES[pageSize] : null;
+        let doc = el.originalTiptapDoc;
+        if (size) {
+          doc = wrapTiptapDoc(doc, size.width - el.margin.left - el.margin.right, {
+            fontFamily: el.fontFamily,
+            fontSize: el.fontSize,
+            color: el.strokeColor,
+          });
+        }
+
+        const { height: measured } = measureTiptapDocWithWidth(
+          doc,
+          size ? size.width - el.margin.left - el.margin.right : el.width,
+          { fontFamily: el.fontFamily, fontSize: el.fontSize },
+        );
+        const pages = size ? Math.ceil(measured / (size.height - el.margin.top - el.margin.bottom)) : 1;
+
         return newElementWith(el, {
           pageSize,
           autoResize: !pageSize,
           width: size ? size.width : el.width,
-          height: size ? size.height : el.height,
+          height: size ? pages * size.height : el.height,
+          tiptapDoc: doc,
         });
       }
       return el;

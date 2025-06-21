@@ -5138,7 +5138,16 @@ class App extends React.Component<AppProps, AppState> {
             color: element.strokeColor,
           });
         }
-        if (!element.pageSize) {
+        if (element.pageSize) {
+          const contentW = element.width - element.margin.left - element.margin.right;
+          const contentH = element.height - element.margin.top - element.margin.bottom;
+          const { height: measured } = measureTiptapDocWithWidth(doc, contentW, {
+            fontFamily: element.fontFamily,
+            fontSize: element.fontSize,
+          });
+          const pages = Math.ceil(measured / contentH);
+          height = pages * element.height;
+        } else {
           ({ height } = measureTiptapDocWithWidth(doc, element.width, {
             fontFamily: element.fontFamily,
             fontSize: element.fontSize,
