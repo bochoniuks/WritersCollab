@@ -88,6 +88,7 @@
   },
   "dependencies": {
     "@tiptap/extension-font-family": "2.14.0",
-    "tiptap-extension-font-size": "1.2.0"
+    "tiptap-extension-font-size": "1.2.0",
+    "tiptap-pagination-breaks": "1.0.3"
   }
 }

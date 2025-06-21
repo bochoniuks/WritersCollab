@@ -6,6 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import TextStyle from "@tiptap/extension-text-style";
 import FontSize from "tiptap-extension-font-size";
 import Color from "@tiptap/extension-color";
+import { Pagination } from "tiptap-pagination-breaks"; 
 
 import {
   KEYS,
@@ -18,6 +19,7 @@ import {
   getLineHeight,
   getVerticalOffset,
   FONT_FAMILY,
+  SCRATCHPAD_PAGE_SIZES,
 } from "@excalidraw/common";
 
 import {
@@ -371,7 +373,7 @@ export const scratchpadWysiwyg = ({
     border: 0,
     outline: 0,
     resize: "none",
-    overflow: "hidden",
+    overflow: element.pageSize ? "auto" : "hidden",
     // must be specified because in dark mode canvas creates a stacking context
     zIndex: "var(--zIndex-wysiwyg)",
     wordBreak,
@@ -392,9 +394,29 @@ export const scratchpadWysiwyg = ({
   let prevDoc = element.tiptapDoc;
   const changeHistory = [...(element.changeHistory || [])];
 
+  const { width: pageW, height: pageH } = element.pageSize
+    ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
+    : { width: element.width, height: element.height };
+  const pageMargin = Math.max(
+    element.margin.top,
+    element.margin.right,
+    element.margin.bottom,
+    element.margin.left,
+  );
+
   const ScratchpadEditor = () => {
+    const pageSize = element.pageSize
+      ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
+      : { width: element.width, height: element.height };
+      
     const ed = useEditor({
-      extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize],
+      extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize,
+        Pagination.configure({
+          pageHeight: pageSize.height,
+          pageWidth: pageSize.width,
+          pageMargin: element.margin.top,
+        }),
+      ],
       content: prevDoc,
       onUpdate: ({ editor: ed }) => {
         const doc = ed.getJSON();

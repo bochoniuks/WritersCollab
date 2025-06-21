@@ -15,6 +15,7 @@ import {
   isRTL,
   getVerticalOffset,
   getLineHeight,
+  SCRATCHPAD_PAGE_SIZES,
 } from "@excalidraw/common";
 
 import type {
@@ -844,6 +845,14 @@ export const renderElement = (
       context.textAlign = "left";
       context.textBaseline = "alphabetic";
 
+      const pageHeight =
+        element.pageSize
+          ? SCRATCHPAD_PAGE_SIZES[element.pageSize].height -
+            element.margin.top -
+            element.margin.bottom
+          : Infinity;
+
+      let nextBreak = pageHeight;
       let cursorY = 0;
       for (const line of lines) {
         let baselineOffset = 0;
@@ -881,7 +890,20 @@ export const renderElement = (
           cursorX += metrics.width;
           // lineHeight = Math.max(lineHeight, metrics.height);
         }
-        // cursorY += lineHeight;
+        if (cursorY + baselineOffset + bottomGap > nextBreak) {
+          context.save();
+          context.setLineDash([4, 4]);
+          context.strokeStyle = "#ccc";
+          context.beginPath();
+          context.moveTo(0, nextBreak);
+          context.lineTo(
+            element.width - element.margin.left - element.margin.right,
+            nextBreak,
+          );
+          context.stroke();
+          context.restore();
+          nextBreak += pageHeight;
+        }
         cursorY += baselineOffset + bottomGap;
       }
 
