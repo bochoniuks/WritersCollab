@@ -108,3 +108,17 @@ declare namespace jest {
   interface Expect extends CustomMatchers {}
   interface Matchers extends CustomMatchers {}
 }
+
+declare module "tiptap-pagination-breaks" {
+  import type { Extension } from "@tiptap/core";
+
+  export interface PaginationOptions {
+    pageHeight: number;
+    pageWidth: number;
+    pageMargin: number;
+    label?: string;
+    showPageNumber?: boolean;
+  }
+
+  export const Pagination: Extension<PaginationOptions>;
+}
