@@ -719,6 +719,7 @@ body.excalidraw-cursor-resize * {
   }
 
   .excalidraw-wysiwyg .page {
+    display: block;
     box-sizing: border-box;
     margin: 0 auto 40px auto;
     padding: 20px;
