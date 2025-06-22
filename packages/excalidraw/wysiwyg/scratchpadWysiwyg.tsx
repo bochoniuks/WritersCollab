@@ -159,8 +159,15 @@ export const scratchpadWysiwyg = ({
 
     if (isScratchpadElement(updatedElement)) {
 
-        const contentWidth = updatedElement.width - updatedElement.margin.left - updatedElement.margin.right;
-        const contentHeight = updatedElement.height - updatedElement.margin.top - updatedElement.margin.bottom;
+        const baseSize =
+          updatedElement.pageSize && !updatedElement.paginationEnabled
+            ? SCRATCHPAD_PAGE_SIZES[updatedElement.pageSize]
+            : { width: updatedElement.width, height: updatedElement.height };
+
+        const contentWidth =
+          baseSize.width - updatedElement.margin.left - updatedElement.margin.right;
+        const contentHeight =
+          baseSize.height - updatedElement.margin.top - updatedElement.margin.bottom;
 
         const isEmptyDoc = !updatedElement.originalTiptapDoc.content?.length;
         const measuredHeight = isEmptyDoc
@@ -449,14 +456,6 @@ export const scratchpadWysiwyg = ({
         if (autoSelect) {
           ed.commands.focus();
         }
-        // ed.chain()
-        //   .setFontFamily(String(app.state.currentItemFontFamily))
-        //   .setMark('textStyle', {
-        //       fontFamily: app.state.currentItemFontFamily,
-        //       fontSize: app.state.currentItemFontSize,
-        //     })
-        //     .setColor(element.strokeColor)
-        //     .run();
         const currentFontName =
           Object.entries(FONT_FAMILY).find(([, id]) => id === app.state.currentItemFontFamily)?.[0];
 
@@ -466,10 +465,6 @@ export const scratchpadWysiwyg = ({
           chain
             .setFontFamily(currentFontName ?? "Excalifont")
             .setFontSize(`${app.state.currentItemFontSize}px`);
-            // .setMark('textStyle', {
-            //   fontFamily: app.state.currentItemFontFamily,
-            //   fontSize: app.state.currentItemFontSize,
-            // });
         }
         chain.setColor(element.strokeColor).run();
       }

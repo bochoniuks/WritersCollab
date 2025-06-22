@@ -5156,7 +5156,11 @@ class App extends React.Component<AppProps, AppState> {
           const pages = Math.max(1, Math.ceil(docHeight / pageContentHeight));
           height = pageSize.height * pages;
           width = pageSize.width;
-        } else if (!pageSize) {
+        } else if (pageSize) {
+          // pagination disabled → keep single-page size
+          height = pageSize.height;
+          width = pageSize.width;
+        } else {
           height = docHeight;
         }
       }

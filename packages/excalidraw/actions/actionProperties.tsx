@@ -1972,11 +1972,17 @@ export const actionToggleScratchpadPagination = register({
   },
   perform: (elements, appState) => {
     const scratchpad = getSelectedElements(elements, appState)[0] as ExcalidrawScratchpadElement;
-    const nextElements = changeProperty(elements, appState, (el) =>
-      isScratchpadElement(el) && el.id === scratchpad.id
-        ? newElementWith(el, { paginationEnabled: !el.paginationEnabled })
-        : el,
-    );
+    const nextElements = changeProperty(elements, appState, (el) => {
+      if (isScratchpadElement(el) && el.id === scratchpad.id) {
+        const toggled = !el.paginationEnabled;
+        const size = el.pageSize ? SCRATCHPAD_PAGE_SIZES[el.pageSize] : null;
+        return newElementWith(el, {
+          paginationEnabled: toggled,
+          ...(toggled ? {} : size && { width: size.width, height: size.height }),
+        });
+      }
+      return el;
+    });
     return {
       elements: nextElements,
       appState: {
