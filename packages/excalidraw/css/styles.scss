@@ -721,6 +721,7 @@ body.excalidraw-cursor-resize * {
     padding: var(--page-padding, 0);
     border: 1px solid #e0e0e0;
     background: white;
+    overflow-y: var(--page-overflow, visible); 
   }
 
   .excalidraw-wysiwyg .page:last-child {

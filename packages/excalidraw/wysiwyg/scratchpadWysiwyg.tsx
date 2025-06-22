@@ -159,6 +159,11 @@ export const scratchpadWysiwyg = ({
 
     if (isScratchpadElement(updatedElement)) {
 
+      editable.style.setProperty(
+        "--page-overflow",
+        element.paginationEnabled ? "visible" : "auto",
+      );
+
         const baseSize =
           updatedElement.pageSize && !updatedElement.paginationEnabled
             ? SCRATCHPAD_PAGE_SIZES[updatedElement.pageSize]
@@ -381,9 +386,7 @@ export const scratchpadWysiwyg = ({
     border: 0,
     outline: 0,
     resize: "none",
-    overflow: element.pageSize
-      ? element.paginationEnabled ? "hidden" : "auto"
-      : "hidden",
+    overflow: "hidden",
     // must be specified because in dark mode canvas creates a stacking context
     zIndex: "var(--zIndex-wysiwyg)",
     wordBreak,
@@ -402,6 +405,10 @@ export const scratchpadWysiwyg = ({
     "--page-padding",
     `${element.margin.top}px ${element.margin.right}px ` +
     `${element.margin.bottom}px ${element.margin.left}px`
+  );
+  editable.style.setProperty(
+    "--page-overflow",
+    element.paginationEnabled ? "visible" : "auto",
   );
   updateWysiwygStyle();
 
@@ -427,20 +434,22 @@ export const scratchpadWysiwyg = ({
     
     console.log(element.pageSize)
     console.log(pageSize)
+    const pageExtensions = [
+      PageWrapper.configure({ pageHeight: pageSize.height }),
+      ...(element.paginationEnabled
+        ? [
+            Pagination.configure({
+              pageHeight: pageSize.height,
+              pageWidth: pageSize.width,
+              pageMargin: element.margin.top,
+            }),
+          ]
+        : []),
+    ];
     const ed = useEditor({
       extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize,
-        ...(element.paginationEnabled
-          ? [
-              Pagination.configure({
-                pageHeight: pageSize.height,
-                pageWidth: pageSize.width,
-                pageMargin: element.margin.top,
-              }),
-              PageWrapper.configure({ pageHeight: pageSize.height }),
-            ]
-          : []),
+        ...pageExtensions,
         PageNode,
-        // PageWrapper.configure({ pageHeight: pageSize.height }),
       ],
       content: prevDoc,
       onUpdate: ({ editor: ed }) => {
