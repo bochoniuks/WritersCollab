@@ -131,6 +131,7 @@ import {
   ArrowheadCrowfootOneIcon,
   ArrowheadCrowfootOneOrManyIcon,
   ImageIcon,
+  file
 } from "../components/icons";
 
 import { Fonts } from "../fonts";
@@ -1912,7 +1913,13 @@ export const actionChangeScratchpadPageSize = register({
 
     return {
       elements: nextElements,
-      appState: { ...appState, currentScratchpadPageSize: pageSize },
+      appState: {
+        ...appState,
+        currentScratchpadPageSize: pageSize,
+        currentScratchpadPaginationEnabled: pageSize
+          ? appState.currentScratchpadPaginationEnabled
+          : false,
+      },
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
@@ -1978,9 +1985,8 @@ export const actionToggleScratchpadPagination = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  checked: (appState, elements) => {
-    const selected = getSelectedElements(elements, appState)[0];
-    return !!selected && isScratchpadElement(selected) && selected.paginationEnabled;
+  checked: (appState: AppState) => {
+    return appState.currentScratchpadPaginationEnabled;
   },
   PanelComponent: ({ updateData }) => (
     <ToolButton

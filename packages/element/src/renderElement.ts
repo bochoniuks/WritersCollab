@@ -846,10 +846,10 @@ export const renderElement = (
       context.textBaseline = "alphabetic";
 
       const pageHeight =
-        element.pageSize
+        element.pageSize && element.paginationEnabled
           ? SCRATCHPAD_PAGE_SIZES[element.pageSize].height -
-            element.margin.top -
-            element.margin.bottom
+              element.margin.top -
+              element.margin.bottom
           : Infinity;
 
       let nextBreak = pageHeight;

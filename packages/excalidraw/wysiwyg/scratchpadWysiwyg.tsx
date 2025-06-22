@@ -375,7 +375,9 @@ export const scratchpadWysiwyg = ({
     border: 0,
     outline: 0,
     resize: "none",
-    overflow: element.pageSize ? "auto" : "hidden",
+    overflow: element.pageSize
+      ? element.paginationEnabled ? "hidden" : "auto"
+      : "hidden",
     // must be specified because in dark mode canvas creates a stacking context
     zIndex: "var(--zIndex-wysiwyg)",
     wordBreak,
@@ -415,13 +417,18 @@ export const scratchpadWysiwyg = ({
     console.log(pageSize)
     const ed = useEditor({
       extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize,
-        Pagination.configure({
-          pageHeight: pageSize.height,
-          pageWidth: pageSize.width,
-          pageMargin: element.margin.top,
-        }),
+        ...(element.paginationEnabled
+          ? [
+              Pagination.configure({
+                pageHeight: pageSize.height,
+                pageWidth: pageSize.width,
+                pageMargin: element.margin.top,
+              }),
+              PageWrapper.configure({ pageHeight: pageSize.height }),
+            ]
+          : []),
         PageNode,
-        PageWrapper.configure({ pageHeight: pageSize.height }),
+        // PageWrapper.configure({ pageHeight: pageSize.height }),
       ],
       content: prevDoc,
       onUpdate: ({ editor: ed }) => {
