@@ -5125,6 +5125,9 @@ class App extends React.Component<AppProps, AppState> {
       let height = element.height;
       let doc = nextDoc;
 
+      const pageSize =
+        element.pageSize && SCRATCHPAD_PAGE_SIZES[element.pageSize];
+
       if (element.autoResize) {
         ({ width, height } = measureTiptapDoc(doc, {
           fontFamily: element.fontFamily,
@@ -5132,17 +5135,29 @@ class App extends React.Component<AppProps, AppState> {
         }));
       } else {
         if (wrapDoc) {
-          doc = wrapTiptapDoc(doc, element.width, {
+          doc = wrapTiptapDoc(doc, width, {
             fontFamily: element.fontFamily,
             fontSize: element.fontSize,
             color: element.strokeColor,
           });
         }
-        if (!element.pageSize) {
-          ({ height } = measureTiptapDocWithWidth(doc, element.width, {
-            fontFamily: element.fontFamily,
-            fontSize: element.fontSize,
-          }));
+        
+        const contentWidth = pageSize
+          ? pageSize.width - element.margin.left - element.margin.right
+          : width;
+        const { height: docHeight } = measureTiptapDocWithWidth(doc, contentWidth, {
+          fontFamily: element.fontFamily,
+          fontSize: element.fontSize,
+        });
+
+        if (pageSize && element.paginationEnabled) {
+          const pageContentHeight =
+            pageSize.height - element.margin.top - element.margin.bottom;
+          const pages = Math.max(1, Math.ceil(docHeight / pageContentHeight));
+          height = pageSize.height * pages;
+          width = pageSize.width;
+        } else if (!pageSize) {
+          height = docHeight;
         }
       }
       this.scene.replaceAllElements(
