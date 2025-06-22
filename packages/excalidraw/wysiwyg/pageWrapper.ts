@@ -22,11 +22,22 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
             let pageStart: number | null = null;
 
             doc.descendants((node, pos) => {
-                if (!node.isBlock) return;
+                console.log(node)
+                if (!node.isBlock) return false;
+
+                // avoid wrapping content that is already inside a page
+                if (node.type.name === "page") {
+                    // reset accumulated height and skip its children
+                    accHeight = 0;
+                    pageStart = null;
+                    return false;
+                }
+
                 const dom = view.nodeDOM(pos) as HTMLElement | null;
-                if (!dom) return;
+                if (!dom) return false;
 
                 const h = dom.getBoundingClientRect().height;
+
                 if (pageStart === null) pageStart = pos;
                 if (accHeight + h > pageHeight) {
                 const range = doc.resolve(pageStart).blockRange(doc.resolve(pos));
