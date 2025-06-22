@@ -1,6 +1,5 @@
 import { Plugin, PluginKey } from "prosemirror-state";
 import { Extension } from "@tiptap/core";
-import { paginationKey } from "tiptap-pagination-breaks";
 
 export interface PageWrapperOptions {
   pageHeight: number;
@@ -14,10 +13,7 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
         key: new PluginKey("pageWrapper"),
         view: (view) => {
           const wrapPages = () => {
-            const pageState = paginationKey.getState(view.state);
-            if (!pageState) return;
-
-            // remove previously created wrappers
+            // remove wrappers created on a previous update
             view.dom.querySelectorAll("div.page").forEach((page) => {
               while (page.firstChild) {
                 page.parentNode!.insertBefore(page.firstChild, page);
@@ -25,17 +21,21 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
               page.remove();
             });
 
-            // group nodes by data-page attribute
             let currentPage: HTMLElement | null = null;
-            Array.from(view.dom.childNodes).forEach((node) => {
-              if (!(node instanceof HTMLElement)) return;
-              const pageNum = node.dataset.page;
-              if (!pageNum) return;
+            let pageNum = 1;
 
-              if (!currentPage || currentPage.dataset.page !== pageNum) {
+            Array.from(view.dom.childNodes).forEach((node) => {
+              if (node instanceof HTMLElement && node.classList.contains("page-break")) {
+                // page-break marks the start of a new page
+                pageNum = parseInt(node.dataset.pageNumber ?? `${pageNum + 1}`);
+                currentPage = null;
+                return; // keep the widget but don’t wrap it
+              }
+
+              if (!currentPage) {
                 currentPage = document.createElement("div");
                 currentPage.className = `page page-${pageNum}`;
-                currentPage.dataset.page = pageNum;
+                currentPage.dataset.page = String(pageNum);
                 node.parentNode!.insertBefore(currentPage, node);
               }
               currentPage.appendChild(node);
