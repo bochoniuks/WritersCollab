@@ -861,7 +861,7 @@ export const renderElement = (
       context.translate(element.margin.left, element.margin.top);
       
       let pageTop = 0;
-      
+
       context.textAlign = "left";
       context.textBaseline = "alphabetic";
 
@@ -902,14 +902,14 @@ export const renderElement = (
           });
           context.font = fontString;
           context.fillStyle = seg.color;
-          context.fillText(seg.text, cursorX, cursorY+baselineOffset);
+          context.fillText(seg.text, cursorX, pageTop + cursorY + baselineOffset);
           const metrics = measureText(seg.text, fontString, getLineHeight(seg.fontFamily));
           cursorX += metrics.width;
           // lineHeight = Math.max(lineHeight, metrics.height);
         }
         
         
-        if (cursorY + baselineOffset + bottomGap > nextBreak) {
+        if (cursorY + baselineOffset + bottomGap + pageTop > nextBreak) {
           context.save();
           context.setLineDash([4, 4]);
           context.strokeStyle = "#ccc";
@@ -921,7 +921,7 @@ export const renderElement = (
           );
           context.stroke();
           context.restore();
-          nextBreak += pageHeight;
+          nextBreak += pageHeight + (element.paginationEnabled ? SCRATCHPAD_PAGE_GAP : 0);
         }
         cursorY += baselineOffset + bottomGap;
       }
