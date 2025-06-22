@@ -16,6 +16,9 @@ import {
   getVerticalOffset,
   getLineHeight,
   SCRATCHPAD_PAGE_SIZES,
+  SCRATCHPAD_PAGE_GAP,
+  SCRATCHPAD_PAGE_BACKGROUND,
+  SCRATCHPAD_PAGE_BORDER_COLOR,
 } from "@excalidraw/common";
 
 import type {
@@ -835,12 +838,29 @@ export const renderElement = (
       context.rotate(element.angle);
       context.translate(-shiftX, -shiftY); // position at element.x/y
       
-      // if (element.backgroundImage) {
-      //   const img = new Image();
-      //   img.src = element.backgroundImage;
-      //   context.drawImage(img, 0, 0, element.width, element.height);
-      // }
+      const pageSize = element.pageSize
+        ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
+        : { width: element.width, height: element.height };
+      const pageContentHeight =
+        pageSize.height - element.margin.top - element.margin.bottom;
+      const pages =
+        element.paginationEnabled && element.pageSize
+          ? Math.max(1, Math.ceil(element.height / pageSize.height))
+          : 1;
+
+      // draw page rectangles
+      for (let i = 0; i < pages; i++) {
+        const y = i * (pageSize.height + SCRATCHPAD_PAGE_GAP);
+        context.fillStyle = SCRATCHPAD_PAGE_BACKGROUND;
+        context.strokeStyle = SCRATCHPAD_PAGE_BORDER_COLOR;
+        context.lineWidth = 1 / appState.zoom.value;
+        context.fillRect(0, y, pageSize.width, pageSize.height);
+        context.strokeRect(0, y, pageSize.width, pageSize.height);
+      }
+      
       context.translate(element.margin.left, element.margin.top);
+      
+      let pageTop = 0;
       
       context.textAlign = "left";
       context.textBaseline = "alphabetic";
@@ -865,8 +885,14 @@ export const renderElement = (
           bottomGap = Math.max(bottomGap, lineHeightPx - verticalOffset);
         }
         
+        
+        if (cursorY + baselineOffset + bottomGap > pageContentHeight) {
+          pageTop += pageSize.height + (element.paginationEnabled ? SCRATCHPAD_PAGE_GAP : 0);
+          cursorY = 0;
+        }
+
         let cursorX = 0;
-        // let lineHeight = 0;
+        
         for (const seg of line) {
           const fontString = getFontString({
             fontSize: seg.fontSize,
@@ -878,18 +904,11 @@ export const renderElement = (
           context.fillStyle = seg.color;
           context.fillText(seg.text, cursorX, cursorY+baselineOffset);
           const metrics = measureText(seg.text, fontString, getLineHeight(seg.fontFamily));
-          if (seg.strike) {
-            const strikeY = cursorY + baselineOffset - seg.fontSize * 0.3;
-            context.beginPath();
-            context.strokeStyle = seg.color;
-            context.lineWidth = Math.max(1, seg.fontSize / 16);
-            context.moveTo(cursorX, strikeY);
-            context.lineTo(cursorX + metrics.width, strikeY);
-            context.stroke();
-          }
           cursorX += metrics.width;
           // lineHeight = Math.max(lineHeight, metrics.height);
         }
+        
+        
         if (cursorY + baselineOffset + bottomGap > nextBreak) {
           context.save();
           context.setLineDash([4, 4]);

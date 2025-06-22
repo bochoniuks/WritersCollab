@@ -44,6 +44,11 @@ export const SCRATCHPAD_PAGE_SIZES = {
 } as const;
 export type ScratchpadPageSize = keyof typeof SCRATCHPAD_PAGE_SIZES;
 
+// spacing and colors used when rendering scratchpad pages
+export const SCRATCHPAD_PAGE_GAP = 40;
+export const SCRATCHPAD_PAGE_BORDER_COLOR = "#e0e0e0";
+export const SCRATCHPAD_PAGE_BACKGROUND = "#ffffff";
+
 export const DRAGGING_THRESHOLD = 10; // px
 export const LINE_CONFIRM_THRESHOLD = 8; // px
 export const ELEMENT_SHIFT_TRANSLATE_AMOUNT = 5;
