@@ -13,49 +13,53 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
     const { pageHeight } = this.options;
     return [
       new Plugin({
-        props: {
-            decorations: (state) => {
-                const { doc } = state;
-                const decorations: Decoration[] = [];
-                let accHeight = 0;
-                let pageIndex = 0;
-                let pageStart: number | null = null;
+        view: (view) => {
+            const updatePages = () => {
+            const { doc, schema } = view.state;
+            const tr = view.state.tr;
+            let accHeight = 0;
+            let pageIndex = 0;
+            let pageStart: number | null = null;
 
-                doc.descendants((node, pos) => {
+            doc.descendants((node, pos) => {
                 if (!node.isBlock) return;
-                const dom = this.editor.view.nodeDOM(pos) as HTMLElement | null;
+                const dom = view.nodeDOM(pos) as HTMLElement | null;
                 if (!dom) return;
 
                 const h = dom.getBoundingClientRect().height;
-                if (pageStart === null) {
-                    pageStart = pos;
-                }
+                if (pageStart === null) pageStart = pos;
                 if (accHeight + h > pageHeight) {
-                    decorations.push(
-                    Decoration.inline(pageStart, pos, {
-                        class: `page page-${pageIndex}`,
-                    }),
-                    );
-                    pageIndex += 1;
-                    accHeight = h;
-                    pageStart = pos;
+                const range = doc.resolve(pageStart).blockRange(doc.resolve(pos));
+                if (range) {
+                    tr.wrap(range, [
+                    { type: schema.nodes.page, attrs: { class: `page page-${pageIndex}` } },
+                    ]);
+                }
+                pageIndex += 1;
+                accHeight = h;
+                pageStart = pos;
                 } else {
-                    accHeight += h;
+                accHeight += h;
                 }
-                });
+            });
 
-                if (pageStart !== null) {
-                decorations.push(
-                    Decoration.inline(pageStart, doc.nodeSize - 2, {
-                    class: `page page-${pageIndex}`,
-                    }),
-                );
+            if (pageStart !== null) {
+                const range = doc
+                .resolve(pageStart)
+                .blockRange(doc.resolve(doc.nodeSize - 2));
+                if (range) {
+                tr.wrap(range, [
+                    { type: schema.nodes.page, attrs: { class: `page page-${pageIndex}` } },
+                ]);
                 }
+            }
+            if (tr.steps.length) view.dispatch(tr);
+            };
 
-                return DecorationSet.create(doc, decorations);
-            },
-            },
-      }),
+            updatePages();
+            return { update: updatePages };
+        },
+        }),
     ];
   },
 });

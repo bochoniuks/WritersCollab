@@ -76,6 +76,7 @@ import type { AppState } from "../types";
 import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 import FontFamily from "@tiptap/extension-font-family";
 import { PageWrapper } from "./pageWrapper";
+import { PageNode } from "./pageNode";
 
 const getTransform = (
   width: number,
@@ -419,6 +420,7 @@ export const scratchpadWysiwyg = ({
           pageWidth: pageSize.width,
           pageMargin: element.margin.top,
         }),
+        PageNode,
         PageWrapper.configure({ pageHeight: pageSize.height }),
       ],
       content: prevDoc,
