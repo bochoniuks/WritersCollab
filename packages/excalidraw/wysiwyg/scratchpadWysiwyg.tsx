@@ -441,7 +441,7 @@ export const scratchpadWysiwyg = ({
         prevDoc = doc;
         updateWysiwygStyle();
       },
-    });
+    }, [element.paginationEnabled, element.pageSize],);
 
     useEffect(() => {
       if (ed) {

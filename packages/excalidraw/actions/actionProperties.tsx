@@ -149,6 +149,7 @@ import { register } from "./register";
 
 import type { AppClassProperties, AppState, Primitive } from "../types";
 import { ToolButton } from "../components/ToolButton";
+import { Switch } from "../components/Switch";
 
 const FONT_SIZE_RELATIVE_INCREASE_STEP = 0.1;
 
@@ -1988,13 +1989,12 @@ export const actionToggleScratchpadPagination = register({
   checked: (appState: AppState) => {
     return appState.currentScratchpadPaginationEnabled;
   },
-  PanelComponent: ({ updateData }) => (
-    <ToolButton
-      type="button"
-      icon={file}
+  PanelComponent: ({ appState, updateData }) => (
+    <Switch
+      name="pagination"
       title={t("labels.pagination")}
-      aria-label={t("labels.pagination")}
-      onClick={() => updateData(null)}
+      checked={appState.currentScratchpadPaginationEnabled}
+      onChange={() => updateData(null)}
     />
   ),
 });
