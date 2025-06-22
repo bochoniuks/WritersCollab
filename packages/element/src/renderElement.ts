@@ -847,6 +847,8 @@ export const renderElement = (
         element.paginationEnabled && element.pageSize
           ? Math.max(1, Math.ceil(element.height / pageSize.height))
           : 1;
+      const isScrollableSinglePage = element.pageSize && !element.paginationEnabled;
+
 
       // draw page rectangles
       for (let i = 0; i < pages; i++) {
@@ -859,7 +861,14 @@ export const renderElement = (
       }
       
       context.translate(element.margin.left, element.margin.top);
-      
+      if (isScrollableSinglePage) {
+        context.save();
+        context.beginPath();
+        context.rect(0, 0, pageSize.width, pageSize.height);
+        context.clip();
+        context.translate(0, -element.scrollTop);
+      }
+
       let pageTop = 0;
 
       context.textAlign = "left";
@@ -886,8 +895,8 @@ export const renderElement = (
         }
         
         
-        if (cursorY + baselineOffset + bottomGap > pageContentHeight) {
-          pageTop += pageSize.height + (element.paginationEnabled ? SCRATCHPAD_PAGE_GAP : 0);
+        if (element.paginationEnabled && cursorY + baselineOffset + bottomGap > pageContentHeight) {
+          pageTop += pageSize.height + SCRATCHPAD_PAGE_GAP;
           cursorY = 0;
         }
 
@@ -909,7 +918,7 @@ export const renderElement = (
         }
         
         
-        if (cursorY + baselineOffset + bottomGap + pageTop > nextBreak) {
+        if (element.paginationEnabled && cursorY + baselineOffset + bottomGap + pageTop > nextBreak) {
           context.save();
           context.setLineDash([4, 4]);
           context.strokeStyle = "#ccc";
@@ -921,9 +930,12 @@ export const renderElement = (
           );
           context.stroke();
           context.restore();
-          nextBreak += pageHeight + (element.paginationEnabled ? SCRATCHPAD_PAGE_GAP : 0);
+          nextBreak += pageHeight + SCRATCHPAD_PAGE_GAP;
         }
         cursorY += baselineOffset + bottomGap;
+      }
+      if (isScrollableSinglePage) {
+        context.restore();
       }
 
       context.restore();
