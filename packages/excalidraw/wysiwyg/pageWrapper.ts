@@ -12,39 +12,55 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
       new Plugin({
         key: new PluginKey("pageWrapper"),
         view: (view) => {
-          const wrapPages = () => {
-            // remove wrappers created on a previous update
-            view.dom.querySelectorAll("div.page").forEach((page) => {
-              while (page.firstChild) {
-                page.parentNode!.insertBefore(page.firstChild, page);
-              }
-              page.remove();
-            });
+            let wrapping = false;
 
-            let currentPage: HTMLElement | null = null;
-            let pageNum = 1;
+            const wrapPages = () => {
+                if (wrapping) {
+                return;
+                }
+                wrapping = true;
+                const observer = (view as any).domObserver;
+                observer?.stop();
 
-            Array.from(view.dom.childNodes).forEach((node) => {
-              if (node instanceof HTMLElement && node.classList.contains("page-break")) {
-                // page-break marks the start of a new page
-                pageNum = parseInt(node.dataset.pageNumber ?? `${pageNum + 1}`);
-                currentPage = null;
-                return; // keep the widget but don’t wrap it
-              }
+                // remove wrappers created on a previous update
+                view.dom.querySelectorAll("div.page").forEach((page) => {
+                while (page.firstChild) {
+                    page.parentNode!.insertBefore(page.firstChild, page);
+                }
+                page.remove();
+                });
 
-              if (!currentPage) {
-                currentPage = document.createElement("div");
-                currentPage.className = `page page-${pageNum}`;
-                currentPage.dataset.page = String(pageNum);
-                node.parentNode!.insertBefore(currentPage, node);
-              }
-              currentPage.appendChild(node);
-            });
-          };
+                let currentPage: HTMLElement | null = null;
+                let pageNum = 1;
 
-          wrapPages();
-          return { update: wrapPages };
-        },
+                Array.from(view.dom.childNodes).forEach((node) => {
+                if (node instanceof HTMLElement && node.classList.contains("page-break")) {
+                    pageNum = parseInt(node.dataset.pageNumber ?? `${pageNum + 1}`);
+                    currentPage = null;
+                    return; // keep the widget but don’t wrap it
+                }
+
+                if (!currentPage) {
+                    currentPage = document.createElement("div");
+                    currentPage.className = `page page-${pageNum}`;
+                    currentPage.dataset.page = String(pageNum);
+                    node.parentNode!.insertBefore(currentPage, node);
+                }
+                currentPage.appendChild(node);
+                });
+
+                wrapping = false;
+                observer?.start();
+            };
+
+            wrapPages();
+            return {
+                update: wrapPages,
+                destroy() {
+                wrapPages();
+                },
+            };
+            },
       }),
     ];
   },
