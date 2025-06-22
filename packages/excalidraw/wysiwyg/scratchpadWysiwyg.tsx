@@ -167,7 +167,7 @@ export const scratchpadWysiwyg = ({
         page.scrollTop = updatedElement.scrollTop;
         pageEl = page;
       }
-      
+
       editable.style.setProperty(
         "--page-overflow",
         element.paginationEnabled ? "visible" : "auto",
@@ -501,9 +501,19 @@ export const scratchpadWysiwyg = ({
 
   pageEl = editable.querySelector<HTMLDivElement>(".page");
   if (pageEl) {
-    pageEl.scrollTop = element.scrollTop;
+    // pageEl.scrollTop = element.scrollTop;
+    // onPageScroll = () => {
+    //   app.scene.mutateElement(element, { scrollTop: pageEl!.scrollTop });
+    // };
+
+    const current = app.scene.getElement(id);
+    pageEl.scrollTop = current && isScratchpadElement(current) ? 
+                        current.scrollTop : element.scrollTop;
     onPageScroll = () => {
-      app.scene.mutateElement(element, { scrollTop: pageEl!.scrollTop });
+        const el = app.scene.getElement(id);
+        if (el && isScratchpadElement(el)) {
+          app.scene.mutateElement(el, { scrollTop: pageEl!.scrollTop });
+        }
     };
     pageEl.addEventListener("scroll", onPageScroll);
   }
