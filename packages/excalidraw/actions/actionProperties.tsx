@@ -150,6 +150,7 @@ import { register } from "./register";
 import type { AppClassProperties, AppState, Primitive } from "../types";
 import { ToolButton } from "../components/ToolButton";
 import { Switch } from "../components/Switch";
+import { measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 
 const FONT_SIZE_RELATIVE_INCREASE_STEP = 0.1;
 
@@ -1971,11 +1972,29 @@ export const actionToggleScratchpadPagination = register({
     );
   },
   perform: (elements, appState) => {
-    const scratchpad = getSelectedElements(elements, appState)[0] as ExcalidrawScratchpadElement;
+    const scratchpad =
+    getSelectedElements(elements, appState)[0] as ExcalidrawScratchpadElement;
     const nextElements = changeProperty(elements, appState, (el) => {
       if (isScratchpadElement(el) && el.id === scratchpad.id) {
         const toggled = !el.paginationEnabled;
         const size = el.pageSize ? SCRATCHPAD_PAGE_SIZES[el.pageSize] : null;
+
+        if (toggled && size) {
+          const contentWidth = size.width - el.margin.left - el.margin.right;
+          const { height: docHeight } = measureTiptapDocWithWidth(
+            el.tiptapDoc,
+            contentWidth,
+            { fontFamily: el.fontFamily, fontSize: el.fontSize }
+          );
+          const pageContentHeight = size.height - el.margin.top - el.margin.bottom;
+          const pages = Math.max(1, Math.ceil(docHeight / pageContentHeight));
+          return newElementWith(el, {
+            paginationEnabled: true,
+            width: size.width,
+            height: size.height * pages,
+          });
+        }
+
         return newElementWith(el, {
           paginationEnabled: toggled,
           ...(toggled ? {} : size && { width: size.width, height: size.height }),
