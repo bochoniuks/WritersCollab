@@ -1,7 +1,6 @@
-// packages/excalidraw/wysiwyg/pageWrapper.ts
-import { Plugin } from "prosemirror-state";
-import { Decoration, DecorationSet } from "prosemirror-view";
+import { Plugin, PluginKey } from "prosemirror-state";
 import { Extension } from "@tiptap/core";
+import { paginationKey } from "tiptap-pagination-breaks";
 
 export interface PageWrapperOptions {
   pageHeight: number;
@@ -10,67 +9,43 @@ export interface PageWrapperOptions {
 export const PageWrapper = Extension.create<PageWrapperOptions>({
   name: "pageWrapper",
   addProseMirrorPlugins() {
-    const { pageHeight } = this.options;
     return [
       new Plugin({
+        key: new PluginKey("pageWrapper"),
         view: (view) => {
-            const updatePages = () => {
-            const { doc, schema } = view.state;
-            const tr = view.state.tr;
-            let accHeight = 0;
-            let pageIndex = 0;
-            let pageStart: number | null = null;
+          const wrapPages = () => {
+            const pageState = paginationKey.getState(view.state);
+            if (!pageState) return;
 
-            doc.descendants((node, pos) => {
-                console.log(node)
-                if (!node.isBlock) return false;
-
-                // avoid wrapping content that is already inside a page
-                if (node.type.name === "page") {
-                    // reset accumulated height and skip its children
-                    accHeight = 0;
-                    pageStart = null;
-                    return false;
-                }
-
-                const dom = view.nodeDOM(pos) as HTMLElement | null;
-                if (!dom) return false;
-
-                const h = dom.getBoundingClientRect().height;
-
-                if (pageStart === null) pageStart = pos;
-                if (accHeight + h > pageHeight) {
-                const range = doc.resolve(pageStart).blockRange(doc.resolve(pos));
-                if (range) {
-                    tr.wrap(range, [
-                    { type: schema.nodes.page, attrs: { class: `page page-${pageIndex}` } },
-                    ]);
-                }
-                pageIndex += 1;
-                accHeight = h;
-                pageStart = pos;
-                } else {
-                accHeight += h;
-                }
+            // remove previously created wrappers
+            view.dom.querySelectorAll("div.page").forEach((page) => {
+              while (page.firstChild) {
+                page.parentNode!.insertBefore(page.firstChild, page);
+              }
+              page.remove();
             });
 
-            if (pageStart !== null) {
-                const range = doc
-                .resolve(pageStart)
-                .blockRange(doc.resolve(doc.nodeSize - 2));
-                if (range) {
-                tr.wrap(range, [
-                    { type: schema.nodes.page, attrs: { class: `page page-${pageIndex}` } },
-                ]);
-                }
-            }
-            if (tr.steps.length) view.dispatch(tr);
-            };
+            // group nodes by data-page attribute
+            let currentPage: HTMLElement | null = null;
+            Array.from(view.dom.childNodes).forEach((node) => {
+              if (!(node instanceof HTMLElement)) return;
+              const pageNum = node.dataset.page;
+              if (!pageNum) return;
 
-            updatePages();
-            return { update: updatePages };
+              if (!currentPage || currentPage.dataset.page !== pageNum) {
+                currentPage = document.createElement("div");
+                currentPage.className = `page page-${pageNum}`;
+                currentPage.dataset.page = pageNum;
+                node.parentNode!.insertBefore(currentPage, node);
+              }
+              currentPage.appendChild(node);
+            });
+          };
+
+          wrapPages();
+          return { update: wrapPages };
         },
-        }),
+      }),
     ];
   },
 });

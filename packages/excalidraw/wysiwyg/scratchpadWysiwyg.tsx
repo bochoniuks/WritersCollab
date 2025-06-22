@@ -77,6 +77,7 @@ import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element
 import FontFamily from "@tiptap/extension-font-family";
 import { PageWrapper } from "./pageWrapper";
 import { PageNode } from "./pageNode";
+import { PaginationWithAttributes } from "./paginationWithAttributes";
 
 const getTransform = (
   width: number,
@@ -415,7 +416,7 @@ export const scratchpadWysiwyg = ({
     console.log(pageSize)
     const ed = useEditor({
       extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize,
-        Pagination.configure({
+        PaginationWithAttributes.configure({
           pageHeight: pageSize.height,
           pageWidth: pageSize.width,
           pageMargin: element.margin.top,
