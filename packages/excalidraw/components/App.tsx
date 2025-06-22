@@ -11643,6 +11643,18 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.closest(".excalidraw-wysiwyg") &&
+        this.state.editingTextElement &&
+        isScratchpadElement(this.state.editingTextElement) &&
+        this.state.editingTextElement.pageSize &&
+        !this.state.editingTextElement.paginationEnabled
+      ) {
+        // wheel scroll belongs to the scratchpad
+        return;
+      }
+      
       event.preventDefault();
 
       if (isPanning) {

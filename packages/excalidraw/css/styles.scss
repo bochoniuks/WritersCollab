@@ -718,7 +718,7 @@ body.excalidraw-cursor-resize * {
     display: block;
     box-sizing: border-box;
     margin: 0 auto 40px auto;
-    padding: 20px;
+    padding: var(--page-padding, 0);
     border: 1px solid #e0e0e0;
     background: white;
   }

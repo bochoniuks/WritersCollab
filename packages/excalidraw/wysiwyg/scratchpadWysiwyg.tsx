@@ -180,8 +180,10 @@ export const scratchpadWysiwyg = ({
                   fontSize: updatedElement.fontSize,
                 },
               ).height;
-          const height = updatedElement.autoResize ? measuredHeight : contentHeight;
-        const width = contentWidth
+        const height = updatedElement.autoResize
+          ? measuredHeight + updatedElement.margin.top + updatedElement.margin.bottom
+          : baseSize.height;
+        const width = baseSize.width;
 
         let coordX = updatedElement.x;
         let coordY = updatedElement.y;
@@ -323,9 +325,6 @@ export const scratchpadWysiwyg = ({
       const editorMaxHeight =
         (appState.height - viewportY) / appState.zoom.value;
       Object.assign(editable.style, {
-        // font,
-        // must be defined *after* font ¯\_(ツ)_/¯
-        // lineHeight: updatedTextElement.lineHeight,
         width: `${width}px`,
         height: `${height}px`,
         left: `${viewportX}px`,
@@ -378,7 +377,7 @@ export const scratchpadWysiwyg = ({
     minHeight: "1em",
     backfaceVisibility: "hidden",
     margin: 0,
-    padding: `${element.margin.top}px ${element.margin.right}px ${element.margin.bottom}px ${element.margin.left}px`,
+    padding: 0,
     border: 0,
     outline: 0,
     resize: "none",
@@ -398,6 +397,12 @@ export const scratchpadWysiwyg = ({
     boxSizing: "content-box",
     top: `${getViewportCoords(element.x, element.y)[1]}px`,
   });
+
+  editable.style.setProperty(
+    "--page-padding",
+    `${element.margin.top}px ${element.margin.right}px ` +
+    `${element.margin.bottom}px ${element.margin.left}px`
+  );
   updateWysiwygStyle();
 
   let editor: ReturnType<typeof useEditor> | null = null;
