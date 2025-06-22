@@ -300,7 +300,7 @@ export const newScratchpadElement = (
     margin: opts.margin ?? { top: 0, right: 0, bottom: 0, left: 0 },
     pageSize: opts.pageSize ?? null,
     paginationEnabled: opts.paginationEnabled ?? !!opts.pageSize,
-    
+    scrollTop: 0,
   };
 
   return newElementWith(scratchpadElementProps, {});

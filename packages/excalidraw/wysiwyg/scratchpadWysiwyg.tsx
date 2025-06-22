@@ -128,6 +128,9 @@ export const scratchpadWysiwyg = ({
   app: App;
   autoSelect?: boolean;
 }): SubmitHandler => {
+  let pageEl: HTMLDivElement | null = null;
+  let onPageScroll: (() => void) | null = null;
+
   const textPropertiesUpdated = (
     updatedTextElement: ExcalidrawTextElement,
     editable: HTMLDivElement,
@@ -156,9 +159,15 @@ export const scratchpadWysiwyg = ({
       }
       const elementsMap = app.scene.getNonDeletedElementsMap();
     
+    
 
     if (isScratchpadElement(updatedElement)) {
-
+      const page = pageEl ?? editable.querySelector<HTMLDivElement>(".page");
+      if (page) {
+        page.scrollTop = updatedElement.scrollTop;
+        pageEl = page;
+      }
+      
       editable.style.setProperty(
         "--page-overflow",
         element.paginationEnabled ? "visible" : "auto",
@@ -490,6 +499,15 @@ export const scratchpadWysiwyg = ({
   const root = createRoot(editable);
   root.render(<ScratchpadEditor />);
 
+  pageEl = editable.querySelector<HTMLDivElement>(".page");
+  if (pageEl) {
+    pageEl.scrollTop = element.scrollTop;
+    onPageScroll = () => {
+      app.scene.mutateElement(element, { scrollTop: pageEl!.scrollTop });
+    };
+    pageEl.addEventListener("scroll", onPageScroll);
+  }
+
   editable.onkeydown = (event) => {
     if (!event.shiftKey && actionZoomIn.keyTest(event)) {
       event.preventDefault();
@@ -609,6 +627,9 @@ export const scratchpadWysiwyg = ({
     window.removeEventListener("beforeunload", handleSubmit);
     unbindUpdate();
     unbindOnScroll();
+    if (pageEl && onPageScroll) {
+      pageEl.removeEventListener("scroll", onPageScroll);
+    }
 
     root.unmount();
     editable.remove();
