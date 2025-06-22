@@ -145,6 +145,7 @@ export type ActionName =
   | "toggleShapeSwitch"
   | "togglePolygon"
   | "changeScratchpadPageSize"
+  | "toggleScratchpadPagination"
   | "selectScratchpadBackground";
 
 export type PanelComponentProps = {

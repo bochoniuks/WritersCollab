@@ -213,7 +213,8 @@ export const SelectedShapeActions = ({
 
       {canChangeScratchpadPageSize(appState, targetElements) &&
         renderAction("changeScratchpadPageSize")}
-
+      {canToggleScratchpadPagination(appState, targetElements) &&
+        renderAction("toggleScratchpadPagination")}
       {targetElements.some((el) => isScratchpadElement(el)) &&
         renderAction("selectScratchpadBackground")}
 
@@ -532,3 +533,10 @@ export const canChangeScratchpadPageSize = (
 ) =>
   appState.activeTool.type === "scratchpad" ||
   targetElements.some((el) => isScratchpadElement(el));
+
+export const canToggleScratchpadPagination = (
+  appState: UIAppState,
+  targetElements: ExcalidrawElement[],
+) =>
+  appState.activeTool.type === "scratchpad" ||
+  targetElements.some((el) => isScratchpadElement(el) && el.pageSize);

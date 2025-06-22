@@ -69,6 +69,7 @@ import type {
   ExcalidrawBindableElement,
   ExcalidrawElement,
   ExcalidrawLinearElement,
+  ExcalidrawScratchpadElement,
   ExcalidrawTextElement,
   FontFamilyValues,
   TextAlign,
@@ -1876,6 +1877,7 @@ export const actionChangeScratchpadPageSize = register({
           autoResize: !pageSize,
           width: size ? size.width : el.width,
           height: size ? size.height : el.height,
+          paginationEnabled: pageSize ? el.paginationEnabled : false,
         });
       }
       return el;
@@ -1947,6 +1949,51 @@ export const actionChangeScratchpadPageSize = register({
   ),
 });
 
+export const actionToggleScratchpadPagination = register({
+  name: "toggleScratchpadPagination",
+  label: "labels.pagination",
+  trackEvent: false,
+  predicate: (elements, appState) => {
+    const selected = getSelectedElements(elements, appState);
+    // enabled only when exactly one scratchpad with a page size is selected
+    return (
+      selected.length === 1 &&
+      isScratchpadElement(selected[0]) &&
+      !!selected[0].pageSize
+    );
+  },
+  perform: (elements, appState) => {
+    const scratchpad = getSelectedElements(elements, appState)[0] as ExcalidrawScratchpadElement;
+    const nextElements = changeProperty(elements, appState, (el) =>
+      isScratchpadElement(el) && el.id === scratchpad.id
+        ? newElementWith(el, { paginationEnabled: !el.paginationEnabled })
+        : el,
+    );
+    return {
+      elements: nextElements,
+      appState: {
+        ...appState,
+        currentScratchpadPaginationEnabled: !scratchpad.paginationEnabled,
+      },
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    };
+  },
+  checked: (appState, elements) => {
+    const selected = getSelectedElements(elements, appState)[0];
+    return !!selected && isScratchpadElement(selected) && selected.paginationEnabled;
+  },
+  PanelComponent: ({ updateData }) => (
+    <ToolButton
+      type="button"
+      icon={file}
+      title={t("labels.pagination")}
+      aria-label={t("labels.pagination")}
+      onClick={() => updateData(null)}
+    />
+  ),
+});
+
+
 export const actionSelectScratchpadBackground = register({
   name: "selectScratchpadBackground",
   label: "labels.backgroundImage",
@@ -1978,3 +2025,4 @@ export const actionSelectScratchpadBackground = register({
     />
   ),
 });
+

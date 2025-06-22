@@ -253,6 +253,7 @@ export const newScratchpadElement = (
     backgroundImage?: string | null;
     margin?: { top: number; right: number; bottom: number; left: number };
     pageSize?: ScratchpadPageSize | null;
+    paginationEnabled?: boolean;
   },
 ): NonDeleted<ExcalidrawScratchpadElement> => {
   const fontFamily = opts.fontFamily ?? DEFAULT_FONT_FAMILY;
@@ -298,6 +299,8 @@ export const newScratchpadElement = (
     backgroundImage: null,
     margin: opts.margin ?? { top: 0, right: 0, bottom: 0, left: 0 },
     pageSize: opts.pageSize ?? null,
+    paginationEnabled: opts.paginationEnabled ?? !!opts.pageSize,
+    
   };
 
   return newElementWith(scratchpadElementProps, {});

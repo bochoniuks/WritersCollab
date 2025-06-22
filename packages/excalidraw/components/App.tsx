@@ -5754,7 +5754,8 @@ class App extends React.Component<AppProps, AppState> {
           : (0 as Radians),
         frameId: topLayerFrame ? topLayerFrame.id : null,
         margin: {top: 10, bottom: 10, left: 10, right: 10},
-        pageSize: "A4"
+        pageSize: "A4",
+        paginationEnabled: this.state.currentScratchpadPaginationEnabled,
       });
 
     if (!existingTextElement && shouldBindToContainer && container) {
