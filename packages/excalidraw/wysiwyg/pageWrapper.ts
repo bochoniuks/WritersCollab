@@ -8,9 +8,13 @@ export interface PageWrapperOptions {
 export const PageWrapper = Extension.create<PageWrapperOptions>({
   name: "pageWrapper",
   addProseMirrorPlugins() {
+    const pageHeight = this.options.pageHeight;
     return [
       new Plugin({
         key: new PluginKey("pageWrapper"),
+        addOptions() {
+            return { pageHeight: 0 };
+        },
         view: (view) => {
             let wrapping = false;
 
@@ -44,6 +48,8 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
                     currentPage = document.createElement("div");
                     currentPage.className = `page page-${pageNum}`;
                     currentPage.dataset.page = String(pageNum);
+                    currentPage.style.minHeight = `${pageHeight}px`;
+                    currentPage.style.height = `${pageHeight}px`;
                     node.parentNode!.insertBefore(currentPage, node);
                 }
                 currentPage.appendChild(node);
