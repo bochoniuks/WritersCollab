@@ -11610,7 +11610,9 @@ class App extends React.Component<AppProps, AppState> {
         !(
           event.target instanceof HTMLCanvasElement ||
           event.target instanceof HTMLTextAreaElement ||
-          event.target instanceof HTMLIFrameElement
+          event.target instanceof HTMLIFrameElement ||
+          (event.target instanceof HTMLElement &&
+            event.target.closest(".excalidraw-wysiwyg"))
         )
       ) {
         // prevent zooming the browser (but allow scrolling DOM)
