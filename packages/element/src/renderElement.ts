@@ -862,9 +862,13 @@ export const renderElement = (
       
       context.translate(element.margin.left, element.margin.top);
       if (isScrollableSinglePage) {
+        const clipWidth =
+          pageSize.width - element.margin.left - element.margin.right;
+        const clipHeight =
+          pageSize.height - element.margin.top - element.margin.bottom;
         context.save();
         context.beginPath();
-        context.rect(0, 0, pageSize.width, pageSize.height);
+        context.rect(0, 0, clipWidth, clipHeight);
         context.clip();
         context.translate(0, -element.scrollTop);
       }
