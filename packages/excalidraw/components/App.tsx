@@ -5228,7 +5228,7 @@ class App extends React.Component<AppProps, AppState> {
       autoSelect: !this.device.isTouchScreen,
     });
     this.deselectElements();
-    updateElement(element.tiptapDoc, false, false);
+    updateElement(element.originalTiptapDoc, false, false);
   }
 
   private deselectElements() {

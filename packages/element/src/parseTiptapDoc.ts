@@ -7,7 +7,8 @@ import type { JSONContent, Mark } from "@tiptap/core";
 import { measureText } from "./textMeasurements";
 import { parseTokens } from "./textWrapping";
 
-export type TiptapSegment = {
+export type TiptapSegment = | {
+  type: "text";
   text: string;
   fontFamily: FontFamilyValues; // use numeric font-family values
   fontSize: number;
@@ -15,6 +16,9 @@ export type TiptapSegment = {
   fontWeight?: string; // e.g. "bold"
   fontStyle?: string;  // e.g. "italic"
   strike?: boolean;
+}
+| {
+  type: "hardBreak";
 };
 
 export type TiptapLine = TiptapSegment[];
@@ -34,6 +38,12 @@ export const wrapTiptapDoc = (
 
   for (const line of lines) {
     for (const seg of line) {
+      if (seg.type === "hardBreak") {
+        current.content!.push({ type: "hardBreak" });
+        width = 0;
+        continue;
+      }
+      
       const tokens = parseTokens(seg.text);
       for (const token of tokens) {
         const font = getFontString({
@@ -162,6 +172,9 @@ export const measureTiptapDoc = (
       lineHeight = metrics.height;
     } else {
       for (const seg of line) {
+        if (seg.type === "hardBreak") {
+          continue; // contributes no width/height
+        }
         const font = getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize });
         const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));
         lineWidth += metrics.width;
@@ -200,7 +213,7 @@ export const parseTiptapDoc = (
     const defaultColor = opts.color ?? COLOR_PALETTE.black;
   
     const lines: TiptapLine[] = [];
-  let current: TiptapLine = [];
+    let current: TiptapLine = [];
 
   const pushLine = () => {
     // if (current.length) {
@@ -256,24 +269,29 @@ export const parseTiptapDoc = (
         }
       });
     }
-
+    
+    // console.log(node)
     if (node.type === "text") {
         current.push({
-        text: node.text ?? "",
-        fontFamily: style.fontFamily || defaultFontFamily,
-        fontSize: style.fontSize || defaultFontSize,
-        color: style.color || defaultColor,
-        fontWeight: style.fontWeight,
-        fontStyle: style.fontStyle,
-        strike: style.strike,
-      });
-    } else if (node.type === "hardBreak") {
-      pushLine();
+          type: "text",
+          text: node.text ?? "",
+          fontFamily: style.fontFamily || defaultFontFamily,
+          fontSize: style.fontSize || defaultFontSize,
+          color: style.color || defaultColor,
+          fontWeight: style.fontWeight,
+          fontStyle: style.fontStyle,
+          strike: style.strike,
+        });
+    } else if(node.type === "paragraph" && (node.content?.length ?? 0) === 0){
+        // console.log("hardBreak created")
+        current.push({ type: "hardBreak" });
+        pushLine();
     }
 
     if (Array.isArray(node.content)) {
       if (node.type === "paragraph" && node.content.length === 0) {
         // ensure blank paragraphs become blank lines
+        current.push({ type: "hardBreak" });
         pushLine();
       } else {
         node.content.forEach((child, idx) => {
@@ -287,7 +305,8 @@ export const parseTiptapDoc = (
   };
 
   visit(doc);
-  pushLine();
+  // pushLine();
+  // console.log(lines)
   return lines;
 };
 

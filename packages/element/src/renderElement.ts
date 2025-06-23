@@ -887,6 +887,7 @@ export const renderElement = (
 
       let cursorY = 0;
       for (const line of lines) {
+        console.log(line)
         let baselineOffset = 0;
         let bottomGap = 0;
 
@@ -899,6 +900,9 @@ export const renderElement = (
           bottomGap = metrics.height;
         } else {
           for (const seg of line) {
+            if (seg.type === "hardBreak") {
+              continue;
+            }
             const lineHeightPx = getLineHeightInPx(seg.fontSize, getLineHeight(seg.fontFamily));
             const verticalOffset = getVerticalOffset(seg.fontFamily, seg.fontSize, lineHeightPx);
             baselineOffset = Math.max(baselineOffset, verticalOffset);
@@ -915,6 +919,9 @@ export const renderElement = (
         let cursorX = 0;
         
         for (const seg of line) {
+          if (seg.type === "hardBreak") {
+            continue; // nothing to draw
+          }
           const fontString = getFontString({
             fontSize: seg.fontSize,
             fontFamily: seg.fontFamily,
