@@ -131,6 +131,7 @@ export const scratchpadWysiwyg = ({
   let pageEl: HTMLDivElement | null = null;
   const onPageScroll = (evt: Event) => {
     console.log("onPageScroll")
+    console.log(evt.target)
     const el = app.scene.getElement(id);
     const page = evt.currentTarget as HTMLDivElement;
     if (el && isScratchpadElement(el)) {
@@ -469,6 +470,10 @@ export const scratchpadWysiwyg = ({
         PageNode,
       ],
       content: prevDoc,
+      onCreate: () => {
+        // page wrapper exists only after the editor mounts
+        refreshPageElement();
+      },
       onUpdate: ({ editor: ed }) => {
         const doc = ed.getJSON();
         console.log(doc)
@@ -526,7 +531,10 @@ export const scratchpadWysiwyg = ({
     }
   };
 
-  refreshPageElement();
+  // wait for the editor DOM to mount so `.page` exists
+  requestAnimationFrame(() => {
+    refreshPageElement();
+  });
 
   editable.onkeydown = (event) => {
     if (!event.shiftKey && actionZoomIn.keyTest(event)) {
