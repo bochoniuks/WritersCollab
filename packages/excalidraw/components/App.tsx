@@ -3607,13 +3607,10 @@ class App extends React.Component<AppProps, AppState> {
           currentY += element.height + LINE_GAP;
         } else {
           const prevLine = lines[idx - 1]?.trim();
-          // add paragraph only if previous line was not empty, IOW don't add
-          // more than one empty line
-          if (prevLine) {
-            currentY +=
-              getLineHeightInPx(textElementProps.fontSize, lineHeight) +
-              LINE_GAP;
-          }
+          // always leave space for empty lines
+          currentY +=
+            getLineHeightInPx(textElementProps.fontSize, lineHeight) +
+            LINE_GAP;
         }
 
         return acc;
