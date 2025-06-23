@@ -491,7 +491,7 @@ export const scratchpadWysiwyg = ({
       if (ed) {
         editor = ed as Editor;
         if (autoSelect) {
-          ed.commands.focus();
+          ed.view.focus();
         }
         const currentFontName =
           Object.entries(FONT_FAMILY).find(([, id]) => id === app.state.currentItemFontFamily)?.[0];
@@ -680,7 +680,7 @@ export const scratchpadWysiwyg = ({
 
       // case: clicking on the same property → no change → no update → no focus
       if (!isPropertiesTrigger) {
-        editor?.commands.focus();
+        editor?.view.focus();
       }
     });
   };
@@ -747,7 +747,7 @@ export const scratchpadWysiwyg = ({
       ".properties-content",
     );
     if (!isPopupOpened) {
-      editor?.commands.focus();
+      editor?.view.focus();
     }
   });
 

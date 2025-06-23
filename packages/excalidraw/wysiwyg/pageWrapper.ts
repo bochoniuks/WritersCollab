@@ -9,7 +9,6 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
   name: "pageWrapper",
   addProseMirrorPlugins() {
     const pageHeight = this.options.pageHeight;
-    let uid = 0;
     return [
       new Plugin({
         key: new PluginKey("pageWrapper"),
@@ -53,22 +52,21 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
                 let pageNum = 1;
 
                 Array.from(view.dom.childNodes).forEach((node) => {
-                if (node instanceof HTMLElement && node.classList.contains("page-break")) {
-                    pageNum = parseInt(node.dataset.pageNumber ?? `${pageNum + 1}`);
-                    currentPage = null;
-                    return; // keep the widget but don’t wrap it
-                }
+                  if (node instanceof HTMLElement && node.classList.contains("page-break")) {
+                      pageNum = parseInt(node.dataset.pageNumber ?? `${pageNum + 1}`);
+                      currentPage = null;
+                      return; // keep the widget but don’t wrap it
+                  }
 
-                if (!currentPage) {
-                    currentPage = document.createElement("div");
-                    currentPage.className = `page page-${pageNum} uid-${uid}`;
-                    uid+=1;
-                    currentPage.dataset.page = String(pageNum);
-                    currentPage.style.minHeight = `${pageHeight}px`;
-                    currentPage.style.height = `${pageHeight}px`;
-                    node.parentNode!.insertBefore(currentPage, node);
-                }
-                currentPage.appendChild(node);
+                  if (!currentPage) {
+                      currentPage = document.createElement("div");
+                      currentPage.className = `page page-${pageNum}`;
+                      currentPage.dataset.page = String(pageNum);
+                      currentPage.style.minHeight = `${pageHeight}px`;
+                      currentPage.style.height = `${pageHeight}px`;
+                      node.parentNode!.insertBefore(currentPage, node);
+                  }
+                  currentPage.appendChild(node);
                 });
 
                 wrapping = false;
