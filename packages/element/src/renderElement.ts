@@ -885,7 +885,6 @@ export const renderElement = (
               element.margin.bottom
           : Infinity;
 
-      let nextBreak = pageHeight;
       let cursorY = 0;
       for (const line of lines) {
         let baselineOffset = 0;
@@ -921,21 +920,6 @@ export const renderElement = (
           // lineHeight = Math.max(lineHeight, metrics.height);
         }
         
-        
-        if (element.paginationEnabled && cursorY + baselineOffset + bottomGap + pageTop > nextBreak) {
-          context.save();
-          context.setLineDash([4, 4]);
-          context.strokeStyle = "#ccc";
-          context.beginPath();
-          context.moveTo(0, nextBreak);
-          context.lineTo(
-            element.width - element.margin.left - element.margin.right,
-            nextBreak,
-          );
-          context.stroke();
-          context.restore();
-          nextBreak += pageHeight + SCRATCHPAD_PAGE_GAP;
-        }
         cursorY += baselineOffset + bottomGap;
       }
       if (isScrollableSinglePage) {
