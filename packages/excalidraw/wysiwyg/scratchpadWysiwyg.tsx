@@ -129,7 +129,15 @@ export const scratchpadWysiwyg = ({
   autoSelect?: boolean;
 }): SubmitHandler => {
   let pageEl: HTMLDivElement | null = null;
-  let onPageScroll: (() => void) | null = null;
+  const onPageScroll = (evt: Event) => {
+    console.log("onPageScroll")
+    const el = app.scene.getElement(id);
+    const page = evt.currentTarget as HTMLDivElement;
+    if (el && isScratchpadElement(el)) {
+      console.log(page.scrollTop)
+      app.scene.mutateElement(el, { scrollTop: page.scrollTop });
+    }
+  };
 
   const textPropertiesUpdated = (
     updatedTextElement: ExcalidrawTextElement,
@@ -470,6 +478,7 @@ export const scratchpadWysiwyg = ({
         changeHistory.push({ from: prevDoc, to: doc, timestamp: Date.now() });
         prevDoc = doc;
         updateWysiwygStyle();
+        refreshPageElement();
       },
     }, [element.paginationEnabled, element.pageSize],);
 
@@ -499,24 +508,25 @@ export const scratchpadWysiwyg = ({
   const root = createRoot(editable);
   root.render(<ScratchpadEditor />);
 
-  pageEl = editable.querySelector<HTMLDivElement>(".page");
-  if (pageEl) {
-    // pageEl.scrollTop = element.scrollTop;
-    // onPageScroll = () => {
-    //   app.scene.mutateElement(element, { scrollTop: pageEl!.scrollTop });
-    // };
+  const refreshPageElement = () => {
+    const page = editable.querySelector<HTMLDivElement>(".page");
+    if (page !== pageEl) {
+      if (pageEl) {
+        pageEl.removeEventListener("scroll", onPageScroll);
+      }
+      pageEl = page;
+      if (pageEl) {
+        const current = app.scene.getElement(id);
+        pageEl.scrollTop =
+          current && isScratchpadElement(current)
+            ? current.scrollTop
+            : element.scrollTop;
+        pageEl.addEventListener("scroll", onPageScroll);
+      }
+    }
+  };
 
-    const current = app.scene.getElement(id);
-    pageEl.scrollTop = current && isScratchpadElement(current) ? 
-                        current.scrollTop : element.scrollTop;
-    onPageScroll = () => {
-        const el = app.scene.getElement(id);
-        if (el && isScratchpadElement(el)) {
-          app.scene.mutateElement(el, { scrollTop: pageEl!.scrollTop });
-        }
-    };
-    pageEl.addEventListener("scroll", onPageScroll);
-  }
+  refreshPageElement();
 
   editable.onkeydown = (event) => {
     if (!event.shiftKey && actionZoomIn.keyTest(event)) {
@@ -637,7 +647,7 @@ export const scratchpadWysiwyg = ({
     window.removeEventListener("beforeunload", handleSubmit);
     unbindUpdate();
     unbindOnScroll();
-    if (pageEl && onPageScroll) {
+    if (pageEl) {
       pageEl.removeEventListener("scroll", onPageScroll);
     }
 
