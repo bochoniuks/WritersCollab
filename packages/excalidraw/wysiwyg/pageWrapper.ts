@@ -27,6 +27,20 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
                 const observer = (view as any).domObserver;
                 observer?.stop();
 
+                // if there are no page breaks and a page already exists, just update its size
+                const hasPageBreaks = Array.from(view.dom.childNodes).some(
+                  (n) => n instanceof HTMLElement && n.classList.contains("page-break"),
+                );
+                if (!hasPageBreaks) {
+                  const existing = view.dom.querySelector<HTMLDivElement>("div.page");
+                  if (existing && existing.parentNode === view.dom) {
+                    wrapping = false;
+                    observer?.start();
+                    return;
+                  }
+                }
+
+
                 // remove wrappers created on a previous update
                 view.dom.querySelectorAll("div.page").forEach((page) => {
                 while (page.firstChild) {
