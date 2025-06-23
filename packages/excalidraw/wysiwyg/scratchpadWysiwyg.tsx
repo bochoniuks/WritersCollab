@@ -431,7 +431,7 @@ export const scratchpadWysiwyg = ({
 
   let editor: ReturnType<typeof useEditor> | null = null;
   // let editor: Editor | null = null;
-  let prevDoc = element.tiptapDoc;
+  let prevDoc = element.originalTiptapDoc;
   const changeHistory = [...(element.changeHistory || [])];
 
   const { width: pageW, height: pageH } = element.pageSize

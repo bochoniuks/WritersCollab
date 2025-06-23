@@ -272,12 +272,17 @@ export const parseTiptapDoc = (
     }
 
     if (Array.isArray(node.content)) {
-      node.content.forEach((child, idx) => {
-        visit({ ...child }, { ...style });
-        if (node.type === "paragraph" && idx === node.content!.length - 1) {
-          pushLine();
-        }
-      });
+      if (node.type === "paragraph" && node.content.length === 0) {
+        // ensure blank paragraphs become blank lines
+        pushLine();
+      } else {
+        node.content.forEach((child, idx) => {
+          visit({ ...child }, { ...style });
+          if (node.type === "paragraph" && idx === node.content!.length - 1) {
+            pushLine();
+          }
+        });
+      }
     }
   };
 

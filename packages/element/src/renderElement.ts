@@ -821,7 +821,7 @@ export const renderElement = (
       break;
     }
     case "scratchpad": {
-      const lines = parseTiptapDoc(element.tiptapDoc, {
+      const lines = parseTiptapDoc(element.originalTiptapDoc, {
         fontFamily: element.fontFamily,
         fontSize: element.fontSize,
         color: element.strokeColor,
@@ -890,11 +890,20 @@ export const renderElement = (
         let baselineOffset = 0;
         let bottomGap = 0;
 
-        for (const seg of line) {
-          const lineHeightPx = getLineHeightInPx(seg.fontSize, getLineHeight(seg.fontFamily));
-          const verticalOffset = getVerticalOffset(seg.fontFamily, seg.fontSize, lineHeightPx);
-          baselineOffset = Math.max(baselineOffset, verticalOffset);
-          bottomGap = Math.max(bottomGap, lineHeightPx - verticalOffset);
+        if (line.length === 0) {
+          const metrics = measureText(
+            "",
+            getFontString({ fontFamily: element.fontFamily, fontSize: element.fontSize }),
+            getLineHeight(element.fontFamily),
+          );
+          bottomGap = metrics.height;
+        } else {
+          for (const seg of line) {
+            const lineHeightPx = getLineHeightInPx(seg.fontSize, getLineHeight(seg.fontFamily));
+            const verticalOffset = getVerticalOffset(seg.fontFamily, seg.fontSize, lineHeightPx);
+            baselineOffset = Math.max(baselineOffset, verticalOffset);
+            bottomGap = Math.max(bottomGap, lineHeightPx - verticalOffset);
+          }
         }
         
         
