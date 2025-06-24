@@ -362,8 +362,7 @@ import {
   actionToggleElementLock,
   actionToggleLinearEditor,
   actionToggleObjectsSnapMode,
-  actionToggleCropEditor,
-  actionEnterIdeationView,
+  actionToggleCropEditor
 } from "../actions";
 import { actionWrapTextInContainer } from "../actions/actionBoundText";
 import { actionToggleHandTool, zoomToFit } from "../actions/actionCanvas";
@@ -489,7 +488,6 @@ import {
   isPointHittingLinkIcon,
 } from "./hyperlink/helpers";
 import { MagicIcon, copyIcon, fullscreenIcon } from "./icons";
-import { IdeationView } from "./IdeationView";
 import { Toast } from "./Toast";
 
 import { findShapeByKey } from "./shapes";
@@ -1724,7 +1722,6 @@ class App extends React.Component<AppProps, AppState> {
                             this.eraserTrail,
                           ]}
                         />
-                        <IdeationView />
                         {selectedElements.length === 1 &&
                           this.state.openDialog?.name !==
                             "elementLinkSelector" &&
@@ -1752,8 +1749,7 @@ class App extends React.Component<AppProps, AppState> {
                                 title="Ideation view"
                                 icon={fullscreenIcon}
                                 checked={false}
-                                onChange={() =>
-                                  this.actionManager.executeAction(actionEnterIdeationView)
+                                onChange={() =>{}
                                 }
                               />
                             </ElementCanvasButtons>

@@ -812,19 +812,6 @@ body.excalidraw-cursor-resize * {
     font-family: "Assistant";
   }
 
-  .ideation-view {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-  }
-
-  .ideation-content .page {
-    width: 60vw;
-    margin: 0 auto;
-    pointer-events: auto;
-  }
+  
   
 }
