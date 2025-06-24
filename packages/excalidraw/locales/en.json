@@ -127,6 +127,7 @@
     "unbindText": "Unbind text",
     "bindText": "Bind text to the container",
     "createContainerFromText": "Wrap text in a container",
+    "enterIdeationView": "Ideation view",
     "link": {
       "edit": "Edit link",
       "editEmbed": "Edit embeddable link",

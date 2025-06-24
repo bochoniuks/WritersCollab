@@ -10,6 +10,7 @@ import type { ExcalidrawScratchpadElement } from "@excalidraw/element/types";
 export const actionEnterIdeationView = register({
   name: "enterIdeationView",
   trackEvent: false,
+  label: "labels.enterIdeationView",
   predicate(elements, appState) {
     const sel = getSelectedElements(elements, appState);
     return sel.length === 1 && isScratchpadElement(sel[0]);
@@ -20,19 +21,19 @@ export const actionEnterIdeationView = register({
       appState,
     ) as [ExcalidrawScratchpadElement];
     return {
-      elements.map((el) =>
-        el.id === scratchpad.id
+        elements: elements.map((el) =>
+            el.id === scratchpad.id
             ? newElementWith(el as ExcalidrawScratchpadElement, {
                 paginationEnabled: true,
-            })
+                })
             : el,
-        )
-      appState: {
-        ...appState,
-        scratchpadViewMode: "ideation",
-        ideationScratchpadId: scratchpad.id,
-      },
-      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
-    };
+        ),
+        appState: {
+            ...appState,
+            scratchpadViewMode: "ideation",
+            ideationScratchpadId: scratchpad.id,
+        },
+        captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+        };
   },
 });
