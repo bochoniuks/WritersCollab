@@ -272,7 +272,6 @@ export const parseTiptapDoc = (
       });
     }
     
-    // console.log(node)
     if (node.type === "text") {
         current.push({
           type: "text",
@@ -285,7 +284,6 @@ export const parseTiptapDoc = (
           strike: style.strike,
         });
     } else if(node.type === "paragraph" && (node.content?.length ?? 0) === 0){
-        // console.log("hardBreak created")
         current.push({ type: "hardBreak" });
         pushLine();
     }
@@ -307,8 +305,6 @@ export const parseTiptapDoc = (
   };
 
   visit(doc);
-  // pushLine();
-  // console.log(lines)
   return lines;
 };
 

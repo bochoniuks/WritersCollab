@@ -376,7 +376,8 @@ export interface AppState {
     | { name: "imageExport" | "help" | "jsonExport" }
     | { name: "ttd"; tab: "text-to-diagram" | "mermaid" }
     | { name: "commandPalette" }
-    | { name: "elementLinkSelector"; sourceElementId: ExcalidrawElement["id"] };
+    | { name: "elementLinkSelector"; sourceElementId: ExcalidrawElement["id"] }
+    | { name: "ideationView"; scratchpadId: ExcalidrawElement["id"] };
 
   /**
    * Reflects user preference for whether the default sidebar should be docked.
@@ -453,6 +454,8 @@ export interface AppState {
   /** picking scratchpad background */
   isPickingScratchpadBackground: boolean;
   scratchpadBackgroundPickerId: ExcalidrawElement["id"] | null;
+  scratchpadViewMode: "cava" | "ideation" | "full";
+  ideationScratchpadId: ExcalidrawElement["id"] | null;
 
   /** null if no search matches found / search closed */
   searchMatches: Readonly<{

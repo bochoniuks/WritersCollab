@@ -146,7 +146,8 @@ export type ActionName =
   | "togglePolygon"
   | "changeScratchpadPageSize"
   | "toggleScratchpadPagination"
-  | "selectScratchpadBackground";
+  | "selectScratchpadBackground"
+  | "enterIdeationView";
 
 export type PanelComponentProps = {
   elements: readonly ExcalidrawElement[];

@@ -269,8 +269,6 @@ export const newScratchpadElement = (
   );
 
   let { width, height } = opts;
-  console.log(opts)
-  console.log(opts.pageSize)
   if (opts.pageSize) {
     const size = SCRATCHPAD_PAGE_SIZES[opts.pageSize];
     width = size.width;
@@ -284,7 +282,7 @@ export const newScratchpadElement = (
     width ??= metrics.width;
     height ??= metrics.height;
   }
-  console.log(width, height)
+
   const scratchpadElementProps: ExcalidrawScratchpadElement = {
     ..._newElementBase<ExcalidrawScratchpadElement>("scratchpad", {...opts, width, height}),
     tiptapDoc,

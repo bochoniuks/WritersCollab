@@ -363,6 +363,7 @@ import {
   actionToggleLinearEditor,
   actionToggleObjectsSnapMode,
   actionToggleCropEditor,
+  actionEnterIdeationView,
 } from "../actions";
 import { actionWrapTextInContainer } from "../actions/actionBoundText";
 import { actionToggleHandTool, zoomToFit } from "../actions/actionCanvas";
@@ -488,6 +489,7 @@ import {
   isPointHittingLinkIcon,
 } from "./hyperlink/helpers";
 import { MagicIcon, copyIcon, fullscreenIcon } from "./icons";
+import { IdeationView } from "./IdeationView";
 import { Toast } from "./Toast";
 
 import { findShapeByKey } from "./shapes";
@@ -1722,6 +1724,7 @@ class App extends React.Component<AppProps, AppState> {
                             this.eraserTrail,
                           ]}
                         />
+                        <IdeationView />
                         {selectedElements.length === 1 &&
                           this.state.openDialog?.name !==
                             "elementLinkSelector" &&
@@ -1737,6 +1740,23 @@ class App extends React.Component<AppProps, AppState> {
                                 this.updateEmbedValidationStatus
                               }
                             />
+                          )}
+                        {selectedElements.length === 1 &&
+                          isScratchpadElement(firstSelectedElement) &&
+                          this.state.scratchpadViewMode === "cava" && (
+                            <ElementCanvasButtons
+                              element={firstSelectedElement}
+                              elementsMap={elementsMap}
+                            >
+                              <ElementCanvasButton
+                                title="Ideation view"
+                                icon={fullscreenIcon}
+                                checked={false}
+                                onChange={() =>
+                                  this.actionManager.executeAction(actionEnterIdeationView)
+                                }
+                              />
+                            </ElementCanvasButtons>
                           )}
                         {this.props.aiEnabled !== false &&
                           selectedElements.length === 1 &&

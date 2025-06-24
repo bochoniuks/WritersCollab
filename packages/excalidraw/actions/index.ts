@@ -98,3 +98,4 @@ export {
   actionSelectScratchpadBackground,
   actionToggleScratchpadPagination,
 } from "./actionProperties";
+export { actionEnterIdeationView } from "./actionEnterIdeationView";

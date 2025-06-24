@@ -887,7 +887,6 @@ export const renderElement = (
 
       let cursorY = 0;
       for (const line of lines) {
-        console.log(line)
         let baselineOffset = 0;
         let bottomGap = 0;
 
