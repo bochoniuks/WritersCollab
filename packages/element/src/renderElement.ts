@@ -891,7 +891,10 @@ export const renderElement = (
         let baselineOffset = 0;
         let bottomGap = 0;
 
-        if (line.length === 0) {
+        const isBreakLine =
+          line.length === 0 || line.every((seg) => seg.type === "hardBreak");
+
+        if (isBreakLine) {
           const metrics = measureText(
             "",
             getFontString({ fontFamily: element.fontFamily, fontSize: element.fontSize }),

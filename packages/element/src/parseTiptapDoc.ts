@@ -162,8 +162,10 @@ export const measureTiptapDoc = (
   for (const line of lines) {
     let lineWidth = 0;
     let lineHeight = 0;
-    if (line.length === 0) {
-      // empty paragraph → use default font metrics
+    const isBreakLine =
+        line.length === 0 || line.every((seg) => seg.type === "hardBreak");
+
+    if (isBreakLine) {
       const metrics = measureText(
         "",
         getFontString({ fontFamily: defaultFontFamily, fontSize: defaultFontSize }),
