@@ -108,6 +108,7 @@ export const scratchpadWysiwyg = ({
   element,
   canvas,
   excalidrawContainer,
+  containerSelector = ".excalidraw-textEditorContainer",
   app,
   autoSelect = true,
 }: {
@@ -124,6 +125,7 @@ export const scratchpadWysiwyg = ({
   element: ExcalidrawScratchpadElement;
   canvas: HTMLCanvasElement;
   excalidrawContainer: HTMLDivElement | null;
+  containerSelector?: string;
   app: App;
   autoSelect?: boolean;
 }): SubmitHandler => {
@@ -784,9 +786,8 @@ export const scratchpadWysiwyg = ({
     window.addEventListener("pointerdown", onPointerDown, { capture: true });
   });
   window.addEventListener("beforeunload", handleSubmit);
-  excalidrawContainer
-    ?.querySelector(".excalidraw-textEditorContainer")!
-    .appendChild(editable);
+  const target = excalidrawContainer?.querySelector(containerSelector);
+  target?.appendChild(editable);
 
   return handleSubmit;
 };
