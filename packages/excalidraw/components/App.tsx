@@ -106,6 +106,9 @@ import {
   DEFAULT_SCRATCHPAD_HEIGHT_RATIO,
   SCRATCHPAD_PAGE_SIZES,
   randomId,
+  IDEATION_SCRATCHPAD_WIDTH_RATIO,
+  MIN_ZOOM,
+  MAX_ZOOM,
 } from "@excalidraw/common";
 
 import { addToGroup, duplicateElement, getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
@@ -533,11 +536,13 @@ import type {
   GenerateDiagramToCode,
   NullableGridSize,
   Offsets,
+  Zoom,
 } from "../types";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
 import { measureTiptapDoc, measureTiptapDocWithWidth, wrapTiptapDoc } from "@excalidraw/element/parseTiptapDoc";
 import { GROUP_FLAG_CONFIG } from "../groupFlagConfig";
+import { centerScrollOn } from "../scene/scroll";
 
 const AppContext = React.createContext<AppClassProperties>(null!);
 const AppPropsContext = React.createContext<AppProps>(null!);
@@ -656,6 +661,8 @@ class App extends React.Component<AppProps, AppState> {
     container: HTMLDivElement | null;
     id: string;
   };
+  private prevScratchpadView: { scrollX: number; scrollY: number; zoom: Zoom } | null = null;
+
 
   public files: BinaryFiles = {};
   public imageCache: AppClassProperties["imageCache"] = new Map();
@@ -1739,21 +1746,28 @@ class App extends React.Component<AppProps, AppState> {
                             />
                           )}
                         {selectedElements.length === 1 &&
-                          isScratchpadElement(firstSelectedElement) &&
-                          this.state.scratchpadViewMode === "cava" && (
+                          isScratchpadElement(firstSelectedElement) && (
                             <ElementCanvasButtons
                               element={firstSelectedElement}
                               elementsMap={elementsMap}
                             >
-                              <ElementCanvasButton
-                                title="Ideation view"
-                                icon={fullscreenIcon}
-                                checked={false}
-                                onChange={() => this.enterIdeationView(
-                                    firstSelectedElement as ExcalidrawScratchpadElement,
-                                  )
-                                }
-                              />
+                              {this.state.scratchpadViewMode === "cava" ? (
+                                <ElementCanvasButton
+                                  title="Ideation view"
+                                  icon={fullscreenIcon}
+                                  checked={false}
+                                  onChange={() =>
+                                    this.enterIdeationView(firstSelectedElement as ExcalidrawScratchpadElement)
+                                  }
+                                />
+                              ) : (
+                                <ElementCanvasButton
+                                  title="Canvas view"
+                                  icon={fullscreenIcon}
+                                  checked={false}
+                                  onChange={() => this.exitIdeationView(firstSelectedElement as ExcalidrawScratchpadElement)}
+                                />
+                              )}
                             </ElementCanvasButtons>
                           )}
                         {this.props.aiEnabled !== false &&
@@ -2163,7 +2177,30 @@ class App extends React.Component<AppProps, AppState> {
     }
   }
 
+  private exitIdeationView(element: ExcalidrawScratchpadElement) {
+    const prev = this.prevScratchpadView;
+    this.prevScratchpadView = null;
+    const size = element.pageSize
+        ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
+        : null;
+    this.mutateElement(element, {
+          paginationEnabled: false
+        });
+    this.setState({
+      scrollX: prev?.scrollX ?? this.state.scrollX,
+      scrollY: prev?.scrollY ?? this.state.scrollY,
+      zoom: prev?.zoom ?? this.state.zoom,
+      scratchpadViewMode: "cava",
+    });
+  }
+
   private enterIdeationView(element: ExcalidrawScratchpadElement) {
+    this.prevScratchpadView = {
+      scrollX: this.state.scrollX,
+      scrollY: this.state.scrollY,
+      zoom: this.state.zoom,
+    };
+
     if (!element.paginationEnabled) {
       const size = element.pageSize
         ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
@@ -2189,13 +2226,27 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
-    this.scrollToContent(element, {
-      fitToViewport: true,
-      viewportZoomFactor: 0.6,
-      animate: true,
+    const elementsMap = this.scene.getElementsMapIncludingDeleted();
+    const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
+
+    const zoomVal = clamp(
+      (this.state.width * IDEATION_SCRATCHPAD_WIDTH_RATIO) / (x2 - x1),
+      MIN_ZOOM,
+      MAX_ZOOM,
+    );
+
+    const { scrollX, scrollY } = centerScrollOn({
+      scenePoint: { x: (x1 + x2) / 2, y: (y1 + y2) / 2 },
+      viewportDimensions: { width: this.state.width, height: this.state.height },
+      zoom: { value: getNormalizedZoom(zoomVal) },
     });
 
-    this.setState({ scratchpadViewMode: "ideation" });
+    this.setState({
+      scrollX,
+      scrollY,
+      zoom: { value: getNormalizedZoom(zoomVal) },
+      scratchpadViewMode: "ideation",
+    });
   }
 
   public onMagicframeToolSelect = () => {
