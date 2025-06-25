@@ -454,6 +454,8 @@ export interface AppState {
   isPickingScratchpadBackground: boolean;
   scratchpadBackgroundPickerId: ExcalidrawElement["id"] | null;
   scratchpadViewMode: "cava" | "ideation" | "full";
+  /** element that defines ideation bounds */
+  ideationElementId: ExcalidrawElement["id"] | null;
 
   /** null if no search matches found / search closed */
   searchMatches: Readonly<{

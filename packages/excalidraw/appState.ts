@@ -134,6 +134,7 @@ export const getDefaultAppState = (): Omit<
     isPickingScratchpadBackground: false,
     scratchpadBackgroundPickerId: null,
     scratchpadViewMode: "cava",
+    ideationElementId: null,
   };
 };
 
@@ -268,6 +269,7 @@ const APP_STATE_STORAGE_CONF = (<
   isPickingScratchpadBackground: { browser: false, export: false, server: false },
   scratchpadBackgroundPickerId: { browser: false, export: false, server: false },
   scratchpadViewMode:       { browser: true,  export: false, server: false },
+  ideationElementId:        { browser: false, export: false, server: false },
 });
 
 const _clearAppStateForStorage = <

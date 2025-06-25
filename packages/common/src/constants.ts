@@ -39,6 +39,8 @@ export const DEFAULT_SCRATCHPAD_WIDTH_RATIO = 0.2;
 export const DEFAULT_SCRATCHPAD_HEIGHT_RATIO = 0.15;
 /** Scratchpad width as fraction of screen when in ideation mode. */
 export const IDEATION_SCRATCHPAD_WIDTH_RATIO = 0.6;
+/** extra width (in element widths) allowed when panning horizontally */
+export const IDEATION_HORIZONTAL_SCROLL_FACTOR = 2;
 
 export const SCRATCHPAD_PAGE_SIZES = {
   A4: { width: 794, height: 1123 },      // approx. 210×297 mm @96 dpi

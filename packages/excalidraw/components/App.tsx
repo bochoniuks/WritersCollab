@@ -109,6 +109,7 @@ import {
   IDEATION_SCRATCHPAD_WIDTH_RATIO,
   MIN_ZOOM,
   MAX_ZOOM,
+  IDEATION_HORIZONTAL_SCROLL_FACTOR,
 } from "@excalidraw/common";
 
 import { addToGroup, duplicateElement, getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
@@ -2205,6 +2206,7 @@ class App extends React.Component<AppProps, AppState> {
       scrollY,
       zoom: prev?.zoom ?? this.state.zoom,
       scratchpadViewMode: "cava",
+      ideationElementId: null,
     });
   }
 
@@ -2244,9 +2246,10 @@ class App extends React.Component<AppProps, AppState> {
     const elementsMap = this.scene.getElementsMapIncludingDeleted();
     const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
 
+    const minZoom = Math.max(MIN_ZOOM, this.state.height / (y2 - y1));
     const zoomVal = clamp(
       (this.state.width * IDEATION_SCRATCHPAD_WIDTH_RATIO) / (x2 - x1),
-      MIN_ZOOM,
+      minZoom,
       MAX_ZOOM,
     );
 
@@ -2261,6 +2264,7 @@ class App extends React.Component<AppProps, AppState> {
       scrollY,
       zoom: { value: getNormalizedZoom(zoomVal) },
       scratchpadViewMode: "ideation",
+      ideationElementId: element.id,
     });
   }
 
@@ -4019,6 +4023,38 @@ class App extends React.Component<AppProps, AppState> {
   ) => {
     this.cancelInProgressAnimation?.();
     this.maybeUnfollowRemoteUser();
+    if (
+      this.state.scratchpadViewMode === "ideation" &&
+      this.state.ideationElementId
+    ) {
+      const el = this.scene.getElement(this.state.ideationElementId);
+      if (el) {
+        const map = this.scene.getElementsMapIncludingDeleted();
+        const [x1, y1, x2, y2] = getElementAbsoluteCoords(el, map);
+        const minZoom = Math.max(MIN_ZOOM, this.state.height / (y2 - y1));
+        const zoom = state.zoom ?? this.state.zoom;
+        const clampedZoom = { value: clamp(zoom.value, minZoom, MAX_ZOOM) };
+        const viewW = this.state.width / clampedZoom.value;
+        const viewH = this.state.height / clampedZoom.value;
+        const dx = el.width * IDEATION_HORIZONTAL_SCROLL_FACTOR;
+
+        state = {
+          ...state,
+          zoom: clampedZoom,
+          scrollX: clamp(
+            state.scrollX ?? this.state.scrollX,
+            -(x2 - viewW) - dx,
+            -x1 + dx,
+          ),
+          scrollY: clamp(
+            state.scrollY ?? this.state.scrollY,
+            -(y2 - viewH),
+            -y1,
+          ),
+        };
+      }
+    }
+
     this.setState(state);
   };
 
@@ -11796,17 +11832,34 @@ class App extends React.Component<AppProps, AppState> {
           // reduced amplification for small deltas (small movements on a trackpad)
           Math.min(1, absDelta / 20);
 
-        this.translateCanvas((state) => ({
-          ...getStateForZoom(
-            {
-              viewportX: this.lastViewportPosition.x,
-              viewportY: this.lastViewportPosition.y,
-              nextZoom: getNormalizedZoom(newZoom),
-            },
-            state,
-          ),
-          shouldCacheIgnoreZoom: true,
-        }));
+        const minZoom =
+            this.state.scratchpadViewMode === "ideation" &&
+            this.state.ideationElementId
+              ? Math.max(
+                  MIN_ZOOM,
+                  this.state.height /
+                    (getElementAbsoluteCoords(
+                      this.scene.getElement(this.state.ideationElementId)!,
+                      this.scene.getElementsMapIncludingDeleted(),
+                    )[3] -
+                      getElementAbsoluteCoords(
+                        this.scene.getElement(this.state.ideationElementId)!,
+                        this.scene.getElementsMapIncludingDeleted(),
+                      )[1]),
+                )
+              : MIN_ZOOM;
+
+          this.translateCanvas((state) => ({
+            ...getStateForZoom(
+              {
+                viewportX: this.lastViewportPosition.x,
+                viewportY: this.lastViewportPosition.y,
+                nextZoom: getNormalizedZoom(clamp(newZoom, minZoom, MAX_ZOOM)),
+              },
+              state,
+            ),
+            shouldCacheIgnoreZoom: true,
+          }));
         this.resetShouldCacheIgnoreZoomDebounced();
         return;
       }
