@@ -1746,7 +1746,8 @@ class App extends React.Component<AppProps, AppState> {
                             />
                           )}
                         {selectedElements.length === 1 &&
-                          isScratchpadElement(firstSelectedElement) && (
+                          isScratchpadElement(firstSelectedElement) &&
+                          firstSelectedElement.pageSize && (
                             <ElementCanvasButtons
                               element={firstSelectedElement}
                               elementsMap={elementsMap}
@@ -2184,15 +2185,25 @@ class App extends React.Component<AppProps, AppState> {
         ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
         : null;
     this.mutateElement(element, {
-          paginationEnabled: false
-        });
+      paginationEnabled: false,
+      ...(size && { width: size.width, height: size.height }),
+    });
+    const elementsMap = this.scene.getElementsMapIncludingDeleted();
+    const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
+    const { scrollX, scrollY } = centerScrollOn({
+      scenePoint: { x: (x1 + x2) / 2, y: (y1 + y2) / 2 },
+      viewportDimensions: { width: this.state.width, height: this.state.height },
+      zoom: prev?.zoom ?? this.state.zoom,
+    });
+
     this.setState({
-      scrollX: prev?.scrollX ?? this.state.scrollX,
-      scrollY: prev?.scrollY ?? this.state.scrollY,
+      scrollX,
+      scrollY,
       zoom: prev?.zoom ?? this.state.zoom,
       scratchpadViewMode: "cava",
     });
   }
+
 
   private enterIdeationView(element: ExcalidrawScratchpadElement) {
     this.prevScratchpadView = {
