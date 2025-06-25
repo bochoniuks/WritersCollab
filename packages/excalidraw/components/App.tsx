@@ -4027,10 +4027,10 @@ class App extends React.Component<AppProps, AppState> {
     const updater = (
       prevState: Readonly<AppState>,
       props: Readonly<AppProps>,
-    ): Partial<AppState> => {
-      const nextState = (
-        typeof state === "function" ? state(prevState, props) : state
-      ) as AppState | Pick<AppState, keyof AppState> | null;
+        ): AppState | Pick<AppState, keyof AppState> | null => {
+      const nextState =
+        typeof state === "function" ? state(prevState, props) : state;
+
       const partialNextState = nextState as Partial<AppState>;
       const zoom = (partialNextState.zoom ?? prevState.zoom) as Zoom;
 
@@ -4064,10 +4064,10 @@ class App extends React.Component<AppProps, AppState> {
               -(y2 - viewH),
               -y1,
             ),
-          };
+          } as Pick<AppState, keyof AppState>;
         }
       }
-      return nextState;
+      return nextState as AppState | Pick<AppState, keyof AppState> | null;
     };
 
     this.setState(updater);
