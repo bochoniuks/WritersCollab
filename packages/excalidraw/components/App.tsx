@@ -4023,39 +4023,51 @@ class App extends React.Component<AppProps, AppState> {
   ) => {
     this.cancelInProgressAnimation?.();
     this.maybeUnfollowRemoteUser();
-    if (
-      this.state.scratchpadViewMode === "ideation" &&
-      this.state.ideationElementId
-    ) {
-      const el = this.scene.getElement(this.state.ideationElementId);
-      if (el) {
-        const map = this.scene.getElementsMapIncludingDeleted();
-        const [x1, y1, x2, y2] = getElementAbsoluteCoords(el, map);
-        const minZoom = Math.max(MIN_ZOOM, this.state.height / (y2 - y1));
-        const zoom = state.zoom ?? this.state.zoom;
-        const clampedZoom = { value: clamp(zoom.value, minZoom, MAX_ZOOM) };
-        const viewW = this.state.width / clampedZoom.value;
-        const viewH = this.state.height / clampedZoom.value;
-        const dx = el.width * IDEATION_HORIZONTAL_SCROLL_FACTOR;
 
-        state = {
-          ...state,
-          zoom: clampedZoom,
-          scrollX: clamp(
-            state.scrollX ?? this.state.scrollX,
-            -(x2 - viewW) - dx,
-            -x1 + dx,
-          ),
-          scrollY: clamp(
-            state.scrollY ?? this.state.scrollY,
-            -(y2 - viewH),
-            -y1,
-          ),
-        };
+    const updater = (
+      prevState: Readonly<AppState>,
+      props: Readonly<AppProps>,
+    ): Partial<AppState> => {
+      const nextState =
+        typeof state === "function" ? state(prevState, props) : state;
+
+      if (
+        prevState.scratchpadViewMode === "ideation" &&
+        prevState.ideationElementId
+      ) {
+        const el = this.scene.getElement(prevState.ideationElementId);
+        if (el) {
+          const map = this.scene.getElementsMapIncludingDeleted();
+          const [x1, y1, x2, y2] = getElementAbsoluteCoords(el, map);
+          const minZoom = Math.max(MIN_ZOOM, prevState.height / (y2 - y1));
+          const zoom = (nextState?.zoom ?? prevState.zoom) as Zoom;
+          const clampedZoom = {
+            value: getNormalizedZoom(clamp(zoom.value, minZoom, MAX_ZOOM)),
+          };
+          const viewW = prevState.width / clampedZoom.value;
+          const viewH = prevState.height / clampedZoom.value;
+          const dx = el.width * IDEATION_HORIZONTAL_SCROLL_FACTOR;
+
+          return {
+            ...nextState,
+            zoom: clampedZoom,
+            scrollX: clamp(
+              (nextState?.scrollX ?? prevState.scrollX) as number,
+              -(x2 - viewW) - dx,
+              -x1 + dx,
+            ),
+            scrollY: clamp(
+              (nextState?.scrollY ?? prevState.scrollY) as number,
+              -(y2 - viewH),
+              -y1,
+            ),
+          };
+        }
       }
-    }
+      return nextState;
+    };
 
-    this.setState(state);
+    this.setState(updater);
   };
 
   setToast = (
