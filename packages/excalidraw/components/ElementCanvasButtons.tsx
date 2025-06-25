@@ -33,10 +33,12 @@ export const ElementCanvasButtons = ({
   children,
   element,
   elementsMap,
+  followScroll = false,
 }: {
   children: React.ReactNode;
   element: NonDeletedExcalidrawElement;
   elementsMap: ElementsMap;
+  followScroll?: boolean;
 }) => {
   const appState = useExcalidrawAppState();
 
@@ -53,11 +55,19 @@ export const ElementCanvasButtons = ({
 
   const { x, y } = getContainerCoords(element, appState, elementsMap);
 
+  const adjustedY =
+    followScroll &&
+    appState.scratchpadViewMode === "ideation" &&
+    (element as any).paginationEnabled
+      ? y - ((element as any).scrollTop || 0)
+      : y;
+
   return (
     <div
       className="excalidraw-canvas-buttons"
       style={{
-        top: `${y}px`,
+        // top: `${y}px`,
+        top: `${adjustedY}px`,
         left: `${x}px`,
         // width: CONTAINER_WIDTH,
         padding: CONTAINER_PADDING,

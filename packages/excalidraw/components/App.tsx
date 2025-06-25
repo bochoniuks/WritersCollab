@@ -1751,6 +1751,10 @@ class App extends React.Component<AppProps, AppState> {
                             <ElementCanvasButtons
                               element={firstSelectedElement}
                               elementsMap={elementsMap}
+                              followScroll={
+                                this.state.scratchpadViewMode === "ideation" &&
+                                firstSelectedElement.paginationEnabled
+                              }
                             >
                               {this.state.scratchpadViewMode === "cava" ? (
                                 <ElementCanvasButton
