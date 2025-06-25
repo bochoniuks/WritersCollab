@@ -4028,8 +4028,11 @@ class App extends React.Component<AppProps, AppState> {
       prevState: Readonly<AppState>,
       props: Readonly<AppProps>,
     ): Partial<AppState> => {
-      const nextState =
-        typeof state === "function" ? state(prevState, props) : state;
+      const nextState = (
+        typeof state === "function" ? state(prevState, props) : state
+      ) as AppState | Pick<AppState, keyof AppState> | null;
+      const partialNextState = nextState as Partial<AppState>;
+      const zoom = (partialNextState.zoom ?? prevState.zoom) as Zoom;
 
       if (
         prevState.scratchpadViewMode === "ideation" &&
@@ -4040,7 +4043,7 @@ class App extends React.Component<AppProps, AppState> {
           const map = this.scene.getElementsMapIncludingDeleted();
           const [x1, y1, x2, y2] = getElementAbsoluteCoords(el, map);
           const minZoom = Math.max(MIN_ZOOM, prevState.height / (y2 - y1));
-          const zoom = (nextState?.zoom ?? prevState.zoom) as Zoom;
+          // const zoom = (nextState?.zoom ?? prevState.zoom) as Zoom;
           const clampedZoom = {
             value: getNormalizedZoom(clamp(zoom.value, minZoom, MAX_ZOOM)),
           };
@@ -4052,12 +4055,12 @@ class App extends React.Component<AppProps, AppState> {
             ...nextState,
             zoom: clampedZoom,
             scrollX: clamp(
-              (nextState?.scrollX ?? prevState.scrollX) as number,
+              (partialNextState.scrollX ?? prevState.scrollX) as number,
               -(x2 - viewW) - dx,
               -x1 + dx,
             ),
             scrollY: clamp(
-              (nextState?.scrollY ?? prevState.scrollY) as number,
+              (partialNextState.scrollY ?? prevState.scrollY) as number,
               -(y2 - viewH),
               -y1,
             ),
