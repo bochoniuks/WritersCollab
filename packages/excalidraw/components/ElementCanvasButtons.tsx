@@ -35,9 +35,6 @@ const getContainerCoords = (
   const y = topRight.y - appState.offsetTop;
   const bottom = bottomRight.y - appState.offsetTop;
 
-  console.log("topRight: ", topRight)
-  console.log("appState.offsetTop: ", appState.offsetTop)
-
   return { x, y, bottom };
 };
 
@@ -74,10 +71,9 @@ export const ElementCanvasButtons = ({
         ? y + ((element as any).scrollTop || 0) * appState.zoom.value
         : y;
 
-    console.log(desiredY, y, bottom)
+    console.log("desiredY: ",desiredY, "y: ", y, "appState.zoom.value: ",appState.zoom.value)
     const adjustedY = clamp(desiredY-y, y, bottom);
     
-    console.log("adjustedY: ", adjustedY)
     return (
       <div
         className="excalidraw-canvas-buttons"
