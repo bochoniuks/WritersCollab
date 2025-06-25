@@ -59,7 +59,7 @@ export const ElementCanvasButtons = ({
     followScroll &&
     appState.scratchpadViewMode === "ideation" &&
     (element as any).paginationEnabled
-      ? y - ((element as any).scrollTop || 0) * appState.zoom.value
+      ? y + ((element as any).scrollTop || 0)
       : y;
 
   return (
