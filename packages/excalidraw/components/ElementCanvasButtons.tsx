@@ -11,6 +11,7 @@ import { useExcalidrawAppState } from "../components/App";
 import "./ElementCanvasButtons.scss";
 
 import type { AppState } from "../types";
+import { clamp } from "@excalidraw/math";
 
 const CONTAINER_PADDING = 5;
 
@@ -19,14 +20,25 @@ const getContainerCoords = (
   appState: AppState,
   elementsMap: ElementsMap,
 ) => {
-  const [x1, y1] = getElementAbsoluteCoords(element, elementsMap);
-  const { x: viewportX, y: viewportY } = sceneCoordsToViewportCoords(
-    { sceneX: x1 + element.width, sceneY: y1 },
+  const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
+
+  const topRight = sceneCoordsToViewportCoords(
+    { sceneX: x2, sceneY: y1 },
     appState,
   );
-  const x = viewportX - appState.offsetLeft + 10;
-  const y = viewportY - appState.offsetTop;
-  return { x, y };
+  const bottomRight = sceneCoordsToViewportCoords(
+    { sceneX: x2, sceneY: y2 },
+    appState,
+  );
+
+  const x = topRight.x - appState.offsetLeft + 10;
+  const y = topRight.y - appState.offsetTop;
+  const bottom = bottomRight.y - appState.offsetTop;
+
+  console.log("topRight: ", topRight)
+  console.log("appState.offsetTop: ", appState.offsetTop)
+
+  return { x, y, bottom };
 };
 
 export const ElementCanvasButtons = ({
@@ -53,27 +65,31 @@ export const ElementCanvasButtons = ({
     return null;
   }
 
-  const { x, y } = getContainerCoords(element, appState, elementsMap);
+  const { x, y, bottom } = getContainerCoords(element, appState, elementsMap);
 
-  const adjustedY =
+  const desiredY =
     followScroll &&
     appState.scratchpadViewMode === "ideation" &&
-    (element as any).paginationEnabled
-      ? y + ((element as any).scrollTop || 0)
-      : y;
+      (element as any).paginationEnabled
+        ? y + ((element as any).scrollTop || 0) * appState.zoom.value
+        : y;
 
-  return (
-    <div
-      className="excalidraw-canvas-buttons"
-      style={{
-        // top: `${y}px`,
-        top: `${adjustedY}px`,
-        left: `${x}px`,
-        // width: CONTAINER_WIDTH,
-        padding: CONTAINER_PADDING,
-      }}
-    >
-      {children}
-    </div>
-  );
+    console.log(desiredY, y, bottom)
+    const adjustedY = clamp(desiredY-y, y, bottom);
+    
+    console.log("adjustedY: ", adjustedY)
+    return (
+      <div
+        className="excalidraw-canvas-buttons"
+        style={{
+          // top: `${y}px`,
+          top: `${adjustedY}px`,
+          left: `${x}px`,
+          // width: CONTAINER_WIDTH,
+          padding: CONTAINER_PADDING,
+        }}
+      >
+        {children}
+      </div>
+    );
 };
