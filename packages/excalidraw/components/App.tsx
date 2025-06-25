@@ -1749,7 +1749,9 @@ class App extends React.Component<AppProps, AppState> {
                                 title="Ideation view"
                                 icon={fullscreenIcon}
                                 checked={false}
-                                onChange={() =>{}
+                                onChange={() => this.enterIdeationView(
+                                    firstSelectedElement as ExcalidrawScratchpadElement,
+                                  )
                                 }
                               />
                             </ElementCanvasButtons>
@@ -2159,6 +2161,41 @@ class App extends React.Component<AppProps, AppState> {
         duration: 1500,
       });
     }
+  }
+
+  private enterIdeationView(element: ExcalidrawScratchpadElement) {
+    if (!element.paginationEnabled) {
+      const size = element.pageSize
+        ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
+        : null;
+
+      if (size) {
+        const contentWidth = size.width - element.margin.left - element.margin.right;
+        const { height: docHeight } = measureTiptapDocWithWidth(
+          element.tiptapDoc,
+          contentWidth,
+          { fontFamily: element.fontFamily, fontSize: element.fontSize },
+        );
+        const pageContentHeight =
+          size.height - element.margin.top - element.margin.bottom;
+        const pages = Math.max(1, Math.ceil(docHeight / pageContentHeight));
+        this.mutateElement(element, {
+          paginationEnabled: true,
+          width: size.width,
+          height: size.height * pages,
+        });
+      } else {
+        this.mutateElement(element, { paginationEnabled: true });
+      }
+    }
+
+    this.scrollToContent(element, {
+      fitToViewport: true,
+      viewportZoomFactor: 0.6,
+      animate: true,
+    });
+
+    this.setState({ scratchpadViewMode: "ideation" });
   }
 
   public onMagicframeToolSelect = () => {
