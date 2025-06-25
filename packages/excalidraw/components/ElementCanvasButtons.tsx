@@ -1,5 +1,5 @@
 import { sceneCoordsToViewportCoords } from "@excalidraw/common";
-import { getElementAbsoluteCoords } from "@excalidraw/element";
+import { getElementAbsoluteCoords, getVisibleSceneBounds } from "@excalidraw/element";
 
 import type {
   ElementsMap,
@@ -64,21 +64,22 @@ export const ElementCanvasButtons = ({
 
   const { x, y, bottom } = getContainerCoords(element, appState, elementsMap);
 
-  const desiredY =
-    followScroll &&
-    appState.scratchpadViewMode === "ideation" &&
-      (element as any).paginationEnabled
-        ? y + ((element as any).scrollTop || 0) * appState.zoom.value
-        : y;
+  let adjustedY = y
 
-    console.log("desiredY: ",desiredY, "y: ", y, "appState.zoom.value: ",appState.zoom.value)
-    const adjustedY = clamp(desiredY-y, y, bottom);
+  if (followScroll){
+    const viewportBounds = getVisibleSceneBounds(appState);
+    console.log(viewportBounds)
+    console.log(y, bottom )
+    const desiredY = ((viewportBounds[3]-viewportBounds[1])/2)*appState.zoom.value
+    adjustedY = clamp(desiredY, y, bottom);
+  }
+  
+
     
     return (
       <div
         className="excalidraw-canvas-buttons"
         style={{
-          // top: `${y}px`,
           top: `${adjustedY}px`,
           left: `${x}px`,
           // width: CONTAINER_WIDTH,
