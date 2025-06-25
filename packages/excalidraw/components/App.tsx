@@ -110,6 +110,7 @@ import {
   MIN_ZOOM,
   MAX_ZOOM,
   IDEATION_HORIZONTAL_SCROLL_FACTOR,
+  IDEATION_VERTICAL_SCROLL_MARGIN_RATIO,
 } from "@excalidraw/common";
 
 import { addToGroup, duplicateElement, getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
@@ -4050,6 +4051,7 @@ class App extends React.Component<AppProps, AppState> {
           const viewW = prevState.width / clampedZoom.value;
           const viewH = prevState.height / clampedZoom.value;
           const dx = el.width * IDEATION_HORIZONTAL_SCROLL_FACTOR;
+          const dy = viewH * IDEATION_VERTICAL_SCROLL_MARGIN_RATIO;
 
           return {
             ...nextState,
@@ -4061,8 +4063,8 @@ class App extends React.Component<AppProps, AppState> {
             ),
             scrollY: clamp(
               (partialNextState.scrollY ?? prevState.scrollY) as number,
-              -(y2 - viewH),
-              -y1,
+              -(y2 - viewH) - dy,
+              -y1 + dy,
             ),
           } as Pick<AppState, keyof AppState>;
         }
