@@ -3462,20 +3462,19 @@ class App extends React.Component<AppProps, AppState> {
     const { duplicatedElements } = duplicateElements({
       type: "everything",
       elements: elements.map((element) => {
-        const updates = {
+        const updates: Parameters<typeof newElementWith>[1] = {
           x: element.x + gridX - minX,
           y: element.y + gridY - minY,
-        } as Parameters<typeof newElementWith>[1];
-
-        if (
-          this.state.scratchpadViewMode === "ideation" &&
-          this.state.ideationElementId
-        ) {
-          updates.customData = {
-            ...(element.customData || {}),
-            ideationId: this.state.ideationElementId,
-          };
-        }
+          ...(this.state.scratchpadViewMode === "ideation" &&
+            this.state.ideationElementId
+              ? {
+                  customData: {
+                    ...(element.customData || {}),
+                    ideationId: this.state.ideationElementId,
+                  },
+                }
+              : {}),
+        };
         return newElementWith(element, updates);
       }),
       randomizeSeed: !opts.retainSeed,
