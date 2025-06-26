@@ -145,7 +145,14 @@ export class Renderer {
         let elements = this.scene.getNonDeletedElements();
 
         if (scratchpadViewMode === "ideation" && ideationElementId) {
-          elements = elements.filter((el) => el.id === ideationElementId);
+          elements = elements.filter(
+            (el) =>
+              el.id === ideationElementId ||
+              el.customData?.ideationId === ideationElementId,
+          );
+        } else {
+          // hide elements created in ideation mode when back on the canvas
+          elements = elements.filter((el) => !el.customData?.ideationId);
         }
 
         const elementsMap = getRenderableElements({

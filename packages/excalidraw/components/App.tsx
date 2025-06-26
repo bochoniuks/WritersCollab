@@ -3462,10 +3462,21 @@ class App extends React.Component<AppProps, AppState> {
     const { duplicatedElements } = duplicateElements({
       type: "everything",
       elements: elements.map((element) => {
-        return newElementWith(element, {
+        const updates = {
           x: element.x + gridX - minX,
           y: element.y + gridY - minY,
-        });
+        } as Parameters<typeof newElementWith>[1];
+
+        if (
+          this.state.scratchpadViewMode === "ideation" &&
+          this.state.ideationElementId
+        ) {
+          updates.customData = {
+            ...(element.customData || {}),
+            ideationId: this.state.ideationElementId,
+          };
+        }
+        return newElementWith(element, updates);
       }),
       randomizeSeed: !opts.retainSeed,
     });
@@ -8268,6 +8279,9 @@ class App extends React.Component<AppProps, AppState> {
       locked: false,
       width,
       height,
+      ...(this.state.scratchpadViewMode === "ideation" && this.state.ideationElementId
+        ? { customData: { ideationId: this.state.ideationElementId } }
+        : {}),
     });
 
     this.scene.insertElement(element);
@@ -8322,6 +8336,9 @@ class App extends React.Component<AppProps, AppState> {
       width: embedLink.intrinsicSize.w,
       height: embedLink.intrinsicSize.h,
       link,
+      ...(this.state.scratchpadViewMode === "ideation" && this.state.ideationElementId
+        ? { customData: { ideationId: this.state.ideationElementId } }
+        : {}),
     });
 
     this.scene.insertElement(element);
@@ -8367,6 +8384,9 @@ class App extends React.Component<AppProps, AppState> {
       opacity: this.state.currentItemOpacity,
       locked: false,
       frameId: topLayerFrame ? topLayerFrame.id : null,
+      ...(this.state.scratchpadViewMode === "ideation" && this.state.ideationElementId
+        ? { customData: { ideationId: this.state.ideationElementId } }
+        : {}),
     });
 
     return element;
@@ -8506,6 +8526,9 @@ class App extends React.Component<AppProps, AppState> {
                   : null,
               locked: false,
               frameId: topLayerFrame ? topLayerFrame.id : null,
+              ...(this.state.scratchpadViewMode === "ideation" && this.state.ideationElementId
+                ? { customData: { ideationId: this.state.ideationElementId } }
+                : {}),
             });
       this.setState((prevState) => {
         const nextSelectedElementIds = {
@@ -8588,6 +8611,9 @@ class App extends React.Component<AppProps, AppState> {
       roundness: this.getCurrentItemRoundness(elementType),
       locked: false,
       frameId: topLayerFrame ? topLayerFrame.id : null,
+      ...(this.state.scratchpadViewMode === "ideation" && this.state.ideationElementId
+      ? { customData: { ideationId: this.state.ideationElementId } }
+      : {}),
     } as const;
 
     let element;
@@ -8634,6 +8660,9 @@ class App extends React.Component<AppProps, AppState> {
       opacity: this.state.currentItemOpacity,
       locked: false,
       ...FRAME_STYLE,
+      ...(this.state.scratchpadViewMode === "ideation" && this.state.ideationElementId
+        ? { customData: { ideationId: this.state.ideationElementId } }
+        : {}),
     } as const;
 
     const frame =
@@ -9207,16 +9236,23 @@ class App extends React.Component<AppProps, AppState> {
               randomizeSeed: true,
               idsOfElementsToDuplicate,
               overrides: ({ duplicateElement, origElement }) => {
-                return {
-                  // reset to the original element's frameId (unless we've
-                  // duplicated alongside a frame in which case we need to
-                  // keep the duplicate frame's id) so that the element
-                  // frame membership is refreshed on pointerup
-                  // NOTE this is a hacky solution and should be done
-                  // differently
-                  frameId: duplicateElement.frameId ?? origElement.frameId,
-                  seed: randomInteger(),
-                };
+                const base = {
+                    frameId: duplicateElement.frameId ?? origElement.frameId,
+                    seed: randomInteger(),
+                  };
+                  if (
+                    this.state.scratchpadViewMode === "ideation" &&
+                    this.state.ideationElementId
+                  ) {
+                    return {
+                      ...base,
+                      customData: {
+                        ...(duplicateElement.customData || {}),
+                        ideationId: this.state.ideationElementId,
+                      },
+                    };
+                  }
+                  return base;
               },
             });
             duplicatedElements.forEach((element) => {

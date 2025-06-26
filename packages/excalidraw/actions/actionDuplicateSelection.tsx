@@ -71,11 +71,21 @@ export const actionDuplicateSelection = register({
       overrides: ({ origElement, origIdToDuplicateId }) => {
         const duplicateFrameId =
           origElement.frameId && origIdToDuplicateId.get(origElement.frameId);
-        return {
+        const base = {
           x: origElement.x + DEFAULT_GRID_SIZE / 2,
           y: origElement.y + DEFAULT_GRID_SIZE / 2,
           frameId: duplicateFrameId ?? origElement.frameId,
         };
+        if (appState.scratchpadViewMode === "ideation" && appState.ideationElementId) {
+          return {
+            ...base,
+            customData: {
+              ...(origElement.customData || {}),
+              ideationId: appState.ideationElementId,
+            },
+          };
+        }
+        return base;
       },
     });
 
