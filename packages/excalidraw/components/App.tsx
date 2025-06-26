@@ -4061,14 +4061,21 @@ class App extends React.Component<AppProps, AppState> {
           const dx = (el.width * IDEATION_HORIZONTAL_SCROLL_FACTOR) / 2;
           const dy = viewH * IDEATION_VERTICAL_SCROLL_MARGIN_RATIO;
 
+          const minScrollX = -(x2 - viewW) - dx;
+          const maxScrollX = -x1 + dx;
+
+          let nextScrollX = (partialNextState.scrollX ?? prevState.scrollX) as number;
+          if (viewW > el.width * IDEATION_HORIZONTAL_SCROLL_FACTOR) {
+            // viewport is wider than the allowed scroll width – keep the scratchpad centered
+            nextScrollX = viewW / 2 - (x1 + x2) / 2;
+          } else {
+            nextScrollX = clamp(nextScrollX, minScrollX, maxScrollX);
+          }
+
           return {
             ...nextState,
             zoom: clampedZoom,
-            scrollX: clamp(
-              (partialNextState.scrollX ?? prevState.scrollX) as number,
-              -(x2 - viewW) - dx,
-              -x1 + dx,
-            ),
+            scrollX: nextScrollX,
             scrollY: clamp(
               (partialNextState.scrollY ?? prevState.scrollY) as number,
               -(y2 - viewH) - dy,
