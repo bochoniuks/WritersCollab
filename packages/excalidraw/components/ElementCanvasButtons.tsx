@@ -68,13 +68,9 @@ export const ElementCanvasButtons = ({
 
   if (followScroll){
     const viewportBounds = getVisibleSceneBounds(appState);
-    console.log(viewportBounds)
-    console.log(y, bottom )
     const desiredY = ((viewportBounds[3]-viewportBounds[1])/2)*appState.zoom.value
     adjustedY = clamp(desiredY, y, bottom);
   }
-  
-
     
     return (
       <div

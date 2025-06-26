@@ -43,6 +43,10 @@ export const IDEATION_SCRATCHPAD_WIDTH_RATIO = 0.6;
 export const IDEATION_HORIZONTAL_SCROLL_FACTOR = 1.5;
 /** fraction of viewport height kept as margin in ideation mode */
 export const IDEATION_VERTICAL_SCROLL_MARGIN_RATIO = 0.25;
+/** cap number of pages shown when zooming out in ideation mode */
+export const MAX_IDEATION_VISIBLE_PAGES = 5;
+
+
 
 export const SCRATCHPAD_PAGE_SIZES = {
   A4: { width: 794, height: 1123 },      // approx. 210×297 mm @96 dpi

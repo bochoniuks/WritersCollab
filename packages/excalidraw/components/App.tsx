@@ -111,6 +111,7 @@ import {
   MAX_ZOOM,
   IDEATION_HORIZONTAL_SCROLL_FACTOR,
   IDEATION_VERTICAL_SCROLL_MARGIN_RATIO,
+  MAX_IDEATION_VISIBLE_PAGES,
 } from "@excalidraw/common";
 
 import { addToGroup, duplicateElement, getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
@@ -2221,11 +2222,11 @@ class App extends React.Component<AppProps, AppState> {
       zoom: this.state.zoom,
     };
 
-    if (!element.paginationEnabled) {
-      const size = element.pageSize
+    const size = element.pageSize
         ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
         : null;
 
+    if (!element.paginationEnabled) {
       if (size) {
         const contentWidth = size.width - element.margin.left - element.margin.right;
         const { height: docHeight } = measureTiptapDocWithWidth(
@@ -2249,7 +2250,12 @@ class App extends React.Component<AppProps, AppState> {
     const elementsMap = this.scene.getElementsMapIncludingDeleted();
     const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
 
-    const minZoom = Math.max(MIN_ZOOM, this.state.height / (y2 - y1));
+    const scratchpadHeight = y2 - y1;
+    const visibleHeight = size
+      ? Math.min(size.height * MAX_IDEATION_VISIBLE_PAGES, scratchpadHeight)
+      : scratchpadHeight;
+
+    const minZoom = Math.max(MIN_ZOOM, this.state.height / visibleHeight);
     const zoomVal = clamp(
       (this.state.width * IDEATION_SCRATCHPAD_WIDTH_RATIO) / (x2 - x1),
       minZoom,
