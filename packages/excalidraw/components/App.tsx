@@ -1626,6 +1626,8 @@ class App extends React.Component<AppProps, AppState> {
         editingTextElement: this.state.editingTextElement,
         newElementId: this.state.newElement?.id,
         pendingImageElementId: this.state.pendingImageElementId,
+        scratchpadViewMode: this.state.scratchpadViewMode,
+        ideationElementId: this.state.ideationElementId,
       });
     this.visibleElements = visibleElements;
 
@@ -4050,7 +4052,7 @@ class App extends React.Component<AppProps, AppState> {
           };
           const viewW = prevState.width / clampedZoom.value;
           const viewH = prevState.height / clampedZoom.value;
-          const dx = el.width * IDEATION_HORIZONTAL_SCROLL_FACTOR;
+          const dx = (el.width * IDEATION_HORIZONTAL_SCROLL_FACTOR) / 2;
           const dy = viewH * IDEATION_VERTICAL_SCROLL_MARGIN_RATIO;
 
           return {

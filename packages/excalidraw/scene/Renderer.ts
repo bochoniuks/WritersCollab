@@ -121,6 +121,8 @@ export class Renderer {
         editingTextElement,
         newElementId,
         pendingImageElementId,
+        scratchpadViewMode,
+        ideationElementId,
         // cache-invalidation nonce
         sceneNonce: _sceneNonce,
       }: {
@@ -136,9 +138,15 @@ export class Renderer {
          * (we'd have to prefilter elements outside of this function) */
         newElementId: ExcalidrawElement["id"] | undefined;
         pendingImageElementId: AppState["pendingImageElementId"];
+        scratchpadViewMode: AppState["scratchpadViewMode"];
+        ideationElementId: AppState["ideationElementId"];
         sceneNonce: ReturnType<InstanceType<typeof Scene>["getSceneNonce"]>;
       }) => {
-        const elements = this.scene.getNonDeletedElements();
+        let elements = this.scene.getNonDeletedElements();
+
+        if (scratchpadViewMode === "ideation" && ideationElementId) {
+          elements = elements.filter((el) => el.id === ideationElementId);
+        }
 
         const elementsMap = getRenderableElements({
           elements,
@@ -146,6 +154,8 @@ export class Renderer {
           newElementId,
           pendingImageElementId,
         });
+        
+        
 
         const visibleElements = getVisibleCanvasElements({
           elementsMap,
