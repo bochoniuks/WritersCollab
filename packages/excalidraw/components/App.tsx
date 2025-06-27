@@ -1806,8 +1806,19 @@ class App extends React.Component<AppProps, AppState> {
                                     title="Go to linked scratchpad"
                                     icon={ArrowIcon}
                                     checked={false}
-                                    onChange={() =>
+                                    onChange={() => {
+                                      const size = firstSelectedElement.pageSize
+                                        ? SCRATCHPAD_PAGE_SIZES[firstSelectedElement.pageSize]
+                                        : null;
+                                      this.mutateElement(
+                                        firstSelectedElement as ExcalidrawScratchpadElement,
+                                        {
+                                          paginationEnabled: false,
+                                          ...(size && { width: size.width, height: size.height }),
+                                        },
+                                      );
                                       this.enterIdeationView(connectedScratchpad!)
+                                    }
                                     }
                                   />
                                 )}
