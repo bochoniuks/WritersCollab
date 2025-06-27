@@ -471,6 +471,13 @@ export const maybeBindLinearElement = (
       bindLinearElement(linearElement, hoveredElement, "end", scene);
     }
   }
+
+  const updatedArrow = scene.getNonDeletedElement(
+    linearElement.id,
+  ) as NonDeleted<ExcalidrawArrowElement>;
+  if (updatedArrow.startBinding && updatedArrow.endBinding) {
+    removeDuplicateScratchpadArrows(updatedArrow, scene);
+  }
 };
 
 const normalizePointBinding = (
