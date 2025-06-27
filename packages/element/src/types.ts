@@ -197,6 +197,7 @@ export type ExcalidrawRectanguloidElement =
   | ExcalidrawFreeDrawElement
   | ExcalidrawIframeLikeElement
   | ExcalidrawFrameLikeElement
+  | ExcalidrawScratchpadElement
   | ExcalidrawEmbeddableElement;
 
 /**

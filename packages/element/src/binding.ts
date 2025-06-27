@@ -60,6 +60,7 @@ import {
   isFrameLikeElement,
   isLinearElement,
   isRectanguloidElement,
+  isScratchpadElement,
   isTextElement,
 } from "./typeChecks";
 
@@ -164,6 +165,40 @@ export const bindOrUnbindLinearElement = (
       ),
     });
   });
+};
+
+const removeDuplicateScratchpadArrows = (
+  arrow: NonDeleted<ExcalidrawArrowElement>,
+  scene: Scene,
+) => {
+  const startId = arrow.startBinding?.elementId;
+  const endId = arrow.endBinding?.elementId;
+  if (!startId || !endId) {
+    return;
+  }
+
+  const startEl = scene.getNonDeletedElement(startId);
+  const endEl = scene.getNonDeletedElement(endId);
+  if (!startEl || !endEl) {
+    return;
+  }
+  if (!isScratchpadElement(startEl) || !isScratchpadElement(endEl)) {
+    return;
+  }
+
+  for (const el of scene.getNonDeletedElements()) {
+    if (
+      el.id !== arrow.id &&
+      isArrowElement(el) &&
+      el.startBinding?.elementId &&
+      el.endBinding?.elementId &&
+      ((el.startBinding.elementId === startId && el.endBinding.elementId === endId) ||
+       (el.startBinding.elementId === endId && el.endBinding.elementId === startId))
+    ) {
+      scene.mutateElement(el, { isDeleted: true });
+      fixBindingsAfterDeletion(scene.getNonDeletedElements(), [el]);
+    }
+  }
 };
 
 const bindOrUnbindLinearElementEdge = (
@@ -504,6 +539,12 @@ export const bindLinearElement = (
         type: "arrow",
       }),
     });
+  }
+  const updatedArrow = scene.getNonDeletedElement(
+    linearElement.id,
+  ) as NonDeleted<ExcalidrawArrowElement>;
+  if (updatedArrow.startBinding && updatedArrow.endBinding) {
+    removeDuplicateScratchpadArrows(updatedArrow, scene);
   }
 };
 

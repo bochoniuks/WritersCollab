@@ -172,6 +172,7 @@ export const intersectElementWithLineSegment = (
     case "rectangle":
     case "image":
     case "text":
+    case "scratchpad":
     case "iframe":
     case "embeddable":
     case "frame":

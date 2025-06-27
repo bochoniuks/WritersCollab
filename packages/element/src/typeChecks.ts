@@ -189,6 +189,7 @@ export const isBindableElement = (
       element.type === "embeddable" ||
       element.type === "frame" ||
       element.type === "magicframe" ||
+      element.type === "scratchpad" ||
       (element.type === "text" && !element.containerId))
   );
 };
