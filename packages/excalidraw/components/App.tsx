@@ -493,7 +493,7 @@ import {
   isPointHittingLink,
   isPointHittingLinkIcon,
 } from "./hyperlink/helpers";
-import { MagicIcon, copyIcon, fullscreenIcon } from "./icons";
+import { MagicIcon, copyIcon, fullscreenIcon, ArrowIcon } from "./icons";
 import { Toast } from "./Toast";
 
 import { findShapeByKey } from "./shapes";
@@ -1649,6 +1649,28 @@ class App extends React.Component<AppProps, AppState> {
 
     const firstSelectedElement = selectedElements[0];
 
+    const ideationTarget =
+      this.state.scratchpadViewMode === "ideation" && this.state.ideationElementId
+        ? this.scene.getElement(this.state.ideationElementId)
+        : null;
+
+    let connectedScratchpad: ExcalidrawScratchpadElement | null = null;
+    if (ideationTarget && isScratchpadElement(ideationTarget)) {
+      for (const el of this.scene.getNonDeletedElements()) {
+        if (
+          isArrowElement(el) &&
+          el.endBinding?.elementId === ideationTarget.id &&
+          el.startBinding?.elementId
+        ) {
+          const startEl = this.scene.getElement(el.startBinding.elementId);
+          if (startEl && isScratchpadElement(startEl)) {
+            connectedScratchpad = startEl;
+            break;
+          }
+        }
+      }
+    }
+
     const showShapeSwitchPanel =
       editorJotaiStore.get(convertElementTypePopupAtom)?.type === "panel";
 
@@ -1778,6 +1800,17 @@ class App extends React.Component<AppProps, AppState> {
                                   onChange={() => this.exitIdeationView(firstSelectedElement as ExcalidrawScratchpadElement)}
                                 />
                               )}
+                              {this.state.scratchpadViewMode === "ideation" &&
+                                connectedScratchpad && (
+                                  <ElementCanvasButton
+                                    title="Go to linked scratchpad"
+                                    icon={ArrowIcon}
+                                    checked={false}
+                                    onChange={() =>
+                                      this.enterIdeationView(connectedScratchpad!)
+                                    }
+                                  />
+                                )}
                             </ElementCanvasButtons>
                           )}
                         {this.props.aiEnabled !== false &&
