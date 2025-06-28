@@ -1971,10 +1971,10 @@ export const actionToggleScratchpadPagination = register({
       !!selected[0].pageSize
     );
   },
-  perform: (elements, appState) => {
+  perform: (elements, appState, _, app) => {
     const scratchpad =
     getSelectedElements(elements, appState)[0] as ExcalidrawScratchpadElement;
-    const nextElements = changeProperty(elements, appState, (el) => {
+    let nextElements = changeProperty(elements, appState, (el) => {
       if (isScratchpadElement(el) && el.id === scratchpad.id) {
         const toggled = !el.paginationEnabled;
         const size = el.pageSize ? SCRATCHPAD_PAGE_SIZES[el.pageSize] : null;
@@ -2002,6 +2002,26 @@ export const actionToggleScratchpadPagination = register({
       }
       return el;
     });
+
+    console.log({...nextElements})
+    const updated = nextElements.find(
+      (el) => isScratchpadElement(el) && el.id === scratchpad.id,
+    ) as ExcalidrawScratchpadElement;
+    updateBoundElements(updated, app.scene);
+
+    const elementsMap = arrayToMap(nextElements);
+    for (const bound of updated.boundElements || []) {
+      if (bound.type === "arrow") {
+        const refreshed = app.scene.getElement(bound.id);
+        console.log({...refreshed})
+        if (refreshed) {
+          elementsMap.set(refreshed.id, refreshed);
+        }
+      }
+    }
+    nextElements = Array.from(elementsMap.values());
+
+    console.log(nextElements)
     return {
       elements: nextElements,
       appState: {

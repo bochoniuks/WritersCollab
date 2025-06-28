@@ -770,7 +770,9 @@ export const updateBoundElements = (
   if (!isBindableElement(changedElement)) {
     return;
   }
-
+  console.log(changedElement)
+  console.log(options)
+  
   const { newSize, simultaneouslyUpdated } = options ?? {};
   const simultaneouslyUpdatedElementIds = getSimultaneouslyUpdatedElementIds(
     simultaneouslyUpdated,
@@ -824,6 +826,7 @@ export const updateBoundElements = (
 
     // `linearElement` is being moved/scaled already, just update the binding
     if (simultaneouslyUpdatedElementIds.has(element.id)) {
+      console.log("mutating")
       scene.mutateElement(element, bindings);
       return;
     }
