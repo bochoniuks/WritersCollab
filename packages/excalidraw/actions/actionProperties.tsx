@@ -2007,7 +2007,10 @@ export const actionToggleScratchpadPagination = register({
     const updated = nextElements.find(
       (el) => isScratchpadElement(el) && el.id === scratchpad.id,
     ) as ExcalidrawScratchpadElement;
-    updateBoundElements(updated, app.scene);
+    updateBoundElements(updated, app.scene, {
+      changedElements: new Map([[updated.id, updated]]),
+      newSize: { width: updated.width, height: updated.height },
+    });
 
     const elementsMap = arrayToMap(nextElements);
     for (const bound of updated.boundElements || []) {
