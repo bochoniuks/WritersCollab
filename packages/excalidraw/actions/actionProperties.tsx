@@ -1890,11 +1890,12 @@ export const actionChangeScratchpadPageSize = register({
     const scratchpads = getSelectedElements(elements, appState).filter(isScratchpadElement);
 
     for (const scratchpad of scratchpads) {
-      const updated = elementsMap.get(scratchpad.id)!;
-      updateBoundElements(updated, app.scene, {
-        newSize: { width: updated.width, height: updated.height },
-      });
-    }
+        const updated = elementsMap.get(scratchpad.id)!;
+        updateBoundElements(updated, app.scene, {
+          newSize: { width: updated.width, height: updated.height },
+          changedElements: new Map([[updated.id, updated]]),
+        });
+      }
 
     nextElements = Array.from(elementsMap.values());
 
@@ -1993,6 +1994,7 @@ export const actionToggleScratchpadPagination = register({
       ) as ExcalidrawScratchpadElement;
       updateBoundElements(updated, app.scene, {
         newSize: { width: updated.width, height: updated.height },
+        changedElements: new Map([[updated.id, updated]]),
       });
 
 
