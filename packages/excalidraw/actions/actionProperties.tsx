@@ -1890,13 +1890,21 @@ export const actionChangeScratchpadPageSize = register({
     const scratchpads = getSelectedElements(elements, appState).filter(isScratchpadElement);
 
     for (const scratchpad of scratchpads) {
-        const updated = elementsMap.get(scratchpad.id)!;
-        updateBoundElements(updated, app.scene, {
-          newSize: { width: updated.width, height: updated.height },
-          changedElements: new Map([[updated.id, updated]]),
-        });
-      }
+      const updated = elementsMap.get(scratchpad.id)!;
+      updateBoundElements(updated, app.scene, {
+        newSize: { width: updated.width, height: updated.height },
+        changedElements: new Map([[updated.id, updated]]),
+      });
 
+      for (const bound of updated.boundElements || []) {
+        if (bound.type === "arrow") {
+          const refreshed = app.scene.getElement(bound.id);
+          if (refreshed) {
+            elementsMap.set(refreshed.id, refreshed);
+          }
+        }
+      }
+    }
     nextElements = Array.from(elementsMap.values());
 
     return {
@@ -1960,7 +1968,7 @@ export const actionToggleScratchpadPagination = register({
   perform: (elements, appState, _, app) => {
     const scratchpad =
     getSelectedElements(elements, appState)[0] as ExcalidrawScratchpadElement;
-    const nextElements = changeProperty(elements, appState, (el) => {
+    let nextElements = changeProperty(elements, appState, (el) => {
       if (isScratchpadElement(el) && el.id === scratchpad.id) {
         const toggled = !el.paginationEnabled;
         const size = el.pageSize ? SCRATCHPAD_PAGE_SIZES[el.pageSize] : null;
@@ -1990,12 +1998,23 @@ export const actionToggleScratchpadPagination = register({
     });
 
     const updated = nextElements.find(
-        (el) => isScratchpadElement(el) && el.id === scratchpad.id,
-      ) as ExcalidrawScratchpadElement;
-      updateBoundElements(updated, app.scene, {
-        newSize: { width: updated.width, height: updated.height },
-        changedElements: new Map([[updated.id, updated]]),
-      });
+      (el) => isScratchpadElement(el) && el.id === scratchpad.id,
+    ) as ExcalidrawScratchpadElement;
+    updateBoundElements(updated, app.scene, {
+      newSize: { width: updated.width, height: updated.height },
+      changedElements: new Map([[updated.id, updated]]),
+    });
+
+    const elementsMap = arrayToMap(nextElements);
+    for (const bound of updated.boundElements || []) {
+      if (bound.type === "arrow") {
+        const refreshed = app.scene.getElement(bound.id);
+        if (refreshed) {
+          elementsMap.set(refreshed.id, refreshed);
+        }
+      }
+    }
+    nextElements = Array.from(elementsMap.values());
 
 
     return {
