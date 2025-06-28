@@ -1,6 +1,6 @@
 import { getFontString } from "@excalidraw/common";
 
-import { newElementWith } from "@excalidraw/element";
+import { newElementWith, updateBoundElements } from "@excalidraw/element";
 import { measureText } from "@excalidraw/element";
 
 import { isTextElement } from "@excalidraw/element";
@@ -27,27 +27,35 @@ export const actionTextAutoResize = register({
     );
   },
   perform: (elements, appState, _, app) => {
-    const selectedElements = getSelectedElements(elements, appState);
+  const selectedElements = getSelectedElements(elements, appState);
+
+    const updatedElements = elements.map((element) => {
+      if (element.id === selectedElements[0].id && isTextElement(element)) {
+        const metrics = measureText(
+          element.originalText,
+          getFontString(element),
+          element.lineHeight,
+        );
+
+        const updated = newElementWith(element, {
+          autoResize: true,
+          width: metrics.width,
+          height: metrics.height,
+          text: element.originalText,
+        });
+
+        updateBoundElements(updated, app.scene, {
+          newSize: { width: metrics.width, height: metrics.height },
+        });
+
+        return updated;
+      }
+      return element;
+    });
 
     return {
       appState,
-      elements: elements.map((element) => {
-        if (element.id === selectedElements[0].id && isTextElement(element)) {
-          const metrics = measureText(
-            element.originalText,
-            getFontString(element),
-            element.lineHeight,
-          );
-
-          return newElementWith(element, {
-            autoResize: true,
-            width: metrics.width,
-            height: metrics.height,
-            text: element.originalText,
-          });
-        }
-        return element;
-      }),
+      elements: updatedElements,
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
