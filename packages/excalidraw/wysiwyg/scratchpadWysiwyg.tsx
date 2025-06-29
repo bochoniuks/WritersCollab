@@ -229,8 +229,8 @@ export const scratchpadWysiwyg = ({
           top: `${viewportY}px`, 
           width: `${width}px`,
           height: `${height}px`,
-          // font: font,
-          // lineHeight: lineHeight,
+          font,
+          lineHeight,
           color: updatedElement.strokeColor,
           opacity: updatedElement.opacity / 100,
           filter: "var(--theme-filter)",
@@ -395,6 +395,10 @@ export const scratchpadWysiwyg = ({
     wordBreak = "break-word";
   }
   const lineHeight = getLineHeight(element.fontFamily);
+  const font = getFontString({
+    fontFamily: element.fontFamily,
+    fontSize: element.fontSize,
+  });
 
   Object.assign(editable.style, {
     position: "absolute",
@@ -407,6 +411,8 @@ export const scratchpadWysiwyg = ({
     outline: 0,
     resize: "none",
     overflow: "hidden",
+    font,
+    lineHeight,
     // must be specified because in dark mode canvas creates a stacking context
     zIndex: "var(--zIndex-wysiwyg)",
     wordBreak,
