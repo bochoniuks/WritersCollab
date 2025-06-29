@@ -821,7 +821,7 @@ export const renderElement = (
       break;
     }
     case "scratchpad": {
-      const lines = parseTiptapDoc(element.originalTiptapDoc, {
+      const lines = parseTiptapDoc(element.tiptapDoc, {
         fontFamily: element.fontFamily,
         fontSize: element.fontSize,
         color: element.strokeColor,
