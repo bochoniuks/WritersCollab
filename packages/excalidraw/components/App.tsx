@@ -9492,7 +9492,7 @@ class App extends React.Component<AppProps, AppState> {
       if (this.state.activeTool.type === "selection") {
         pointerDownState.boxSelection.hasOccurred = true;
 
-        const elements = this.scene.getNonDeletedElements();
+        const elements = this.getInteractableElements();
 
         // box-select line editor points
         if (this.state.editingLinearElement) {
