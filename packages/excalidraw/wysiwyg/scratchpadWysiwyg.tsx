@@ -26,6 +26,7 @@ import {
 import {
   getLineHeightInPx,
   isScratchpadElement,
+  normalizeText,
   originalContainerCache,
   updateOriginalContainerCache,
 } from "@excalidraw/element";
@@ -77,6 +78,7 @@ import type { AppState } from "../types";
 import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 import FontFamily from "@tiptap/extension-font-family";
 import { PageWrapper } from "./pageWrapper";
+import { parseClipboard } from "../clipboard";
 
 const getTransform = (
   width: number,
@@ -487,6 +489,18 @@ export const scratchpadWysiwyg = ({
         updateWysiwygStyle();
         refreshPageElement();
       },
+      editorProps: {
+        handlePaste: (view, event) => {
+          event.preventDefault();
+          parseClipboard(event, true).then(({ text }) => {
+            if (text) {
+              view.dispatch(view.state.tr.insertText(normalizeText(text)));
+            }
+          });
+          return true;  
+        },
+      },
+
     }, [element.paginationEnabled, element.pageSize],);
 
     useEffect(() => {
