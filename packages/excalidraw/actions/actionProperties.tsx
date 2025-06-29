@@ -1987,7 +1987,12 @@ export const actionToggleScratchpadPagination = register({
             { fontFamily: el.fontFamily, fontSize: el.fontSize }
           );
           const pageContentHeight = size.height - el.margin.top - el.margin.bottom;
+          console.log("size.height: ", size.height)
+          console.log("docHeight: ", docHeight)
+          console.log("pageContentHeight: ", pageContentHeight)
+          console.log("Math.ceil(docHeight / pageContentHeight): ", Math.ceil(docHeight / pageContentHeight))
           const pages = Math.max(1, Math.ceil(docHeight / pageContentHeight));
+
           return newElementWith(el, {
             paginationEnabled: true,
             width: size.width,

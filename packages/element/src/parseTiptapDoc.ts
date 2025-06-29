@@ -172,6 +172,7 @@ export const measureTiptapDoc = (
         getLineHeight(defaultFontFamily),
       );
       lineHeight = metrics.height;
+      console.log("HB lineHeight: ", lineHeight)
     } else {
       for (const seg of line) {
         if (seg.type === "hardBreak") {
@@ -182,9 +183,11 @@ export const measureTiptapDoc = (
         lineWidth += metrics.width;
         lineHeight = Math.max(lineHeight, metrics.height);
       }
+      console.log("lineHeight: ", lineHeight)
     }
     width = Math.max(width, lineWidth);
     height += lineHeight;
+    console.log("height: ", height)
   }
   return { width, height };
 };
