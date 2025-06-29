@@ -821,7 +821,7 @@ export const renderElement = (
       break;
     }
     case "scratchpad": {
-      const lines = parseTiptapDoc(element.originalTiptapDoc, {
+      const lines = parseTiptapDoc(element.tiptapDoc, {
         fontFamily: element.fontFamily,
         fontSize: element.fontSize,
         color: element.strokeColor,
@@ -894,12 +894,22 @@ export const renderElement = (
           line.length === 0 || line.every((seg) => seg.type === "hardBreak");
 
         if (isBreakLine) {
-          const metrics = measureText(
-            "",
-            getFontString({ fontFamily: element.fontFamily, fontSize: element.fontSize }),
-            getLineHeight(element.fontFamily),
-          );
-          bottomGap = metrics.height;
+          if (line.length > 0) {
+            for (const seg of line) {
+              const lineHeightPx = getLineHeightInPx(
+                seg.fontSize,
+                getLineHeight(seg.fontFamily),
+              );
+              bottomGap = Math.max(bottomGap, lineHeightPx);
+            }
+          } else {
+            const metrics = measureText(
+              "",
+              getFontString({ fontFamily: element.fontFamily, fontSize: element.fontSize }),
+              getLineHeight(element.fontFamily),
+            );
+            bottomGap = metrics.height;
+          }
         } else {
           for (const seg of line) {
             if (seg.type === "hardBreak") {

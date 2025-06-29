@@ -169,12 +169,23 @@ export const measureTiptapDoc = (
         line.length === 0 || line.every((seg) => seg.type === "hardBreak");
 
     if (isBreakLine) {
-      const metrics = measureText(
-        "",
-        getFontString({ fontFamily: defaultFontFamily, fontSize: defaultFontSize }),
-        getLineHeight(defaultFontFamily),
-      );
-      lineHeight = metrics.height;
+      if (line.length > 0) {
+        for (const seg of line) {
+          const metrics = measureText(
+            "",
+            getFontString({ fontFamily: seg.fontFamily, fontSize: seg.fontSize }),
+            getLineHeight(seg.fontFamily),
+          );
+          lineHeight = Math.max(lineHeight, metrics.height);
+        }
+      } else {
+        const metrics = measureText(
+          "",
+          getFontString({ fontFamily: defaultFontFamily, fontSize: defaultFontSize }),
+          getLineHeight(defaultFontFamily),
+        );
+        lineHeight = metrics.height;
+      }
     } else {
       for (const seg of line) {
         if (seg.type === "hardBreak") {
