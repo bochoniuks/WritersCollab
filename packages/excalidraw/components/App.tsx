@@ -5372,17 +5372,18 @@ class App extends React.Component<AppProps, AppState> {
           fontSize: element.fontSize,
         }));
       } else {
+        const contentWidth = pageSize
+          ? pageSize.width - element.margin.left - element.margin.right
+          : width;
+
         if (wrapDoc) {
-          doc = wrapTiptapDoc(doc, width, {
+          doc = wrapTiptapDoc(doc, contentWidth, {
             fontFamily: element.fontFamily,
             fontSize: element.fontSize,
             color: element.strokeColor,
           });
         }
         
-        const contentWidth = pageSize
-          ? pageSize.width - element.margin.left - element.margin.right
-          : width;
         const { height: docHeight } = measureTiptapDocWithWidth(doc, contentWidth, {
           fontFamily: element.fontFamily,
           fontSize: element.fontSize,
