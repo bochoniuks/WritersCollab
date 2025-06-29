@@ -2230,7 +2230,7 @@ class App extends React.Component<AppProps, AppState> {
       if (size) {
         const contentWidth = size.width - element.margin.left - element.margin.right;
         const { height: docHeight } = measureTiptapDocWithWidth(
-          element.tiptapDoc,
+          element.originalTiptapDoc,
           contentWidth,
           { fontFamily: element.fontFamily, fontSize: element.fontSize },
         );
