@@ -727,13 +727,13 @@ body.excalidraw-cursor-resize * {
   .excalidraw-wysiwyg .page:last-child {
     margin-bottom: 0;
   }
-  
-  insertion {
+
+  insert {
     color: green;
     text-decoration: underline;
   }
 
-  deletion {
+  delete {
     color: red;
     text-decoration: line-through;
   }
