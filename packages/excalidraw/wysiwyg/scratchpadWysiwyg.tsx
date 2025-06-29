@@ -212,10 +212,10 @@ export const scratchpadWysiwyg = ({
         let coordX = updatedElement.x;
         let coordY = updatedElement.y;
 
-        const font = getFontString({
-          fontFamily: updatedElement.fontFamily,
-          fontSize: updatedElement.fontSize,
-        });
+        // const font = getFontString({
+        //   fontFamily: updatedElement.fontFamily,
+        //   fontSize: updatedElement.fontSize,
+        // });
 
         const lineHeight = getLineHeight(updatedElement.fontFamily);
 
@@ -228,7 +228,8 @@ export const scratchpadWysiwyg = ({
           top: `${viewportY}px`, 
           width: `${width}px`,
           height: `${height}px`,
-          font,
+          fontFamily: getFontFamilyString({ fontFamily: updatedElement.fontFamily }),
+          fontSize: `${updatedElement.fontSize}px`,
           lineHeight,
           color: updatedElement.strokeColor,
           opacity: updatedElement.opacity / 100,
@@ -394,10 +395,10 @@ export const scratchpadWysiwyg = ({
     wordBreak = "break-word";
   }
   const lineHeight = getLineHeight(element.fontFamily);
-  const font = getFontString({
-    fontFamily: element.fontFamily,
-    fontSize: element.fontSize,
-  });
+  // const font = getFontString({
+  //   fontFamily: element.fontFamily,
+  //   fontSize: element.fontSize,
+  // });
 
   Object.assign(editable.style, {
     position: "absolute",
@@ -410,7 +411,8 @@ export const scratchpadWysiwyg = ({
     outline: 0,
     resize: "none",
     overflow: "hidden",
-    font,
+    fontFamily: getFontFamilyString({ fontFamily: element.fontFamily }),
+    fontSize: `${element.fontSize}px`,
     lineHeight,
     // must be specified because in dark mode canvas creates a stacking context
     zIndex: "var(--zIndex-wysiwyg)",
