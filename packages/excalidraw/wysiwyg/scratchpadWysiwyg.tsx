@@ -74,6 +74,7 @@ import type App from "../components/App";
 import type { AppState } from "../types";
 import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 import FontFamily from "@tiptap/extension-font-family";
+import { StyledHardBreak } from "./styledHardBreak";
 
 const getTransform = (
   width: number,
@@ -453,7 +454,8 @@ export const scratchpadWysiwyg = ({
 
   const ScratchpadEditor = () => {
     const ed = useEditor({
-      extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize],
+      extensions: [StarterKit, StyledHardBreak,
+         TextStyle, Color, FontFamily, FontSize],
       content: prevDoc,
       onUpdate: ({ editor: ed }) => {
         const doc = ed.getJSON();

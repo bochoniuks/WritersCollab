@@ -44,10 +44,7 @@ export const wrapTiptapDoc = (
         });
         const w = measureText(token, font, getLineHeight(seg.fontFamily)).width;
 
-        if (width && width + w > maxWidth) {
-          current.content!.push({ type: "hardBreak" });
-          width = 0;
-        }
+        
         
         const fontName =
           Object.entries(FONT_FAMILY).find(([, id]) => id === seg.fontFamily)?.[0] ??
@@ -74,6 +71,10 @@ export const wrapTiptapDoc = (
           marks.push({ type: "strike" });
         }
 
+        if (width && width + w > maxWidth) {
+          current.content!.push({ type: "hardBreak", marks: marks as Mark[] });
+          width = 0;
+        }
 
         current.content!.push({
           type: "text",
@@ -268,6 +269,15 @@ export const parseTiptapDoc = (
         strike: style.strike,
       });
     } else if (node.type === "hardBreak") {
+      current.push({
+        text: "",
+        fontFamily: style.fontFamily || defaultFontFamily,
+        fontSize: style.fontSize || defaultFontSize,
+        color: style.color || defaultColor,
+        fontWeight: style.fontWeight,
+        fontStyle: style.fontStyle,
+        strike: style.strike,
+      });
       pushLine();
     }
 
