@@ -7,6 +7,7 @@ import TextStyle from "@tiptap/extension-text-style";
 import FontSize from "tiptap-extension-font-size";
 import Color from "@tiptap/extension-color";
 import { Pagination } from "tiptap-pagination-breaks"; 
+import TrackChangeExtension from "track-change-extension";
 
 import {
   KEYS,
@@ -467,6 +468,7 @@ export const scratchpadWysiwyg = ({
     ];
     const ed = useEditor({
       extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize,
+        TrackChangeExtension.configure({ enabled: true }),
         ...pageExtensions
       ],
       content: prevDoc,

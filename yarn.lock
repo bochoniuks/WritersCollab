@@ -9045,6 +9045,11 @@ tr46@~0.0.3:
   resolved "https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
+track-change-extension@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.npmjs.org/track-change-extension/-/track-change-extension-1.0.3.tgz"
+  integrity sha512-5noBdsao1LoZklEQByg5GNQw8lHKnD8NvsgJ/l4eW7usffxv8PJbvvty4j8GPyyzRWv/QvRUuaXEh4CSlo9teA==
+
 ts-dedent@^2.2.0:
   version "2.2.0"
   resolved "https://registry.npmjs.org/ts-dedent/-/ts-dedent-2.2.0.tgz"
