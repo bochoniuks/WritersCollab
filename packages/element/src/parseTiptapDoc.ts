@@ -273,6 +273,10 @@ export const parseTiptapDoc = (
     }
     
     if (node.type === "text") {
+      // skip text wrapped in <delete> tags
+        if (node.marks?.some((m) => m.type === "deletion")) {
+          return;
+        }
         current.push({
           type: "text",
           text: node.text ?? "",
