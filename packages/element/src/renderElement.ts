@@ -821,6 +821,7 @@ export const renderElement = (
       break;
     }
     case "scratchpad": {
+      console.log(element.tiptapDoc)
       const lines = parseTiptapDoc(element.tiptapDoc, {
         fontFamily: element.fontFamily,
         fontSize: element.fontSize,
@@ -887,6 +888,7 @@ export const renderElement = (
 
       let cursorY = 0;
       for (const line of lines) {
+        console.log(line)
         let baselineOffset = 0;
         let bottomGap = 0;
 

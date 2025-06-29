@@ -134,12 +134,9 @@ export const scratchpadWysiwyg = ({
 }): SubmitHandler => {
   let pageEl: HTMLDivElement | null = null;
   const onPageScroll = (evt: Event) => {
-    console.log("onPageScroll")
-    console.log(evt.target)
     const el = app.scene.getElement(id);
     const page = evt.currentTarget as HTMLDivElement;
     if (el && isScratchpadElement(el)) {
-      console.log(page.scrollTop)
       app.scene.mutateElement(el, { scrollTop: page.scrollTop });
     }
   };
@@ -454,8 +451,6 @@ export const scratchpadWysiwyg = ({
       ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
       : { width: element.width, height: element.height };
     
-    console.log(element.pageSize)
-    console.log(pageSize)
     const pageExtensions = [
       ...(element.paginationEnabled
         ? [
