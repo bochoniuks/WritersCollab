@@ -283,6 +283,9 @@ export const parseTiptapDoc = (
           fontStyle: style.fontStyle,
           strike: style.strike,
         });
+    } else if (node.type === "hardBreak") {
+        current.push({ type: "hardBreak" });
+        pushLine();
     } else if(node.type === "paragraph" && (node.content?.length ?? 0) === 0){
         current.push({ type: "hardBreak" });
         pushLine();
