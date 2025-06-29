@@ -19,6 +19,8 @@ export type TiptapSegment = | {
 }
 | {
   type: "hardBreak";
+  fontFamily: FontFamilyValues; // use numeric font-family values
+  fontSize: number;
 };
 
 export type TiptapLine = TiptapSegment[];
@@ -52,12 +54,7 @@ export const wrapTiptapDoc = (
           fontWeight: seg.fontWeight,
           fontStyle: seg.fontStyle,
         });
-        const w = measureText(token, font, getLineHeight(seg.fontFamily)).width;
-
-        if (width && width + w > maxWidth) {
-          current.content!.push({ type: "hardBreak" });
-          width = 0;
-        }
+        
         
         const fontName =
           Object.entries(FONT_FAMILY).find(([, id]) => id === seg.fontFamily)?.[0] ??
@@ -83,7 +80,13 @@ export const wrapTiptapDoc = (
         if (seg.strike) {
           marks.push({ type: "strike" });
         }
+        
+        const w = measureText(token, font, getLineHeight(seg.fontFamily)).width;
 
+        if (width && width + w > maxWidth) {
+          current.content!.push({ type: "hardBreak", marks: marks as Mark[] });
+          width = 0;
+        }
 
         current.content!.push({
           type: "text",
@@ -172,7 +175,6 @@ export const measureTiptapDoc = (
         getLineHeight(defaultFontFamily),
       );
       lineHeight = metrics.height;
-      console.log("HB lineHeight: ", lineHeight)
     } else {
       for (const seg of line) {
         if (seg.type === "hardBreak") {
@@ -183,11 +185,9 @@ export const measureTiptapDoc = (
         lineWidth += metrics.width;
         lineHeight = Math.max(lineHeight, metrics.height);
       }
-      console.log("lineHeight: ", lineHeight)
     }
     width = Math.max(width, lineWidth);
     height += lineHeight;
-    console.log("height: ", height)
   }
   return { width, height };
 };
@@ -286,15 +286,26 @@ export const parseTiptapDoc = (
           fontStyle: style.fontStyle,
           strike: style.strike,
         });
+    } else if (node.type === "hardBreak") {   
+        current.push({
+          type: "hardBreak",
+          fontFamily: style.fontFamily || defaultFontFamily,
+          fontSize: style.fontSize || defaultFontSize,
+        });
+        pushLine();
     } else if(node.type === "paragraph" && (node.content?.length ?? 0) === 0){
-        current.push({ type: "hardBreak" });
+        current.push({ type: "hardBreak",
+          fontFamily: style.fontFamily || defaultFontFamily,
+          fontSize: style.fontSize || defaultFontSize, });
         pushLine();
     }
 
     if (Array.isArray(node.content)) {
       if (node.type === "paragraph" && node.content.length === 0) {
         // ensure blank paragraphs become blank lines
-        current.push({ type: "hardBreak" });
+        current.push({ type: "hardBreak",
+          fontFamily: style.fontFamily || defaultFontFamily,
+          fontSize: style.fontSize || defaultFontSize, });
         pushLine();
       } else {
         node.content.forEach((child, idx) => {
