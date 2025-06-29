@@ -1994,6 +1994,24 @@ class App extends React.Component<AppProps, AppState> {
     return this.scene.getNonDeletedElements();
   };
 
+  private getInteractableElements() {
+    let elements = this.scene.getNonDeletedElements();
+
+    if (
+      this.state.scratchpadViewMode === "ideation" &&
+      this.state.ideationElementId
+    ) {
+      elements = elements.filter(
+        (el) =>
+          el.id === this.state.ideationElementId ||
+          el.customData?.ideationId === this.state.ideationElementId,
+      );
+    } else {
+      elements = elements.filter((el) => !el.customData?.ideationId);
+    }
+    return elements;
+  }
+
   public onInsertElements = (elements: readonly ExcalidrawElement[]) => {
     this.addElementsFromPasteOrLibrary({
       elements,
@@ -5529,18 +5547,17 @@ class App extends React.Component<AppProps, AppState> {
     const iframeLikes: Ordered<ExcalidrawIframeElement>[] = [];
 
     const elementsMap = this.scene.getNonDeletedElementsMap();
+    const base = this.getInteractableElements();
 
     const elements = (
       opts?.includeBoundTextElement && opts?.includeLockedElements
-        ? this.scene.getNonDeletedElements()
-        : this.scene
-            .getNonDeletedElements()
-            .filter(
-              (element) =>
-                (opts?.includeLockedElements || !element.locked) &&
-                (opts?.includeBoundTextElement ||
-                  !(isTextElement(element) && element.containerId)),
-            )
+        ? base
+        : base.filter(
+            (element) =>
+              (opts?.includeLockedElements || !element.locked) &&
+              (opts?.includeBoundTextElement ||
+                !(isTextElement(element) && element.containerId)),
+          )
     )
       .filter((el) => this.hitElement(x, y, el))
       .filter((element) => {
@@ -5620,7 +5637,7 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   private getTextBindableContainerAtPosition(x: number, y: number) {
-    const elements = this.scene.getNonDeletedElements();
+    const elements = this.getInteractableElements();
     const selectedElements = this.scene.getSelectedElements(this.state);
     if (selectedElements.length === 1) {
       return isTextBindableContainer(selectedElements[0], false)
@@ -6242,7 +6259,7 @@ class App extends React.Component<AppProps, AppState> {
       return undefined;
     }
 
-    const elements = this.scene.getNonDeletedElements();
+    const elements = this.getInteractableElements();
     let hitElementIndex = -1;
 
     for (let index = elements.length - 1; index >= 0; index--) {
