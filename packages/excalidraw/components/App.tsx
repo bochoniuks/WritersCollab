@@ -5410,7 +5410,8 @@ class App extends React.Component<AppProps, AppState> {
         }
       }),
       onSubmit: withBatchedUpdates(({ viaKeyboard, nextDoc }) => {
-        const isDeleted = !nextDoc.content?.length;
+        const isDeleted = false;
+
         updateElement(nextDoc, isDeleted, true);
         if (!isDeleted && viaKeyboard) {
           const elId = element.containerId ?? element.id;
@@ -10012,7 +10013,7 @@ class App extends React.Component<AppProps, AppState> {
       }
       else if (isScratchpadElement(newElement)) {
         this.resetCursor();
-        this.handleScratchpadWysiwyg(newElement, { isExistingElement: true });
+        this.handleScratchpadWysiwyg(newElement, { isExistingElement: false });
       }
 
       if (
