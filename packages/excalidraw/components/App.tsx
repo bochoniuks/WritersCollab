@@ -6845,9 +6845,13 @@ class App extends React.Component<AppProps, AppState> {
             });
           } else if (
             !hitElement ||
+            !(
+              this.state.scratchpadViewMode === "ideation" &&
+              isScratchpadElement(hitElement)
+            ) &&
             // Ebow arrows can only be moved when unconnected
-            !isElbowArrow(hitElement) ||
-            !(hitElement.startBinding || hitElement.endBinding)
+            (!isElbowArrow(hitElement) ||
+            !(hitElement.startBinding || hitElement.endBinding))
           ) {
             setCursor(this.interactiveCanvas, CURSOR_TYPE.MOVE);
             if (this.state.activeEmbeddable?.state === "hover") {
@@ -9182,7 +9186,12 @@ class App extends React.Component<AppProps, AppState> {
 
           // when we're editing the name of a frame, we want the user to be
           // able to select and interact with the text input
-          if (!this.state.editingFrame  && this.isGroupActionAllowed("move")) {
+          if (!this.state.editingFrame  && this.isGroupActionAllowed("move")
+              &&
+                !(
+                  this.state.scratchpadViewMode === "ideation" &&
+                  selectedElements.some((el) => isScratchpadElement(el))
+                )) {
             dragSelectedElements(
               pointerDownState,
               selectedElements,
