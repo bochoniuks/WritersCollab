@@ -2205,7 +2205,7 @@ class App extends React.Component<AppProps, AppState> {
     }
   }
 
-  private exitIdeationView(element: ExcalidrawScratchpadElement) {
+  private exitIdeationView = withBatchedUpdates((element: ExcalidrawScratchpadElement) => {
     const prev = this.prevScratchpadView;
     this.prevScratchpadView = null;
     const size = element.pageSize
@@ -2213,16 +2213,13 @@ class App extends React.Component<AppProps, AppState> {
         : null;
     this.mutateElement(element, {
       paginationEnabled: false,
+      scrollTop: 0,
       ...(size && { width: size.width, height: size.height }),
     });
 
-    if (size) {
-      updateBoundElements(element, this.scene, {
-        newSize: { width: size.width, height: size.height },
+    updateBoundElements(element, this.scene, {
+        newSize: size ? { width: size.width, height: size.height } : undefined,
       });
-    } else {
-      updateBoundElements(element, this.scene);
-    }
 
     const elementsMap = this.scene.getElementsMapIncludingDeleted();
     const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
@@ -2242,7 +2239,7 @@ class App extends React.Component<AppProps, AppState> {
     });
 
     
-  } 
+  }) 
 
   private handleIdeationPopState = () => {
     if (
