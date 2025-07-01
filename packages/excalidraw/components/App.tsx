@@ -2229,8 +2229,24 @@ class App extends React.Component<AppProps, AppState> {
       zoom: prev?.zoom ?? this.state.zoom,
       scratchpadViewMode: "cava",
       ideationElementId: null,
+      editingTextElement: null,
     });
-  }
+    this.focusContainer();
+  } 
+
+  private handleIdeationPopState = () => {
+    if (
+      this.state.scratchpadViewMode === "ideation" &&
+      this.state.ideationElementId
+    ) {
+      const el = this.scene.getElement(
+        this.state.ideationElementId,
+      ) as ExcalidrawScratchpadElement | null;
+      if (el) {
+        this.exitIdeationView(el);
+      }
+    }
+  };
 
 
   private enterIdeationView(element: ExcalidrawScratchpadElement) {
@@ -2286,13 +2302,21 @@ class App extends React.Component<AppProps, AppState> {
       zoom: { value: getNormalizedZoom(zoomVal) },
     });
 
+    window.history.pushState(
+      { scratchpadViewMode: "ideation" },
+      APP_NAME,
+      window.location.href,
+    );
+
     this.setState({
       scrollX,
       scrollY,
       zoom: { value: getNormalizedZoom(zoomVal) },
       scratchpadViewMode: "ideation",
       ideationElementId: element.id,
+      editingTextElement: element,
     });
+    this.handleScratchpadWysiwyg(element, { isExistingElement: true });
   }
 
   public onMagicframeToolSelect = () => {
@@ -2792,9 +2816,12 @@ class App extends React.Component<AppProps, AppState> {
         errorMessage: <BraveMeasureTextError />,
       });
     }
+
+    window.addEventListener("popstate", this.handleIdeationPopState);
   }
 
   public componentWillUnmount() {
+    window.removeEventListener("popstate", this.handleIdeationPopState);
     (window as any).launchQueue?.setConsumer(() => {});
     this.renderer.destroy();
     this.scene.destroy();
@@ -2819,6 +2846,7 @@ class App extends React.Component<AppProps, AppState> {
     selectGroupsForSelectedElements.clearCache();
     touchTimeout = 0;
     document.documentElement.style.overscrollBehaviorX = "";
+
   }
 
   private onResize = withBatchedUpdates(() => {

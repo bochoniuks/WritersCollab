@@ -237,7 +237,9 @@ export const scratchpadWysiwyg = ({
           transform: getTransform(
             updatedElement.width,
             updatedElement.height,
-            updatedElement.angle,
+            app.state.scratchpadViewMode === "ideation"
+              ? 0
+              : updatedElement.angle,
             appState,
             updatedElement.width,
             editorMaxHeight,
@@ -683,7 +685,9 @@ export const scratchpadWysiwyg = ({
       target.classList.contains("properties-trigger");
 
     setTimeout(() => {
-      editable.onblur = handleSubmit;
+      if (app.state.scratchpadViewMode !== "ideation") {
+        editable.onblur = handleSubmit;
+      }
 
       // case: clicking on the same property → no change → no update → no focus
       if (!isPropertiesTrigger) {
@@ -693,6 +697,9 @@ export const scratchpadWysiwyg = ({
   };
 
   const temporarilyDisableSubmit = () => {
+    if (app.state.scratchpadViewMode === "ideation") {
+      return;
+    }
     editable.onblur = null;
     window.addEventListener("pointerup", bindBlurEvent);
     // handle edge-case where pointerup doesn't fire e.g. due to user
@@ -741,9 +748,11 @@ export const scratchpadWysiwyg = ({
       // immediately (if tools locked) so that users on mobile have chance
       // to submit first (to hide virtual keyboard).
       // Note: revisit if we want to differ this behavior on Desktop
-      requestAnimationFrame(() => {
-        handleSubmit();
-      });
+      if (app.state.scratchpadViewMode !== "ideation") {
+        requestAnimationFrame(() => {
+          handleSubmit();
+        });
+      }
     }
   };
 

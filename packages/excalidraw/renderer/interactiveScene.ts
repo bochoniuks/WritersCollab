@@ -74,7 +74,7 @@ import {
   SCROLLBAR_COLOR,
   SCROLLBAR_WIDTH,
 } from "../scene/scrollbars";
-import { type InteractiveCanvasAppState } from "../types";
+import { AppState, type InteractiveCanvasAppState } from "../types";
 
 import { getClientColor, renderRemoteCursors } from "../clients";
 
@@ -796,7 +796,10 @@ const _renderInteractiveScene = ({
     const textElement = allElementsMap.get(appState.editingTextElement.id) as
       | ExcalidrawTextElement
       | undefined;
-    if (textElement && !textElement.autoResize) {
+    if (textElement &&
+      !textElement.autoResize &&
+      !(isScratchpadElement(textElement) &&
+        (appState as AppState).scratchpadViewMode === "ideation")) {
       renderTextBox(
         textElement,
         context,
