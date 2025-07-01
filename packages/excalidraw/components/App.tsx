@@ -2215,6 +2215,15 @@ class App extends React.Component<AppProps, AppState> {
       paginationEnabled: false,
       ...(size && { width: size.width, height: size.height }),
     });
+
+    if (size) {
+      updateBoundElements(element, this.scene, {
+        newSize: { width: size.width, height: size.height },
+      });
+    } else {
+      updateBoundElements(element, this.scene);
+    }
+
     const elementsMap = this.scene.getElementsMapIncludingDeleted();
     const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
     const { scrollX, scrollY } = centerScrollOn({
@@ -2231,7 +2240,8 @@ class App extends React.Component<AppProps, AppState> {
       ideationElementId: null,
       editingTextElement: null,
     });
-    this.focusContainer();
+
+    
   } 
 
   private handleIdeationPopState = () => {
@@ -2243,6 +2253,7 @@ class App extends React.Component<AppProps, AppState> {
         this.state.ideationElementId,
       ) as ExcalidrawScratchpadElement | null;
       if (el) {
+        console.log("exciting ideation")
         this.exitIdeationView(el);
       }
     }
