@@ -1492,8 +1492,8 @@ class App extends React.Component<AppProps, AppState> {
           zIndex: 2,
         }}
         onDoubleClick={() => this.setState({ editingScratchpad: sp.id })}
-        onPointerDown={(ev) => this.handleCanvasPointerDown(ev)}
-        onWheel={(ev) => this.handleWheel(ev)}
+        onPointerDown={(ev: React.PointerEvent<HTMLDivElement>) => this.handleCanvasPointerDown(ev)}
+        onWheel={(ev: React.WheelEvent<HTMLDivElement>) => this.handleWheel(ev)}
       >
         {header}
         <button

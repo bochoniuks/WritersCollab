@@ -9,7 +9,7 @@ type ElementIslandProps = {
   padding?: number;
   className?: string | boolean;
   style?: React.CSSProperties;
-};
+} & React.HTMLAttributes<HTMLDivElement>;;
 
 /**
  * Floating container for element‑level toolbars.

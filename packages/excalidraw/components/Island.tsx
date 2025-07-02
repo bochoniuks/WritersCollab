@@ -8,7 +8,7 @@ type IslandProps = {
   padding?: number;
   className?: string | boolean;
   style?: object;
-};
+} & React.HTMLAttributes<HTMLDivElement>;;
 
 export const Island = React.forwardRef<HTMLDivElement, IslandProps>(
   ({ children, padding, className, style }, ref) => (
