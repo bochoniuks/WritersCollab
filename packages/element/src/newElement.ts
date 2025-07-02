@@ -243,6 +243,7 @@ const getTextElementPositionOffsets = (
 
 export const newScratchpadElement = (
   opts: ElementConstructorOpts & {
+    name?: string;   
     tiptapDoc?: JSONContent;
     containerId?: ExcalidrawTextContainer["id"] | null;
     fontFamily?: FontFamilyValues;
@@ -299,6 +300,7 @@ export const newScratchpadElement = (
     pageSize: opts.pageSize ?? null,
     paginationEnabled: opts.paginationEnabled ?? !!opts.pageSize,
     scrollTop: 0,
+    name: opts.name || null,
   };
 
   return newElementWith(scratchpadElementProps, {});

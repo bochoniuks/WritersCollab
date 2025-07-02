@@ -727,6 +727,13 @@ body.excalidraw-cursor-resize * {
   .excalidraw-wysiwyg .page:last-child {
     margin-bottom: 0;
   }
+  .excalidraw .scratchpad-ideation-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
 }
 
 

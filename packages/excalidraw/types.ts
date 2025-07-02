@@ -308,6 +308,7 @@ export interface AppState {
     clip: boolean;
   };
   editingFrame: string | null;
+  editingScratchpad: string | null; 
   elementsToHighlight: NonDeleted<ExcalidrawElement>[] | null;
   /**
    * set when a new text is created or when an existing text is being edited

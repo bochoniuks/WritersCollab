@@ -301,6 +301,7 @@ const restoreElement = (
     case "scratchpad":
       return restoreElementWithProperties(element, {
         tiptapDoc: element.tiptapDoc ?? { type: "doc", content: [] },
+        name: element.name ?? "",
         originalTiptapDoc:
           element.originalTiptapDoc ?? element.tiptapDoc ?? { type: "doc", content: [] },
         changeHistory: element.changeHistory ?? [],

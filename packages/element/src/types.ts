@@ -248,6 +248,7 @@ export type ExcalidrawScratchpadElement = _ExcalidrawElementBase & Readonly<{
   pageSize: ScratchpadPageSize | null;   // e.g. "A4", "Letter"
   paginationEnabled: boolean; 
   scrollTop: number; 
+  name: string | null;   
 }>;
 
 export type Ordered<TElement extends ExcalidrawElement> = TElement & {

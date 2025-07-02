@@ -114,7 +114,7 @@ import {
   MAX_IDEATION_VISIBLE_PAGES,
 } from "@excalidraw/common";
 
-import { addToGroup, bumpVersion, duplicateElement, getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
+import { addToGroup, bumpVersion, duplicateElement, getCommonBounds, getElementAbsoluteCoords, getScratchpadTitle } from "@excalidraw/element";
 
 import {
   bindOrUnbindLinearElements,
@@ -1444,6 +1444,72 @@ class App extends React.Component<AppProps, AppState> {
     this.setState({ editingFrame: null });
   };
 
+  private renderScratchpadHeaders = () => {
+    const { theme } = this.state;
+    const isDarkTheme = theme === THEME.DARK;
+    const scratchpads = this.scene.getNonDeletedElements().filter(isScratchpadElement);
+
+    return scratchpads.map((sp) => {
+      const { x, y } = sceneCoordsToViewportCoords({ sceneX: sp.x, sceneY: sp.y }, this.state);
+      const title = getScratchpadTitle(sp);
+
+      const header = sp.id === this.state.editingScratchpad ? (
+        <input
+          autoFocus
+          value={title}
+          onChange={(e) => this.scene.mutateElement(sp, { name: e.target.value })}
+          onBlur={() => this.setState({ editingScratchpad: null })}
+          onKeyDown={(evt) => {
+            if (evt.key === KEYS.ESCAPE || evt.key === KEYS.ENTER) {
+              this.setState({ editingScratchpad: null });
+            }
+          }}
+          style={{
+            background: this.state.viewBackgroundColor,
+            filter: isDarkTheme ? THEME_FILTER : "none",
+            border: "none",
+            boxShadow: "inset 0 0 0 1px var(--color-primary)",
+          }}
+          size={title.length + 1 || 1}
+        />
+      ) : (
+        title
+      );
+
+      return (
+        <div
+          key={sp.id}
+          style={{
+            position: "absolute",
+            top: `${y - 20}px`,
+            left: `${x}px`,
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            zIndex: 2,
+          }}
+          onDoubleClick={() =>
+            this.setState({ editingScratchpad: sp.id })
+          }
+          onPointerDown={(ev) => this.handleCanvasPointerDown(ev)}
+          onWheel={(ev) => this.handleWheel(ev)}
+        >
+          <button
+            className="scratchpad-ideation-btn"
+            onClick={() =>
+              sp.id === this.state.ideationElementId
+                ? this.exitIdeationView(sp)
+                : this.enterIdeationView(sp)
+            }
+          >
+            {fullscreenIcon}
+          </button>
+          {header}
+        </div>
+      );
+    });
+  };
+
   private renderFrameNames = () => {
     if (!this.state.frameRendering.enabled || !this.state.frameRendering.name) {
       if (this.state.editingFrame) {
@@ -1956,6 +2022,7 @@ class App extends React.Component<AppProps, AppState> {
                           />
                         )}
                         {this.renderFrameNames()}
+                        {this.renderScratchpadHeaders()}
                         {this.state.activeLockedId && (
                           <UnlockPopup
                             app={this}
@@ -4823,6 +4890,8 @@ class App extends React.Component<AppProps, AppState> {
             this.setState({
               editingFrame: selectedElement.id,
             });
+          } else if (isScratchpadElement(selectedElement)) {
+            this.setState({ editingScratchpad: selectedElement.id });
           }
         }
       } else if (
@@ -9229,7 +9298,7 @@ class App extends React.Component<AppProps, AppState> {
 
           // when we're editing the name of a frame, we want the user to be
           // able to select and interact with the text input
-          if (!this.state.editingFrame  && this.isGroupActionAllowed("move")
+          if (!this.state.editingFrame && !this.state.editingScratchpad && this.isGroupActionAllowed("move")
               &&
                 !(
                   this.state.scratchpadViewMode === "ideation" &&

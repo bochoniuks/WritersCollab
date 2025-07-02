@@ -101,6 +101,7 @@ export * from "./renderElement";
 export * from "./resizeElements";
 export * from "./resizeTest";
 export * from "./Scene";
+export * from "./scratchpad";
 export * from "./selection";
 export * from "./Shape";
 export * from "./ShapeCache";
