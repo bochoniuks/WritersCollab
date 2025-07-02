@@ -279,6 +279,7 @@ export {
 
 export { Sidebar } from "./components/Sidebar/Sidebar";
 export { Button } from "./components/Button";
+export { ElementIsland } from "./components/ElementIsland";
 export { Footer };
 export { MainMenu };
 export { useDevice } from "./components/App";

@@ -1,0 +1,11 @@
+@import "./Island.scss";
+
+.excalidraw {
+  .ElementIsland {
+    // reduce toolbar height slightly
+    --lg-button-size: 2rem; // main toolbar uses ~2.25rem
+
+    display: flex;
+    align-items: center;
+  }
+}

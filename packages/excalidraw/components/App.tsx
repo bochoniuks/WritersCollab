@@ -495,7 +495,7 @@ import {
 } from "./hyperlink/helpers";
 import { MagicIcon, copyIcon, fullscreenIcon } from "./icons";
 import { Toast } from "./Toast";
-import { Island } from "./Island";
+import { ElementIsland } from "./ElementIsland";
 
 import { findShapeByKey } from "./shapes";
 
@@ -1478,7 +1478,7 @@ class App extends React.Component<AppProps, AppState> {
       );
 
       return (
-      <Island
+      <ElementIsland
         key={sp.id}
         className="scratchpad-header"
         padding={1}
@@ -1506,7 +1506,7 @@ class App extends React.Component<AppProps, AppState> {
         >
           {fullscreenIcon}
         </button>
-      </Island>
+      </ElementIsland>
     );
     });
   };
