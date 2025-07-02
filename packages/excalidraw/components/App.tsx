@@ -1447,7 +1447,7 @@ class App extends React.Component<AppProps, AppState> {
   private renderScratchpadHeaders = () => {
     const { theme } = this.state;
     const isDarkTheme = theme === THEME.DARK;
-    const scratchpads = this.scene.getNonDeletedElements().filter(isScratchpadElement);
+    const scratchpads = this.scene.getNonDeletedElements().filter(isScratchpadElement) as ExcalidrawScratchpadElement[];
 
     return scratchpads.map((sp) => {
       const { x, y } = sceneCoordsToViewportCoords({ sceneX: sp.x, sceneY: sp.y }, this.state);
