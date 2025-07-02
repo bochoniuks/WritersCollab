@@ -16,12 +16,13 @@ type ElementIslandProps = {
  * Uses smaller buttons than the main toolbar.
  */
 export const ElementIsland = React.forwardRef<HTMLDivElement, ElementIslandProps>(
-  ({ children, padding = 1, className, style }, ref) => (
+  ({ children, padding = 1, className, style, ...rest }, ref) => (
     <Island
       ref={ref}
       padding={padding}
       className={clsx("ElementIsland", className)}
       style={style}
+      {...rest}
     >
       {children}
     </Island>
