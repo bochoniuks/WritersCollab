@@ -1471,10 +1471,10 @@ class App extends React.Component<AppProps, AppState> {
             border: "none",
             boxShadow: "inset 0 0 0 1px var(--color-primary)",
           }}
-          size={title.length + 1 || 1}
+          size={Math.max(title.length + 1, 20)}
         />
       ) : (
-        title
+        <span className="scratchpad-label">{title}</span>
       );
 
       return (
@@ -1484,7 +1484,7 @@ class App extends React.Component<AppProps, AppState> {
         padding={1}
         style={{
           position: "absolute",
-          top: `${y - 20}px`,
+          bottom: `${this.state.height + 6 - y + this.state.offsetTop}px`,
           left: `${x}px`,
           display: "flex",
           alignItems: "center",
@@ -2354,6 +2354,9 @@ class App extends React.Component<AppProps, AppState> {
       } else {
         this.mutateElement(element, { paginationEnabled: true });
       }
+    } else if (size && element.height < size.height) {
+      // empty scratchpad: guarantee a full page is visible
+      this.mutateElement(element, { height: size.height });
     }
 
     const elementsMap = this.scene.getElementsMapIncludingDeleted();
@@ -11993,7 +11996,8 @@ class App extends React.Component<AppProps, AppState> {
           event.target instanceof HTMLTextAreaElement ||
           event.target instanceof HTMLIFrameElement ||
           (event.target instanceof HTMLElement &&
-            event.target.closest(".excalidraw-wysiwyg"))
+            (event.target.closest(".excalidraw-wysiwyg") ||
+             event.target.closest(".ElementIsland")))
         )
       ) {
         // prevent zooming the browser (but allow scrolling DOM)
