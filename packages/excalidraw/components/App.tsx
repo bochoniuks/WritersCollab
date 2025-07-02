@@ -495,6 +495,7 @@ import {
 } from "./hyperlink/helpers";
 import { MagicIcon, copyIcon, fullscreenIcon } from "./icons";
 import { Toast } from "./Toast";
+import { Island } from "./Island";
 
 import { findShapeByKey } from "./shapes";
 
@@ -1477,36 +1478,36 @@ class App extends React.Component<AppProps, AppState> {
       );
 
       return (
-        <div
-          key={sp.id}
-          style={{
-            position: "absolute",
-            top: `${y - 20}px`,
-            left: `${x}px`,
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            zIndex: 2,
-          }}
-          onDoubleClick={() =>
-            this.setState({ editingScratchpad: sp.id })
+      <Island
+        key={sp.id}
+        className="scratchpad-header"
+        padding={1}
+        style={{
+          position: "absolute",
+          top: `${y - 20}px`,
+          left: `${x}px`,
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          zIndex: 2,
+        }}
+        onDoubleClick={() => this.setState({ editingScratchpad: sp.id })}
+        onPointerDown={(ev) => this.handleCanvasPointerDown(ev)}
+        onWheel={(ev) => this.handleWheel(ev)}
+      >
+        {header}
+        <button
+          className="scratchpad-ideation-btn"
+          onClick={() =>
+            sp.id === this.state.ideationElementId
+              ? this.exitIdeationView(sp)
+              : this.enterIdeationView(sp)
           }
-          onPointerDown={(ev) => this.handleCanvasPointerDown(ev)}
-          onWheel={(ev) => this.handleWheel(ev)}
         >
-          <button
-            className="scratchpad-ideation-btn"
-            onClick={() =>
-              sp.id === this.state.ideationElementId
-                ? this.exitIdeationView(sp)
-                : this.enterIdeationView(sp)
-            }
-          >
-            {fullscreenIcon}
-          </button>
-          {header}
-        </div>
-      );
+          {fullscreenIcon}
+        </button>
+      </Island>
+    );
     });
   };
 
