@@ -114,7 +114,7 @@ import {
   MAX_IDEATION_VISIBLE_PAGES,
 } from "@excalidraw/common";
 
-import { addToGroup, duplicateElement, getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
+import { addToGroup, bumpVersion, duplicateElement, getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
 
 import {
   bindOrUnbindLinearElements,
@@ -2205,22 +2205,20 @@ class App extends React.Component<AppProps, AppState> {
     }
   }
 
-  private exitIdeationView = withBatchedUpdates((element: ExcalidrawScratchpadElement) => {
+  private exitIdeationView(element: ExcalidrawScratchpadElement) {
     const prev = this.prevScratchpadView;
     this.prevScratchpadView = null;
     const size = element.pageSize
         ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
         : null;
-    this.mutateElement(element, {
+
+    console.log(element)
+    this.scene.mutateElement(element, {
       paginationEnabled: false,
       scrollTop: 0,
       ...(size && { width: size.width, height: size.height }),
     });
-
-    updateBoundElements(element, this.scene, {
-        newSize: size ? { width: size.width, height: size.height } : undefined,
-      });
-
+    
     const elementsMap = this.scene.getElementsMapIncludingDeleted();
     const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
     const { scrollX, scrollY } = centerScrollOn({
@@ -2236,10 +2234,11 @@ class App extends React.Component<AppProps, AppState> {
       scratchpadViewMode: "cava",
       ideationElementId: null,
       editingTextElement: null,
+      selectionElement: null, // clear stale bounding box
     });
 
     
-  }) 
+  }
 
   private handleIdeationPopState = () => {
     if (
@@ -5369,6 +5368,14 @@ class App extends React.Component<AppProps, AppState> {
   ) {
 
     const updateElement = (nextDoc: JSONContent, isDeleted: boolean, wrapDoc: boolean) => {
+      const current = this.scene.getElement(
+        element.id,
+      ) as ExcalidrawScratchpadElement;
+      if (!current) {
+        return;
+      }
+      element = current;       
+      
       let width = element.width;
       let height = element.height;
       let doc = nextDoc;

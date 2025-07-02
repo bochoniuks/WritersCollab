@@ -229,6 +229,7 @@ export const getElementAbsoluteCoords = (
   elementsMap: ElementsMap,
   includeBoundText: boolean = false,
 ): [number, number, number, number, number, number] => {
+
   if (isFreeDrawElement(element)) {
     return getFreeDrawElementAbsoluteCoords(element);
   } else if (isLinearElement(element)) {
