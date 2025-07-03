@@ -228,6 +228,23 @@ export const WelcomeScreenMenuArrow = createIcon(
   { width: 41, height: 94, fill: "none" },
 );
 
+export const arrowsMaximize = createIcon(
+  <g strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    stroke="currentColor"
+  ><path d="M16 4l4 0l0 4" /><path d="M14 10l6 -6" /><path d="M8 20l-4 0l0 -4" /><path d="M4 20l6 -6" /><path d="M16 20l4 0l0 -4" /><path d="M14 14l6 6" /><path d="M8 4l-4 0l0 4" /><path d="M4 4l6 6" /></g>,
+  { fill: "none", width: 22, height: 22, strokeWidth: 1.25 },
+)
+
+export const arrowsMinimize = createIcon(
+  <g strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    stroke="currentColor"
+  ><path d="M5 9l4 0l0 -4" /><path d="M3 3l6 6" /><path d="M5 15l4 0l0 4" /><path d="M3 21l6 -6" /><path d="M19 9l-4 0l0 -4" /><path d="M15 9l6 -6" /><path d="M19 15l-4 0l0 4" /><path d="M15 15l6 6" /></g>,
+  { fill: "none", width: 22, height: 22, strokeWidth: 1.25 },
+)
 // custom
 export const WelcomeScreenHelpArrow = createIcon(
   <>

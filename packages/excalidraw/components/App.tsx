@@ -493,7 +493,9 @@ import {
   isPointHittingLink,
   isPointHittingLinkIcon,
 } from "./hyperlink/helpers";
-import { MagicIcon, copyIcon, fullscreenIcon } from "./icons";
+import { MagicIcon, copyIcon, fullscreenIcon, 
+        arrowsMaximize,
+        arrowsMinimize, } from "./icons";
 import { Toast } from "./Toast";
 import { ElementIsland } from "./ElementIsland";
 
@@ -1495,7 +1497,12 @@ class App extends React.Component<AppProps, AppState> {
         left: `${x}px`,
         zIndex: 2,
       } as const;
-
+      
+      const ideationBtnIcon =
+        sp.id === ideationElementId && scratchpadViewMode === "ideation"
+          ? arrowsMinimize        // show collapse icon when already expanded
+          : arrowsMaximize;     // show expand icon otherwise
+          
       if (isSelected || isEditing || inIdeationView) {
         return (
           <ElementIsland
@@ -1521,12 +1528,12 @@ class App extends React.Component<AppProps, AppState> {
             <button
               className="scratchpad-ideation-btn"
               onClick={() =>
-                sp.id === this.state.ideationElementId
+                sp.id === ideationElementId
                   ? this.exitIdeationView(sp)
                   : this.enterIdeationView(sp)
               }
             >
-              {fullscreenIcon}
+              {ideationBtnIcon}
             </button>
           </ElementIsland>
         );
@@ -1864,7 +1871,7 @@ class App extends React.Component<AppProps, AppState> {
                               {this.state.scratchpadViewMode === "cava" ? (
                                 <ElementCanvasButton
                                   title="Ideation view"
-                                  icon={fullscreenIcon}
+                                  icon={arrowsMaximize}
                                   checked={false}
                                   onChange={() =>
                                     this.enterIdeationView(firstSelectedElement as ExcalidrawScratchpadElement)
@@ -1873,7 +1880,7 @@ class App extends React.Component<AppProps, AppState> {
                               ) : (
                                 <ElementCanvasButton
                                   title="Canvas view"
-                                  icon={fullscreenIcon}
+                                  icon={arrowsMinimize}
                                   checked={false}
                                   onChange={() => this.exitIdeationView(firstSelectedElement as ExcalidrawScratchpadElement)}
                                 />
