@@ -1474,7 +1474,12 @@ class App extends React.Component<AppProps, AppState> {
           size={Math.max(title.length + 1, 20)}
         />
       ) : (
-        <span className="scratchpad-label">{title}</span>
+        <span
+          className="scratchpad-label"
+          style={{ minWidth: "20ch", display: "inline-block" }}
+        >
+          {title}
+        </span>
       );
 
       return (
