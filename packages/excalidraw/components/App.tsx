@@ -400,6 +400,8 @@ import { restore, restoreElements } from "../data/restore";
 import { getCenter, getDistance } from "../gesture";
 import { History } from "../history";
 import { defaultLang, getLanguage, languages, setLanguage, t } from "../i18n";
+import { ToolButton } from "./ToolButton";
+
 
 import {
   calculateScrollCenter,
@@ -1525,16 +1527,28 @@ class App extends React.Component<AppProps, AppState> {
             onWheel={(ev: React.WheelEvent<HTMLDivElement>) => this.handleWheel(ev)}
           >
             {label}
-            <button
-              className="scratchpad-ideation-btn"
+            <div className="App-toolbar__divider" />
+            <ToolButton
+              type="icon"
+              icon={ideationBtnIcon}
+              aria-label={
+                sp.id === ideationElementId &&
+                scratchpadViewMode === "ideation"
+                  ? "Canvas view"
+                  : "Ideation view"
+              }
+              title={
+                sp.id === ideationElementId &&
+                scratchpadViewMode === "ideation"
+                  ? "Canvas view"
+                  : "Ideation view"
+              }
               onClick={() =>
                 sp.id === ideationElementId
                   ? this.exitIdeationView(sp)
                   : this.enterIdeationView(sp)
               }
-            >
-              {ideationBtnIcon}
-            </button>
+            />
           </ElementIsland>
         );
       }
