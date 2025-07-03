@@ -1446,15 +1446,22 @@ class App extends React.Component<AppProps, AppState> {
   };
 
   private renderScratchpadHeaders = () => {
-    const { theme } = this.state;
+    const { theme, selectedElementIds, editingScratchpad, scratchpadViewMode, ideationElementId } = this.state;
     const isDarkTheme = theme === THEME.DARK;
     const scratchpads = this.scene.getNonDeletedElements().filter(isScratchpadElement) as ExcalidrawScratchpadElement[];
 
     return scratchpads.map((sp) => {
-      const { x, y } = sceneCoordsToViewportCoords({ sceneX: sp.x, sceneY: sp.y }, this.state);
+      const { x, y } = sceneCoordsToViewportCoords(
+        { sceneX: sp.x, sceneY: sp.y },
+        this.state,
+      );
       const title = getScratchpadTitle(sp);
+      const isEditing = sp.id === editingScratchpad;
+      const isSelected = !!selectedElementIds[sp.id];
+      const inIdeationView =
+        scratchpadViewMode === "ideation" && ideationElementId === sp.id;
 
-      const header = sp.id === this.state.editingScratchpad ? (
+      const label = isEditing ? (
         <input
           autoFocus
           value={title}
@@ -1482,37 +1489,58 @@ class App extends React.Component<AppProps, AppState> {
         </span>
       );
 
+      const commonStyle = {
+        position: "absolute",
+        bottom: `${this.state.height + 10 - y + this.state.offsetTop}px`,
+        left: `${x}px`,
+        zIndex: 2,
+      } as const;
+
+      if (isSelected || isEditing || inIdeationView) {
+        return (
+          <ElementIsland
+            key={sp.id}
+            className="scratchpad-header"
+            padding={1}
+            style={{
+              ...commonStyle,
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+            onDoubleClick={() => this.setState({ editingScratchpad: sp.id })}
+            onPointerDown={(ev: React.PointerEvent<HTMLDivElement>) => {
+              ev.stopPropagation();
+              if (!this.state.selectedElementIds[sp.id]) {
+                this.setState({ selectedElementIds: { [sp.id]: true } });
+              }
+            }}
+            onWheel={(ev: React.WheelEvent<HTMLDivElement>) => this.handleWheel(ev)}
+          >
+            {label}
+            <button
+              className="scratchpad-ideation-btn"
+              onClick={() =>
+                sp.id === this.state.ideationElementId
+                  ? this.exitIdeationView(sp)
+                  : this.enterIdeationView(sp)
+              }
+            >
+              {fullscreenIcon}
+            </button>
+          </ElementIsland>
+        );
+      }
+
       return (
-      <ElementIsland
-        key={sp.id}
-        className="scratchpad-header"
-        padding={1}
-        style={{
-          position: "absolute",
-          bottom: `${this.state.height + 6 - y + this.state.offsetTop}px`,
-          left: `${x}px`,
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          zIndex: 2,
-        }}
-        onDoubleClick={() => this.setState({ editingScratchpad: sp.id })}
-        onPointerDown={(ev: React.PointerEvent<HTMLDivElement>) => this.handleCanvasPointerDown(ev)}
-        onWheel={(ev: React.WheelEvent<HTMLDivElement>) => this.handleWheel(ev)}
-      >
-        {header}
-        <button
-          className="scratchpad-ideation-btn"
-          onClick={() =>
-            sp.id === this.state.ideationElementId
-              ? this.exitIdeationView(sp)
-              : this.enterIdeationView(sp)
-          }
+        <div
+          key={sp.id}
+          className="scratchpad-name"
+          style={commonStyle}
         >
-          {fullscreenIcon}
-        </button>
-      </ElementIsland>
-    );
+          {label}
+        </div>
+      );
     });
   };
 
