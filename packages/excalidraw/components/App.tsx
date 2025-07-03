@@ -1455,31 +1455,34 @@ class App extends React.Component<AppProps, AppState> {
     const isDarkTheme = theme === THEME.DARK;
     const scratchpads = this.scene.getNonDeletedElements().filter(isScratchpadElement) as ExcalidrawScratchpadElement[];
     const selectedScratchpads = scratchpads.filter((sp) => selectedElementIds[sp.id]);
+    if (selectedScratchpads.length > 0) {
+      return null;                       // nothing to render when none or many are selected
+    }
     const singleSelected = selectedScratchpads.length === 1 ? selectedScratchpads[0] : null;
     const sp = singleSelected as ExcalidrawScratchpadElement;
+
+    
     
     const { x, y } = sceneCoordsToViewportCoords(
       { sceneX: sp.x, sceneY: sp.y },
       this.state,
     );
     const title = getScratchpadTitle(sp);
-    const isEditing = sp.id === editingScratchpad;
-    const isSelected = singleSelected?.id === sp.id;          // only one scratchpad may show header
+    const isEditing = sp.id === editingScratchpad;  
     const inIdeationView =
       scratchpadViewMode === "ideation" && ideationElementId === sp.id;
-
+    const showHeader = inIdeationView || singleSelected; 
     let hideLabel = false;
-    if (isSelected) {
-      const font = getFontString({ fontFamily: DEFAULT_FONT_FAMILY, fontSize: FRAME_STYLE.nameFontSize });
-      const labelMetrics = measureText(
-        title,
-        font,
-        FRAME_STYLE.nameLineHeight as ExcalidrawTextElement["lineHeight"],
-      );
-      const headerWidth = labelMetrics.width + 36;           // approx. button & padding
-      const availableWidth = sp.width * this.state.zoom.value;
-      hideLabel = headerWidth > availableWidth;
-    }
+
+    const font = getFontString({ fontFamily: DEFAULT_FONT_FAMILY, fontSize: FRAME_STYLE.nameFontSize });
+    const labelMetrics = measureText(
+      title,
+      font,
+      FRAME_STYLE.nameLineHeight as ExcalidrawTextElement["lineHeight"],
+    );
+    const headerWidth = labelMetrics.width + 36;           // approx. button & padding
+    const availableWidth = sp.width * this.state.zoom.value;
+    hideLabel = headerWidth > availableWidth;
 
     const label = isEditing ? (
       <input
@@ -1520,8 +1523,9 @@ class App extends React.Component<AppProps, AppState> {
       sp.id === ideationElementId && scratchpadViewMode === "ideation"
         ? arrowsMinimize        // show collapse icon when already expanded
         : arrowsMaximize;     // show expand icon otherwise
-        
-    if (isSelected) {
+    
+    console.log(showHeader)
+    if(showHeader) {
       return (
         <ElementIsland
           key={sp.id}
