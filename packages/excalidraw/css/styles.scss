@@ -727,10 +727,16 @@ body.excalidraw-cursor-resize * {
   .excalidraw-wysiwyg .page:last-child {
     margin-bottom: 0;
   }
+  
   .excalidraw .scratchpad-header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .excalidraw .scratchpad-header--compact .scratchpad-label,
+  .excalidraw .scratchpad-header--compact .App-toolbar__divider {
+    display: none;
   }
 
   .excalidraw .scratchpad-header input {
