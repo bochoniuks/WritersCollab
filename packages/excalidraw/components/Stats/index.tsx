@@ -4,7 +4,7 @@ import throttle from "lodash.throttle";
 import { useEffect, useMemo, useState, memo } from "react";
 
 import { STATS_PANELS } from "@excalidraw/common";
-import { getCommonBounds } from "@excalidraw/element";
+import { getCommonBounds, isScratchpadElement } from "@excalidraw/element";
 import { getUncroppedWidthAndHeight } from "@excalidraw/element";
 import { isElbowArrow, isImageElement } from "@excalidraw/element";
 
@@ -47,6 +47,12 @@ interface StatsProps {
 }
 
 const STATS_TIMEOUT = 50;
+
+const VIEW_MODE_LABELS = {
+  cava: "Canvas",
+  ideation: "Ideation",
+  full: "Full",
+} as const;
 
 export const Stats = (props: StatsProps) => {
   const appState = useExcalidrawAppState();
@@ -233,6 +239,10 @@ export const StatsInner = memo(
                   </StatsRow>
                 </>
               )}
+              <StatsRow columns={2}>
+                <div>{t("stats.scratchpadViewMode")}</div>
+                <div>{VIEW_MODE_LABELS[appState.scratchpadViewMode]}</div>
+              </StatsRow>
             </StatsRows>
 
             {renderCustomStats?.(elements, appState)}
@@ -351,6 +361,12 @@ export const StatsInner = memo(
                           appState={appState}
                         />
                       </StatsRow>
+                      {isScratchpadElement(singleElement) && (
+                        <StatsRow columns={2}>
+                          <div>{t("stats.scratchpadViewMode")}</div>
+                          <div>{VIEW_MODE_LABELS[appState.scratchpadViewMode]}</div>
+                        </StatsRow>
+                      )}
                     </>
                   )}
 

@@ -1456,21 +1456,21 @@ class App extends React.Component<AppProps, AppState> {
     const scratchpads = this.scene.getNonDeletedElements().filter((sp) => {
       return isScratchpadElement(sp) && (scratchpadViewMode !== "ideation" || (scratchpadViewMode === "ideation" && ideationElementId === sp.id))
     }) as ExcalidrawScratchpadElement[];
-    const selectedScratchpads = scratchpads.filter((sp) => selectedElementIds[sp.id]);
-    const singleSelected = selectedScratchpads.length === 1 ? selectedScratchpads[0] : null;
+    // const selectedScratchpads = scratchpads.filter((sp) => selectedElementIds[sp.id]);
+    // const singleSelected = selectedScratchpads.length === 1 ? selectedScratchpads[0] : null;
     
 
-    
     return scratchpads.map(sp => {
       const { x, y } = sceneCoordsToViewportCoords(
         { sceneX: sp.x, sceneY: sp.y },
         this.state,
       );
       const title = getScratchpadTitle(sp);
-      const isEditing = sp.id === editingScratchpad;  
+      const isEditing = sp.id === editingScratchpad;
+      const isSelected = !!selectedElementIds[sp.id];
       const inIdeationView =
         scratchpadViewMode === "ideation" && ideationElementId === sp.id;
-      const showHeader = inIdeationView || singleSelected?.id == sp.id; 
+      const showHeader = isSelected || isEditing || inIdeationView;
       let hideLabel = false;
 
       const font = getFontString({ fontFamily: DEFAULT_FONT_FAMILY, fontSize: FRAME_STYLE.nameFontSize });
