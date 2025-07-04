@@ -1456,8 +1456,9 @@ class App extends React.Component<AppProps, AppState> {
     const scratchpads = this.scene.getNonDeletedElements().filter((sp) => {
       return isScratchpadElement(sp) && (scratchpadViewMode !== "ideation" || (scratchpadViewMode === "ideation" && ideationElementId === sp.id))
     }) as ExcalidrawScratchpadElement[];
-    // const selectedScratchpads = scratchpads.filter((sp) => selectedElementIds[sp.id]);
+    const selectedScratchpads = scratchpads.filter((sp) => selectedElementIds[sp.id]);
     // const singleSelected = selectedScratchpads.length === 1 ? selectedScratchpads[0] : null;
+    const selectedCount = Object.keys(selectedScratchpads).length;
     
 
     return scratchpads.map(sp => {
@@ -1470,7 +1471,7 @@ class App extends React.Component<AppProps, AppState> {
       const isSelected = !!selectedElementIds[sp.id];
       const inIdeationView =
         scratchpadViewMode === "ideation" && ideationElementId === sp.id;
-      const showHeader = isSelected || isEditing || inIdeationView;
+      const showHeader = (selectedCount===1 && isSelected) || isEditing || inIdeationView;
       let hideLabel = false;
 
       const font = getFontString({ fontFamily: DEFAULT_FONT_FAMILY, fontSize: FRAME_STYLE.nameFontSize });
@@ -9230,10 +9231,16 @@ class App extends React.Component<AppProps, AppState> {
         // prevent dragging even if we're no longer holding cmd/ctrl otherwise
         // it would have weird results (stuff jumping all over the screen)
         // Checking for editingTextElement to avoid jump while editing on mobile #6503
+        const isEditingIdeationScratchpad =
+          this.state.scratchpadViewMode === "ideation" &&
+          this.state.editingTextElement &&
+          isScratchpadElement(this.state.editingTextElement) &&
+          this.state.editingTextElement.id === this.state.ideationElementId;
+
         if (
           selectedElements.length > 0 &&
           !pointerDownState.withCmdOrCtrl &&
-          !this.state.editingTextElement &&
+          (!this.state.editingTextElement || isEditingIdeationScratchpad) &&
           this.state.activeEmbeddable?.state !== "active"
         ) {
           const dragOffset = {
