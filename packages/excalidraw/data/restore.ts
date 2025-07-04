@@ -758,7 +758,7 @@ export const restoreAppState = (
         : defaultValue;
   }
 
-  return {
+  const result = {
     ...nextAppState,
     cursorButton: localAppState?.cursorButton || "up",
     // reset on fresh restore so as to hide the UI button if penMode not active
@@ -797,6 +797,12 @@ export const restoreAppState = (
     ),
     editingFrame: null,
   };
+
+  if (result.scratchpadViewMode === "ideation" && !result.ideationElementId) {
+    result.scratchpadViewMode = "cava";
+  }
+
+  return result;
 };
 
 export const restore = (
