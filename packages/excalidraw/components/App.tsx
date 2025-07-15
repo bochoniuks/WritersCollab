@@ -2445,11 +2445,15 @@ class App extends React.Component<AppProps, AppState> {
       MAX_ZOOM,
     );
 
-    const { scrollX, scrollY } = centerScrollOn({
+    const { scrollX, scrollY: centeredY } = centerScrollOn({
       scenePoint: { x: (x1 + x2) / 2, y: (y1 + y2) / 2 },
       viewportDimensions: { width: this.state.width, height: this.state.height },
       zoom: { value: getNormalizedZoom(zoomVal) },
     });
+
+    const viewportHeight = this.state.height / getNormalizedZoom(zoomVal);
+    const scrollY =
+      scratchpadHeight <= viewportHeight ? centeredY : -y1;
 
     window.history.pushState(
       { scratchpadViewMode: "ideation" },

@@ -6,7 +6,8 @@ import StarterKit from "@tiptap/starter-kit";
 import TextStyle from "@tiptap/extension-text-style";
 import FontSize from "tiptap-extension-font-size";
 import Color from "@tiptap/extension-color";
-import { Pagination } from "tiptap-pagination-breaks"; 
+// import { Pagination } from "tiptap-pagination-breaks"; 
+import { Pagination } from "./pagination"; 
 
 import {
   KEYS,
@@ -217,9 +218,13 @@ export const scratchpadWysiwyg = ({
 
         const lineHeight = getLineHeight(updatedElement.fontFamily);
 
+        console.log("coordX: ", coordX, " coordY: ", coordY)
         const [viewportX, viewportY] = getViewportCoords(coordX, coordY);
 
         const editorMaxHeight = (appState.height - viewportY) / appState.zoom.value;
+
+        console.log("top: ", `${viewportY}px`, " height: ", `${height}px`)
+
 
         Object.assign(editable.style, {
           left: `${viewportX}px`,
@@ -401,7 +406,8 @@ export const scratchpadWysiwyg = ({
 
   Object.assign(editable.style, {
     position: "absolute",
-    display: "inline-block",
+    // display: "inline-block",
+    display: "inline-table",
     minHeight: "1em",
     backfaceVisibility: "hidden",
     margin: 0,
@@ -470,7 +476,7 @@ export const scratchpadWysiwyg = ({
       PageWrapper.configure({ pageHeight: pageSize.height }),
     ];
     const ed = useEditor({
-      extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize, StyledHardBreak,
+      extensions: [StarterKit.configure({ hardBreak: false }), TextStyle, Color, FontFamily, FontSize, StyledHardBreak,
         ...pageExtensions
       ],
       content: prevDoc,
@@ -556,6 +562,11 @@ export const scratchpadWysiwyg = ({
       app.actionManager.executeAction(actionDecreaseFontSize);
     } else if (actionIncreaseFontSize.keyTest(event)) {
       app.actionManager.executeAction(actionIncreaseFontSize);
+    } else if (event[KEYS.CTRL_OR_CMD] && event.key === KEYS.A) {
+      // keep selection inside the scratchpad editor
+      event.preventDefault();
+      event.stopPropagation();
+      editor?.commands.selectAll();
     } else if (event.key === KEYS.ESCAPE) {
       event.preventDefault();
       submittedViaKeyboard = true;
