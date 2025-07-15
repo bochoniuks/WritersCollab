@@ -5,6 +5,7 @@ export interface PageWrapperOptions {
   pageHeight: number;
 }
 
+
 export const PageWrapper = Extension.create<PageWrapperOptions>({
   name: "pageWrapper",
   addProseMirrorPlugins() {
@@ -18,6 +19,41 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
         view: (view) => {
             let wrapping = false;
 
+            const normalizePageBreaks = () => {
+              view.dom.querySelectorAll<HTMLDivElement>(".page-break").forEach((el) => {
+                if (el.parentElement === view.dom) return;
+
+                const parent = el.parentElement as HTMLElement;
+
+                if (parent.tagName === "UL" || parent.tagName === "OL") {
+                  const newList = parent.cloneNode(false) as HTMLElement;
+                  let node = el.nextSibling;
+                  parent.removeChild(el);
+                  while (node) {
+                    const next = node.nextSibling;
+                    newList.appendChild(node);
+                    node = next;
+                  }
+                  parent.parentNode!.insertBefore(el, parent.nextSibling);
+                  parent.parentNode!.insertBefore(newList, el.nextSibling);
+                } else if (parent.tagName === "P") {
+                  const newP = parent.cloneNode(false) as HTMLElement;
+                  let node = el.nextSibling;
+                  parent.removeChild(el);
+                  while (node) {
+                    const next = node.nextSibling;
+                    newP.appendChild(node);
+                    node = next;
+                  }
+                  parent.parentNode!.insertBefore(el, parent.nextSibling);
+                  parent.parentNode!.insertBefore(newP, el.nextSibling);
+                } else {
+                  parent.removeChild(el);
+                  parent.parentNode!.insertBefore(el, parent.nextSibling);
+                }
+              });
+            };
+
             const wrapPages = () => {
                 if (wrapping) {
                 return;
@@ -25,6 +61,7 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
                 wrapping = true;
                 const observer = (view as any).domObserver;
                 observer?.stop();
+                // normalizePageBreaks();
 
                 // if there are no page breaks and a page already exists, just update its size
                 const hasPageBreaks = Array.from(view.dom.childNodes).some(

@@ -117,27 +117,30 @@ export const Pagination = Extension.create<PaginationOptions>({
                                 node.type.name === 'orderedList';
                             const isListItem = node.type.name === 'listItem';
                             // Calculate node height
-                            const nodeHeight = isListItem
-                                ? calculateListItemHeight(nodeDOM)
-                                : nodeDOM.offsetHeight;
-                            if (nodeHeight === 0)
-                                return;
+                            // const nodeHeight = isListItem
+                            //     ? calculateListItemHeight(nodeDOM)
+                            //     : nodeDOM.offsetHeight;
+                            // if (nodeHeight === 0)
+                            //     return;
                             // Handle list items
-                            if (isList) {
+                            if (isList || isListItem) {
                                 return;
                             }
 
                             // Paginate individual list items
-                            if (isListItem) {
-                                if (currentPageHeight + nodeHeight > effectivePageHeight) {
-                                    decorations.push(createPageBreak(pos));
-                                    currentPageHeight = nodeHeight;
-                                } else {
-                                    currentPageHeight += nodeHeight;
-                                }
-                                return;
-                            }
+                            // if (isListItem) {
+                            //     if (currentPageHeight + nodeHeight > effectivePageHeight) {
+                            //         decorations.push(createPageBreak(pos));
+                            //         currentPageHeight = nodeHeight;
+                            //     } else {
+                            //         currentPageHeight += nodeHeight;
+                            //     }
+                            //     return;
+                            // }
                             // Handle non-list blocks
+                            const nodeHeight = nodeDOM.offsetHeight;
+                            if (nodeHeight === 0) return;
+
                             if (currentPageHeight + nodeHeight > effectivePageHeight) {
                                 decorations.push(createPageBreak(pos));
                                 currentPageHeight = nodeHeight;
@@ -166,11 +169,11 @@ export const Pagination = Extension.create<PaginationOptions>({
         ];
     },
 });
-function calculateListItemHeight(element: HTMLElement): number {
-    const style = window.getComputedStyle(element);
-    const marginTop = parseFloat(style.marginTop) || 0;
-    const marginBottom = parseFloat(style.marginBottom) || 0;
-    const paddingTop = parseFloat(style.paddingTop) || 0;
-    const paddingBottom = parseFloat(style.paddingBottom) || 0;
-    return (element.offsetHeight + marginTop + marginBottom + paddingTop + paddingBottom);
-}
+// function calculateListItemHeight(element: HTMLElement): number {
+//     const style = window.getComputedStyle(element);
+//     const marginTop = parseFloat(style.marginTop) || 0;
+//     const marginBottom = parseFloat(style.marginBottom) || 0;
+//     const paddingTop = parseFloat(style.paddingTop) || 0;
+//     const paddingBottom = parseFloat(style.paddingBottom) || 0;
+//     return (element.offsetHeight + marginTop + marginBottom + paddingTop + paddingBottom);
+// }
