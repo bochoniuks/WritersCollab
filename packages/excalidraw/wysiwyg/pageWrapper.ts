@@ -61,7 +61,7 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
                 wrapping = true;
                 const observer = (view as any).domObserver;
                 observer?.stop();
-                // normalizePageBreaks();
+                normalizePageBreaks();
 
                 // if there are no page breaks and a page already exists, just update its size
                 const hasPageBreaks = Array.from(view.dom.childNodes).some(

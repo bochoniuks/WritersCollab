@@ -123,16 +123,18 @@ export const Pagination = Extension.create<PaginationOptions>({
                             }
 
                             for (const rect of rects) {
-                                const lineHeight = rect.height;
+                                const lineHeight = rect.bottom - rect.top;
+                                console.log( "effectivePageHeight: ",effectivePageHeight)
                                 if (currentPageHeight + lineHeight > effectivePageHeight) {
-                                    const posInfo =
-                                        this.editor.view.posAtCoords({
-                                            left: rect.left + 1,
-                                            top: rect.bottom - 1,
-                                        });
-                                    console.log(posInfo)
+                                    const remaining = effectivePageHeight - currentPageHeight;
+                                    console.log("remaining: ",remaining)
+                                    // find a position inside the line at the overflow boundary
+                                    const coords = {
+                                        left: rect.left + 1,
+                                        top: rect.top + Math.max(0, remaining) - 1,
+                                    };
+                                    const posInfo = this.editor.view.posAtCoords(coords);
                                     const breakPos = posInfo ? posInfo.pos : pos;
-                                    console.log(breakPos)
                                     decorations.push(createPageBreak(breakPos));
                                     currentPageHeight = lineHeight;
                                 } else {
