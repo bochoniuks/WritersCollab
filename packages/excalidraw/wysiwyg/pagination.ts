@@ -105,11 +105,12 @@ export const Pagination = Extension.create<PaginationOptions>({
                                 }
                                 pageNumber++;
                                 return pageBreak;
-                            });
+                            }, { block: true });
 
                         doc.descendants((node: Node, pos: number) => {
                             if (!node.isBlock)
                                 return;
+                            console.log(node)
                             const nodeDOM = this.editor.view.nodeDOM(pos);
                             if (!(nodeDOM instanceof HTMLElement))
                                 return;
@@ -129,7 +130,9 @@ export const Pagination = Extension.create<PaginationOptions>({
                                             left: rect.left + 1,
                                             top: rect.bottom - 1,
                                         });
+                                    console.log(posInfo)
                                     const breakPos = posInfo ? posInfo.pos : pos;
+                                    console.log(breakPos)
                                     decorations.push(createPageBreak(breakPos));
                                     currentPageHeight = lineHeight;
                                 } else {
