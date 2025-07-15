@@ -113,39 +113,28 @@ export const Pagination = Extension.create<PaginationOptions>({
                             const nodeDOM = this.editor.view.nodeDOM(pos);
                             if (!(nodeDOM instanceof HTMLElement))
                                 return;
-                            const isList = node.type.name === 'bulletList' ||
-                                node.type.name === 'orderedList';
-                            const isListItem = node.type.name === 'listItem';
-                            // Calculate node height
-                            // const nodeHeight = isListItem
-                            //     ? calculateListItemHeight(nodeDOM)
-                            //     : nodeDOM.offsetHeight;
-                            // if (nodeHeight === 0)
-                            //     return;
-                            // Handle list items
-                            if (isList || isListItem) {
+                            // const isList = node.type.name === 'bulletList' ||
+                            //     node.type.name === 'orderedList';
+                            // const isListItem = node.type.name === 'listItem';
+                            const rects = Array.from(nodeDOM.getClientRects());
+                            if (!rects.length) {
                                 return;
                             }
 
-                            // Paginate individual list items
-                            // if (isListItem) {
-                            //     if (currentPageHeight + nodeHeight > effectivePageHeight) {
-                            //         decorations.push(createPageBreak(pos));
-                            //         currentPageHeight = nodeHeight;
-                            //     } else {
-                            //         currentPageHeight += nodeHeight;
-                            //     }
-                            //     return;
-                            // }
-                            // Handle non-list blocks
-                            const nodeHeight = nodeDOM.offsetHeight;
-                            if (nodeHeight === 0) return;
-
-                            if (currentPageHeight + nodeHeight > effectivePageHeight) {
-                                decorations.push(createPageBreak(pos));
-                                currentPageHeight = nodeHeight;
-                            } else {
-                                currentPageHeight += nodeHeight;
+                            for (const rect of rects) {
+                                const lineHeight = rect.height;
+                                if (currentPageHeight + lineHeight > effectivePageHeight) {
+                                    const posInfo =
+                                        this.editor.view.posAtCoords({
+                                            left: rect.left + 1,
+                                            top: rect.bottom - 1,
+                                        });
+                                    const breakPos = posInfo ? posInfo.pos : pos;
+                                    decorations.push(createPageBreak(breakPos));
+                                    currentPageHeight = lineHeight;
+                                } else {
+                                    currentPageHeight += lineHeight;
+                                }
                             }
                         });
                         return DecorationSet.create(doc, decorations);
