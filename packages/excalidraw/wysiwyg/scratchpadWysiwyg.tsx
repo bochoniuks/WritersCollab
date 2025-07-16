@@ -526,8 +526,9 @@ export const scratchpadWysiwyg = ({
         }
         const currentFontName =
           Object.entries(FONT_FAMILY).find(([, id]) => id === app.state.currentItemFontFamily)?.[0];
-
-          
+        
+        let doc = ed.getJSON();
+        console.log("Scratchpad doc with page breaks:", JSON.stringify(doc, null, 2));
         const chain = ed.chain();
         if (!prevDoc?.content?.length) {
           chain
