@@ -105,6 +105,7 @@ export const Pagination = Extension.create<PaginationOptions>({
                                     `;
                                     pageBreak.appendChild(pageIndicator);
                                 }
+                                console.log("Assigned Page Break: ", pageNumber)
                                 pageNumber++;
                                 return pageBreak;
                             });
@@ -142,17 +143,20 @@ export const Pagination = Extension.create<PaginationOptions>({
                             // }
                             // Handle non-list blocks
                             if (currentPageHeight + nodeHeight > effectivePageHeight) {
-                                if (nodeHeight > effectivePageHeight) {
-                                    const avail = effectivePageHeight - currentPageHeight;
+                                const avail = effectivePageHeight - currentPageHeight;
+                                if (nodeHeight > avail) {
+                                    
                                     const offset = findBreakOffsetForHeight(
                                         node.toJSON(),
                                         pageWidth,
                                         avail,
                                         { fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }
                                     );
+                                    console.log("page-break inside", nodeDOM, "at pos", pos + offset);
                                     decorations.push(createPageBreak(pos + offset));
                                     currentPageHeight = nodeHeight - avail;
                                 } else {
+                                    console.log("page-break inside", nodeDOM, "at pos", pos);
                                     decorations.push(createPageBreak(pos));
                                     currentPageHeight = nodeHeight;
                                 }
