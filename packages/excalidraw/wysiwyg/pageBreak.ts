@@ -3,7 +3,7 @@ import { Mark } from "@tiptap/core";
 
 export const PageBreak = Mark.create({
   name: "pageBreak",
-  group: "page",
+  group: "inline",
   inclusive: false,
 
   parseHTML() {

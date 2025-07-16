@@ -286,6 +286,12 @@ export const parseTiptapDoc = (
       });
     }
     
+    // Skip measurement for page-break marks
+    if (node.marks?.some(m => m.type === "pageBreak")) {
+      pushLine();               // finish current line and start a new one
+      return;
+    }
+
     if (node.type === "text") {
         current.push({
           type: "text",
