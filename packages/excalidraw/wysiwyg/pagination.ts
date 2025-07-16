@@ -78,90 +78,46 @@ export const Pagination = Extension.create<PaginationOptions>({
                         const options = pluginKey.getState(state) as PaginationOptions;
                         const { pageHeight, pageMargin, showPageNumber, label } = options;
                         const effectivePageHeight = pageHeight - 2 * pageMargin;
-                        const createPageBreak = (pos: number) =>
-                            Decoration.widget(pos, () => {
-                                const pageBreak = document.createElement('div');
-                                pageBreak.className = 'page-break';
-                                pageBreak.style.cssText = `
-                                    height: 20px;
-                                    width: 100%;
-                                    border-top: 1px dashed #ccc;
-                                    margin: 10px 0;
-                                    position: relative;
-                                    `;
-                                pageBreak.setAttribute('data-page-number', String(pageNumber));
-                                if (showPageNumber) {
-                                    const pageIndicator = document.createElement('span');
-                                    pageIndicator.className = 'page-number';
-                                    pageIndicator.textContent = `${label || 'Page'} ${pageNumber}`;
-                                    pageIndicator.style.cssText = `
-                                        position: absolute;
-                                        right: 0;
-                                        top: -10px;
-                                        font-size: 12px;
-                                        color: #666;
-                                        background: white;
-                                        padding: 0 4px;
-                                    `;
-                                    pageBreak.appendChild(pageIndicator);
-                                }
-                                console.log("Assigned Page Break: ", pageNumber)
+                        // const createPageBreak = (pos: number) =>
+                        //     Decoration.widget(pos, () => {
+                        //         const pageBreak = document.createElement('div');
+                        //         pageBreak.className = 'page-break';
+                        //         pageBreak.style.cssText = `
+                        //             height: 20px;
+                        //             width: 100%;
+                        //             border-top: 1px dashed #ccc;
+                        //             margin: 10px 0;
+                        //             position: relative;
+                        //             `;
+                        //         pageBreak.setAttribute('data-page-number', String(pageNumber));
+                        //         if (showPageNumber) {
+                        //             const pageIndicator = document.createElement('span');
+                        //             pageIndicator.className = 'page-number';
+                        //             pageIndicator.textContent = `${label || 'Page'} ${pageNumber}`;
+                        //             pageIndicator.style.cssText = `
+                        //                 position: absolute;
+                        //                 right: 0;
+                        //                 top: -10px;
+                        //                 font-size: 12px;
+                        //                 color: #666;
+                        //                 background: white;
+                        //                 padding: 0 4px;
+                        //             `;
+                        //             pageBreak.appendChild(pageIndicator);
+                        //         }
+                        //         console.log("Assigned Page Break: ", pageNumber)
+                        //         pageNumber++;
+                        //         return pageBreak;
+                        //     });
+
+                        doc.descendants((node, pos) => {
+                            if (node.marks?.some(m => m.type.name === "pageBreak")) {
+                                decorations.push(
+                                Decoration.widget(pos, () =>
+                                    document.createElement("span")
+                                )
+                                );
                                 pageNumber++;
-                                return pageBreak;
-                            });
-
-                        doc.descendants((node: Node, pos: number) => {
-                            const { pageWidth } = options;
-                            if (!node.isBlock)
-                                return;
-                            const nodeDOM = this.editor.view.nodeDOM(pos);
-                            if (!(nodeDOM instanceof HTMLElement))
-                                return;
-                            const isList = node.type.name === 'bulletList' ||
-                                node.type.name === 'orderedList';
-                            const isListItem = node.type.name === 'listItem';
-                            // Calculate node height
-                            const nodeHeight = isListItem
-                                ? calculateListItemHeight(nodeDOM)
-                                : nodeDOM.offsetHeight;
-                            if (nodeHeight === 0)
-                                return;
-                            // Handle list items
-                            if (isList || isListItem) {
-                                return;
-                            }
-
-                            // Paginate individual list items
-                            // if (isListItem) {
-                            //     if (currentPageHeight + nodeHeight > effectivePageHeight) {
-                            //         decorations.push(createPageBreak(pos));
-                            //         currentPageHeight = nodeHeight;
-                            //     } else {
-                            //         currentPageHeight += nodeHeight;
-                            //     }
-                            //     return;
-                            // }
-                            // Handle non-list blocks
-                            if (currentPageHeight + nodeHeight > effectivePageHeight) {
-                                const avail = effectivePageHeight - currentPageHeight;
-                                if (nodeHeight > avail) {
-                                    
-                                    const offset = findBreakOffsetForHeight(
-                                        node.toJSON(),
-                                        pageWidth,
-                                        avail,
-                                        { fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }
-                                    );
-                                    console.log("page-break inside", nodeDOM, "at pos", pos + offset);
-                                    decorations.push(createPageBreak(pos + offset));
-                                    currentPageHeight = nodeHeight - avail;
-                                } else {
-                                    console.log("page-break inside", nodeDOM, "at pos", pos);
-                                    decorations.push(createPageBreak(pos));
-                                    currentPageHeight = nodeHeight;
-                                }
-                            } else {
-                                currentPageHeight += nodeHeight;
                             }
                         });
                         return DecorationSet.create(doc, decorations);

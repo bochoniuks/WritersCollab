@@ -8,6 +8,7 @@ import FontSize from "tiptap-extension-font-size";
 import Color from "@tiptap/extension-color";
 // import { Pagination } from "tiptap-pagination-breaks"; 
 import { Pagination } from "./pagination"; 
+import { PageBreak } from "./pageBreak";
 
 import {
   KEYS,
@@ -218,12 +219,12 @@ export const scratchpadWysiwyg = ({
 
         const lineHeight = getLineHeight(updatedElement.fontFamily);
 
-        console.log("coordX: ", coordX, " coordY: ", coordY)
+        // console.log("coordX: ", coordX, " coordY: ", coordY)
         const [viewportX, viewportY] = getViewportCoords(coordX, coordY);
 
         const editorMaxHeight = (appState.height - viewportY) / appState.zoom.value;
 
-        console.log("top: ", `${viewportY}px`, " height: ", `${height}px`)
+        // console.log("top: ", `${viewportY}px`, " height: ", `${height}px`)
 
 
         Object.assign(editable.style, {
@@ -474,6 +475,7 @@ export const scratchpadWysiwyg = ({
           ]
         : []),
       PageWrapper.configure({ pageHeight: pageSize.height }),
+      PageBreak,
     ];
     const ed = useEditor({
       extensions: [StarterKit.configure({ hardBreak: false }), TextStyle, Color, FontFamily, FontSize, StyledHardBreak,
@@ -497,7 +499,11 @@ export const scratchpadWysiwyg = ({
             { fontFamily: element.fontFamily, fontSize: element.fontSize }
           );
           if (offset > 0) {
-            ed.commands.insertContentAt(offset, { type: "hardBreak" });
+            ed.commands.insertContentAt(offset, {
+              type: "text",
+              text: " ",
+              marks: [{ type: "pageBreak" }],
+            });
             doc = ed.getJSON();
           }
         }

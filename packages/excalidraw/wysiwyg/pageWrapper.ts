@@ -27,9 +27,7 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
                 observer?.stop();
 
                 // if there are no page breaks and a page already exists, just update its size
-                const hasPageBreaks = Array.from(view.dom.childNodes).some(
-                  (n) => n instanceof HTMLElement && n.classList.contains("page-break"),
-                );
+                const hasPageBreaks = Array.from(view.dom.querySelectorAll("span.page-break")).length > 0;
                 if (!hasPageBreaks) {
                   const existing = view.dom.querySelector<HTMLDivElement>("div.page");
                   if (existing && existing.parentNode === view.dom) {
@@ -50,19 +48,19 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
 
                 let currentPage: HTMLElement | null = null;
                 let pageNum = 1;
-                console.log("++++++++++++++++++++++++++++++++++++++++")
+                // console.log("++++++++++++++++++++++++++++++++++++++++")
                 Array.from(view.dom.childNodes).forEach((node) => {
-                  console.log(node as HTMLElement)
+                  // console.log(node as HTMLElement)
                   if (node instanceof HTMLElement && node.classList.contains("page-break")) {
                       const breakNum = parseInt(node.dataset.pageNumber ?? "", 10);
-                      console.log("Page Break Num: ", breakNum)
+                      // console.log("Page Break Num: ", breakNum)
                       pageNum = (isNaN(breakNum) ? pageNum : breakNum) + 1;
                       currentPage = null;
                       return; // keep the widget but don’t wrap it
                   }
 
                   if (!currentPage) {
-                      console.log("Page Num: ", pageNum)
+                      // console.log("Page Num: ", pageNum)
                       currentPage = document.createElement("div");
                       currentPage.className = `page page-${pageNum}`;
                       currentPage.dataset.page = String(pageNum);
@@ -72,7 +70,7 @@ export const PageWrapper = Extension.create<PageWrapperOptions>({
                   }
                   currentPage.appendChild(node);
                 });
-                console.log("--------------------------------------")
+                // console.log("--------------------------------------")
 
                 wrapping = false;
                 observer?.start();
