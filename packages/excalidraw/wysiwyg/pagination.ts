@@ -7,6 +7,8 @@ import {
 } from 'prosemirror-state';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import { Node } from 'prosemirror-model';
+import { findBreakOffsetForHeight } from '@excalidraw/element/parseTiptapDoc';
+import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE } from '@excalidraw/common';
 
 export interface PaginationOptions {
   pageHeight: number;
@@ -108,6 +110,7 @@ export const Pagination = Extension.create<PaginationOptions>({
                             });
 
                         doc.descendants((node: Node, pos: number) => {
+                            const { pageWidth } = options;
                             if (!node.isBlock)
                                 return;
                             const nodeDOM = this.editor.view.nodeDOM(pos);
@@ -123,24 +126,36 @@ export const Pagination = Extension.create<PaginationOptions>({
                             if (nodeHeight === 0)
                                 return;
                             // Handle list items
-                            if (isList) {
+                            if (isList || isListItem) {
                                 return;
                             }
 
                             // Paginate individual list items
-                            if (isListItem) {
-                                if (currentPageHeight + nodeHeight > effectivePageHeight) {
-                                    decorations.push(createPageBreak(pos));
-                                    currentPageHeight = nodeHeight;
-                                } else {
-                                    currentPageHeight += nodeHeight;
-                                }
-                                return;
-                            }
+                            // if (isListItem) {
+                            //     if (currentPageHeight + nodeHeight > effectivePageHeight) {
+                            //         decorations.push(createPageBreak(pos));
+                            //         currentPageHeight = nodeHeight;
+                            //     } else {
+                            //         currentPageHeight += nodeHeight;
+                            //     }
+                            //     return;
+                            // }
                             // Handle non-list blocks
                             if (currentPageHeight + nodeHeight > effectivePageHeight) {
-                                decorations.push(createPageBreak(pos));
-                                currentPageHeight = nodeHeight;
+                                if (nodeHeight > effectivePageHeight) {
+                                    const avail = effectivePageHeight - currentPageHeight;
+                                    const offset = findBreakOffsetForHeight(
+                                        node.toJSON(),
+                                        pageWidth,
+                                        avail,
+                                        { fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }
+                                    );
+                                    decorations.push(createPageBreak(pos + offset));
+                                    currentPageHeight = nodeHeight - avail;
+                                } else {
+                                    decorations.push(createPageBreak(pos));
+                                    currentPageHeight = nodeHeight;
+                                }
                             } else {
                                 currentPageHeight += nodeHeight;
                             }

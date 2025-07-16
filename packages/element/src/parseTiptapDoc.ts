@@ -333,3 +333,43 @@ export const parseTiptapDoc = (
   return lines;
 };
 
+export const findBreakOffsetForHeight = (
+  paragraph: JSONContent,
+  maxWidth: number,
+  remainingHeight: number,
+  opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {},
+): number => {
+  // Reuse existing wrapping so we mirror browser line breaks
+  const wrapped = wrapTiptapDoc(paragraph, maxWidth, opts);
+  const lines = parseTiptapDoc(wrapped, opts);
+
+  let height = 0;
+  let offset = 0;
+
+  for (const line of lines) {
+    let lineHeight = 0;
+    for (const seg of line) {
+      if (seg.type === "hardBreak") {
+        continue;
+      }
+      const font = getFontString({
+        fontFamily: seg.fontFamily,
+        fontSize: seg.fontSize,
+      });
+      const metrics = measureText(seg.text, font, getLineHeight(seg.fontFamily));
+      lineHeight = Math.max(lineHeight, metrics.height);
+      offset += seg.text.length;
+    }
+
+    // if the next line would exceed available height, stop before it
+    if (height + lineHeight > remainingHeight) {
+      return offset;
+    }
+
+    height += lineHeight;
+    // count the hard break inserted by wrapTiptapDoc
+    offset += 1;
+  }
+
+  return offset;
+};

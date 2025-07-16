@@ -74,7 +74,7 @@ import type { Editor } from "@tiptap/core";
 
 import type App from "../components/App";
 import type { AppState } from "../types";
-import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
+import { findBreakOffsetForHeight, measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 import FontFamily from "@tiptap/extension-font-family";
 import { PageWrapper } from "./pageWrapper";
 import { StyledHardBreak } from "./styledHardBreak";
@@ -485,7 +485,23 @@ export const scratchpadWysiwyg = ({
         refreshPageElement();
       },
       onUpdate: ({ editor: ed }) => {
-        const doc = ed.getJSON();
+        let doc = ed.getJSON();
+
+        if (element.paginationEnabled) {
+          const contentWidth = pageSize.width - element.margin.left - element.margin.right;
+          const contentHeight = pageSize.height - element.margin.top - element.margin.bottom;
+          const offset = findBreakOffsetForHeight(
+            doc,
+            contentWidth,
+            contentHeight,
+            { fontFamily: element.fontFamily, fontSize: element.fontSize }
+          );
+          if (offset > 0) {
+            ed.commands.insertContentAt(offset, { type: "hardBreak" });
+            doc = ed.getJSON();
+          }
+        }
+        
         if (onChange) {
           onChange(doc);
         }
