@@ -474,7 +474,7 @@ export const scratchpadWysiwyg = ({
             }),
           ]
         : []),
-      PageWrapper.configure({ pageHeight: pageSize.height }),
+      // PageWrapper.configure({ pageHeight: pageSize.height }),
       PageBreak,
     ];
     const ed = useEditor({

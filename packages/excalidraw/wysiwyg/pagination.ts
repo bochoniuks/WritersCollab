@@ -114,18 +114,13 @@ export const Pagination = Extension.create<PaginationOptions>({
                             if (node.marks?.some(m => m.type.name === "pageBreak")) {
                                 decorations.push(
                                     Decoration.widget(pos, () => {
-                                    const pageBreak = document.createElement("span");
-                                    pageBreak.className = "page-break";
-                                    pageBreak.setAttribute("data-page-break", "true");
-                                    pageBreak.setAttribute("data-page-number", String(pageNumber));
-                                    if (showPageNumber) {
-                                        const labelSpan = document.createElement("span");
-                                        labelSpan.className = "page-number";
-                                        labelSpan.textContent = `${label || "Page"} ${pageNumber}`;
-                                        pageBreak.appendChild(labelSpan);
-                                    }
-                                    pageNumber++;
-                                    return pageBreak;
+                                        const pageBreak = document.createElement("hr");
+                                        pageBreak.className = "page-break";
+                                        pageBreak.setAttribute("data-page-break", "true");
+                                        pageBreak.style.border = "none";
+                                        pageBreak.style.margin = "20px 0";
+                                        pageNumber++;
+                                        return pageBreak;
                                     })
                                 );
                             }

@@ -701,7 +701,10 @@ body.excalidraw-cursor-resize * {
   }
 
   .excalidraw-wysiwyg .page-break {
-    display: none;        /* hide the visual separator */
+    display: block;
+    border: none;
+    margin: 20px 0;
+    height: 20px;
   }
 
   .excalidraw-wysiwyg .page-break .page-number {
