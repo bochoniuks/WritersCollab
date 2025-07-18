@@ -117,7 +117,8 @@ export const Pagination = Extension.create<PaginationOptions>({
                 view(view) {
                     const borderLayer = document.createElement('div');
                     borderLayer.className = 'page-border-layer';
-                    view.dom.appendChild(borderLayer);
+                    borderLayer.setAttribute('data-pm-ignore', 'true');
+                    (view.dom.parentNode as HTMLElement).appendChild(borderLayer);
 
                     const updateBorders = () => {
                         borderLayer.innerHTML = '';
@@ -128,13 +129,14 @@ export const Pagination = Extension.create<PaginationOptions>({
                         let start = -pageMargin;
                         breaks.forEach((hr) => {
                             const top = start;
-                            const height = hr.offsetTop + pageMargin - start;
+                            const height = pageHeight;
+                            // const height = hr.offsetTop + pageMargin - start;
                             const div = document.createElement('div');
                             div.className = 'page-border';
                             div.style.top = `${top}px`;
                             div.style.height = `${height}px`;
                             borderLayer.appendChild(div);
-                            start = hr.offsetTop - pageMargin;
+                            start += pageHeight;
                         });
 
                         const lastBorder = document.createElement('div');
@@ -142,6 +144,7 @@ export const Pagination = Extension.create<PaginationOptions>({
                         lastBorder.style.top = `${start}px`;
                         lastBorder.style.height = `${pageHeight - start}px`;
                         borderLayer.appendChild(lastBorder);
+                        console.log(borderLayer)
                     };
 
                     updateBorders();
