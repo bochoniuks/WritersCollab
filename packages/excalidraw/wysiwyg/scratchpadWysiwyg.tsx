@@ -392,6 +392,10 @@ export const scratchpadWysiwyg = ({
   editable.dataset.type = "wysiwyg";
   editable.classList.add("excalidraw-wysiwyg");
 
+  const borderLayer = document.createElement("div");
+  borderLayer.classList.add("page-border-layer");
+  editable.appendChild(borderLayer);
+
   let whiteSpace = "pre";
   let wordBreak = "normal";
 
@@ -485,28 +489,10 @@ export const scratchpadWysiwyg = ({
       onCreate: () => {
         // page wrapper exists only after the editor mounts
         refreshPageElement();
+        updatePageBorders();
       },
       onUpdate: ({ editor: ed }) => {
         let doc = ed.getJSON();
-
-        if (element.paginationEnabled) {
-          const contentWidth = pageSize.width - element.margin.left - element.margin.right;
-          const contentHeight = pageSize.height - element.margin.top - element.margin.bottom;
-          // const offset = findBreakOffsetForHeight(
-          //   doc,
-          //   contentWidth,
-          //   contentHeight,
-          //   { fontFamily: element.fontFamily, fontSize: element.fontSize }
-          // );
-          // if (offset > 0) {
-          //   ed.commands.insertContentAt(offset, {
-          //     type: "text",
-          //     text: " ",
-          //     marks: [{ type: "pageBreak" }],
-          //   });
-          //   doc = ed.getJSON();
-          // }
-        }
         
         if (onChange) {
           onChange(doc);
@@ -515,6 +501,7 @@ export const scratchpadWysiwyg = ({
         prevDoc = doc;
         updateWysiwygStyle();
         refreshPageElement();
+        updatePageBorders();
       },
     }, [element.paginationEnabled, element.pageSize],);
 
@@ -544,6 +531,39 @@ export const scratchpadWysiwyg = ({
 
   const root = createRoot(editable);
   root.render(<ScratchpadEditor />);
+
+  const updatePageBorders = () => {
+    borderLayer.innerHTML = "";
+
+    const pageSize = element.pageSize
+      ? SCRATCHPAD_PAGE_SIZES[element.pageSize].height
+      : element.height;
+
+    const pageMargin = element.margin.top;
+    const breaks = Array.from(
+      editable.querySelectorAll<HTMLHRElement>("hr.page-break")
+    );
+
+    let start = -pageMargin;
+    breaks.forEach((hr) => {
+      const top = start;
+      const height = hr.offsetTop + pageMargin - start;
+      const border = document.createElement("div");
+      border.className = "page-border";
+      border.style.top = `${top}px`;
+      border.style.height = `${height}px`;
+      borderLayer.appendChild(border);
+      start = hr.offsetTop - pageMargin;
+    });
+
+    // last page
+    const lastHeight = pageSize - start;
+    const lastBorder = document.createElement("div");
+    lastBorder.className = "page-border";
+    lastBorder.style.top = `${start}px`;
+    lastBorder.style.height = `${lastHeight}px`;
+    borderLayer.appendChild(lastBorder);
+  };
 
   const refreshPageElement = () => {
     const page = editable.querySelector<HTMLDivElement>(".page");
@@ -697,6 +717,7 @@ export const scratchpadWysiwyg = ({
     }
 
     root.unmount();
+    borderLayer.remove();
     editable.remove();
   };
 

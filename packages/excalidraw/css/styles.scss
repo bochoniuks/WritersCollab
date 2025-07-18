@@ -717,18 +717,19 @@ body.excalidraw-cursor-resize * {
     padding: 0 4px;
   }
 
-  .excalidraw-wysiwyg .page {
-    display: block;
-    box-sizing: border-box;
-    margin: 0 auto 40px auto;
-    padding: var(--page-padding, 0);
-    border: 1px solid #e0e0e0;
-    background: white;
-    overflow-y: var(--page-overflow, visible); 
+  .excalidraw-wysiwyg .page-border-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
   }
 
-  .excalidraw-wysiwyg .page:last-child {
-    margin-bottom: 0;
+  .excalidraw-wysiwyg .page-border {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #e0e0e0;
+    background: none;
   }
   
   .excalidraw .scratchpad-header {
