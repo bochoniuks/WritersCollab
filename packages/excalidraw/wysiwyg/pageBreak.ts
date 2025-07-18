@@ -1,24 +1,47 @@
 // packages/excalidraw/wysiwyg/pageBreak.ts
-import { Mark } from "@tiptap/core";
+import { Extension } from "@tiptap/core";
+import { Plugin, PluginKey } from "prosemirror-state";
+import { Decoration, DecorationSet } from "prosemirror-view";
 
-export const PageBreak = Mark.create({
-    name: "pageBreak",
-    group: "inline",
-    inclusive: false,
+export const PageBreak = Extension.create({
+  name: "pageBreak",
 
-    parseHTML() {
-        return [{ tag: "hr[data-page-break]" }];
-    },
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey("pageBreak"),
+        state: {
+          init: () => DecorationSet.empty,
+          apply(tr, set) {
+            if (!tr.docChanged) {
+              return set.map(tr.mapping, tr.doc);
+            }
 
-    renderHTML({ HTMLAttributes }) {
-        return [
-            "hr",
-            {
-                ...HTMLAttributes,
-                "data-page-break": "true",
-                class: "page-break",
-                style: "border:none;margin:20px 0;",
-            },
-        ];
-    },
+            // Compute break positions for the updated document
+            const breaks: number[] = calculateBreakOffsets(
+              tr.doc,
+              this.options.pageHeight,
+              this.options.pageMargin,
+            );
+            const widgets = breaks.map(pos =>
+              Decoration.widget(pos, () => {
+                const hr = document.createElement("hr");
+                hr.className = "page-break";
+                hr.setAttribute("data-page-break", "true");
+                hr.style.border = "none";
+                hr.style.margin = "20px 0";
+                return hr;
+              }),
+            );
+            return DecorationSet.create(tr.doc, widgets);
+          },
+        },
+        props: {
+          decorations(state) {
+            return this.getState(state);
+          },
+        },
+      }),
+    ];
+  },
 });

@@ -8,7 +8,7 @@ import FontSize from "tiptap-extension-font-size";
 import Color from "@tiptap/extension-color";
 // import { Pagination } from "tiptap-pagination-breaks"; 
 import { Pagination } from "./pagination"; 
-import { PageBreak } from "./pageBreak";
+// import { PageBreak } from "./pageBreak";
 
 import {
   KEYS,
@@ -475,7 +475,7 @@ export const scratchpadWysiwyg = ({
           ]
         : []),
       // PageWrapper.configure({ pageHeight: pageSize.height }),
-      PageBreak,
+      // PageBreak,
     ];
     const ed = useEditor({
       extensions: [StarterKit.configure({ hardBreak: false }), TextStyle, Color, FontFamily, FontSize, StyledHardBreak,
@@ -492,20 +492,20 @@ export const scratchpadWysiwyg = ({
         if (element.paginationEnabled) {
           const contentWidth = pageSize.width - element.margin.left - element.margin.right;
           const contentHeight = pageSize.height - element.margin.top - element.margin.bottom;
-          const offset = findBreakOffsetForHeight(
-            doc,
-            contentWidth,
-            contentHeight,
-            { fontFamily: element.fontFamily, fontSize: element.fontSize }
-          );
-          if (offset > 0) {
-            ed.commands.insertContentAt(offset, {
-              type: "text",
-              text: " ",
-              marks: [{ type: "pageBreak" }],
-            });
-            doc = ed.getJSON();
-          }
+          // const offset = findBreakOffsetForHeight(
+          //   doc,
+          //   contentWidth,
+          //   contentHeight,
+          //   { fontFamily: element.fontFamily, fontSize: element.fontSize }
+          // );
+          // if (offset > 0) {
+          //   ed.commands.insertContentAt(offset, {
+          //     type: "text",
+          //     text: " ",
+          //     marks: [{ type: "pageBreak" }],
+          //   });
+          //   doc = ed.getJSON();
+          // }
         }
         
         if (onChange) {

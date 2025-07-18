@@ -76,7 +76,7 @@ export const Pagination = Extension.create<PaginationOptions>({
                         let currentPageHeight = 0;
                         let pageNumber = 1;
                         const options = pluginKey.getState(state) as PaginationOptions;
-                        const { pageHeight, pageMargin, showPageNumber, label } = options;
+                        const { pageHeight, pageMargin, pageWidth, showPageNumber, label } = options;
                         const effectivePageHeight = pageHeight - 2 * pageMargin;
                         // const createPageBreak = (pos: number) =>
                         //     Decoration.widget(pos, () => {
@@ -110,21 +110,38 @@ export const Pagination = Extension.create<PaginationOptions>({
                         //         return pageBreak;
                         //     });
 
-                        doc.descendants((node, pos) => {
-                            if (node.marks?.some(m => m.type.name === "pageBreak")) {
-                                decorations.push(
-                                    Decoration.widget(pos, () => {
-                                        const pageBreak = document.createElement("hr");
-                                        pageBreak.className = "page-break";
-                                        pageBreak.setAttribute("data-page-break", "true");
-                                        pageBreak.style.border = "none";
-                                        pageBreak.style.margin = "20px 0";
-                                        pageNumber++;
-                                        return pageBreak;
-                                    })
-                                );
-                            }
-                        });
+                        const breakPositions: number[] = [];
+                        let pos = 0;
+                        let remainingDoc = doc.toJSON();
+
+                        while (true) {
+                        const breakOffset = findBreakOffsetForHeight(
+                            remainingDoc,
+                            pageWidth - 2 * pageMargin,
+                            effectivePageHeight,
+                            { fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }
+                        );
+                        if (breakOffset <= 0) {
+                            break;
+                        }
+                        pos += breakOffset;
+                        breakPositions.push(pos);
+                        remainingDoc = doc.cut(pos).toJSON();
+                        }
+
+                        for (const p of breakPositions) {
+                        decorations.push(
+                            Decoration.widget(p, () => {
+                            const pageBreak = document.createElement("hr");
+                            pageBreak.className = "page-break";
+                            pageBreak.setAttribute("data-page-break", "true");
+                            pageBreak.style.border = "none";
+                            pageBreak.style.margin = "20px 0";
+                            pageNumber++;
+                            return pageBreak;
+                            })
+                        );
+                        }
                         return DecorationSet.create(doc, decorations);
                     },
                 },
