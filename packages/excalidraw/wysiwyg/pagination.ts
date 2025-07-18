@@ -78,38 +78,7 @@ export const Pagination = Extension.create<PaginationOptions>({
                         const options = pluginKey.getState(state) as PaginationOptions;
                         const { pageHeight, pageMargin, pageWidth, showPageNumber, label } = options;
                         const effectivePageHeight = pageHeight - 2 * pageMargin;
-                        // const createPageBreak = (pos: number) =>
-                        //     Decoration.widget(pos, () => {
-                        //         const pageBreak = document.createElement('div');
-                        //         pageBreak.className = 'page-break';
-                        //         pageBreak.style.cssText = `
-                        //             height: 20px;
-                        //             width: 100%;
-                        //             border-top: 1px dashed #ccc;
-                        //             margin: 10px 0;
-                        //             position: relative;
-                        //             `;
-                        //         pageBreak.setAttribute('data-page-number', String(pageNumber));
-                        //         if (showPageNumber) {
-                        //             const pageIndicator = document.createElement('span');
-                        //             pageIndicator.className = 'page-number';
-                        //             pageIndicator.textContent = `${label || 'Page'} ${pageNumber}`;
-                        //             pageIndicator.style.cssText = `
-                        //                 position: absolute;
-                        //                 right: 0;
-                        //                 top: -10px;
-                        //                 font-size: 12px;
-                        //                 color: #666;
-                        //                 background: white;
-                        //                 padding: 0 4px;
-                        //             `;
-                        //             pageBreak.appendChild(pageIndicator);
-                        //         }
-                        //         console.log("Assigned Page Break: ", pageNumber)
-                        //         pageNumber++;
-                        //         return pageBreak;
-                        //     });
-
+                        
                         const breakPositions: number[] = [];
                         let pos = 0;
                         let remainingDoc = doc.toJSON();
