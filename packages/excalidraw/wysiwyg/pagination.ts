@@ -114,6 +114,42 @@ export const Pagination = Extension.create<PaginationOptions>({
                         return DecorationSet.create(doc, decorations);
                     },
                 },
+                view(view) {
+                    const borderLayer = document.createElement('div');
+                    borderLayer.className = 'page-border-layer';
+                    view.dom.appendChild(borderLayer);
+
+                    const updateBorders = () => {
+                        borderLayer.innerHTML = '';
+                        const { pageHeight, pageMargin } =
+                        pluginKey.getState(view.state) as PaginationOptions;
+                        const breaks = Array.from(view.dom.querySelectorAll<HTMLHRElement>('hr.page-break'));
+
+                        let start = -pageMargin;
+                        breaks.forEach((hr) => {
+                            const top = start;
+                            const height = hr.offsetTop + pageMargin - start;
+                            const div = document.createElement('div');
+                            div.className = 'page-border';
+                            div.style.top = `${top}px`;
+                            div.style.height = `${height}px`;
+                            borderLayer.appendChild(div);
+                            start = hr.offsetTop - pageMargin;
+                        });
+
+                        const lastBorder = document.createElement('div');
+                        lastBorder.className = 'page-border';
+                        lastBorder.style.top = `${start}px`;
+                        lastBorder.style.height = `${pageHeight - start}px`;
+                        borderLayer.appendChild(lastBorder);
+                    };
+
+                    updateBorders();
+                    return {
+                        update: updateBorders,
+                        destroy() { borderLayer.remove(); },
+                    };
+                },
             }),
         ];
     },
