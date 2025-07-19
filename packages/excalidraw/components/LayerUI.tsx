@@ -74,6 +74,7 @@ import type {
   AppClassProperties,
 } from "../types";
 import { ScratchpadToolbar } from "./ScratchpadToolbar";
+import { getScratchpadEditor } from "../wysiwyg/scratchpadWysiwyg";
 
 interface LayerUIProps {
   actionManager: ActionManager;
@@ -243,9 +244,14 @@ const LayerUI = ({
     ) {
       return null;
     }
+    const editor = getScratchpadEditor();
+    console.log(editor)
     return (
       <ScratchpadToolbar style={{}}
-        onBold={() => {}} boldEnabled={false} />
+        onBold={() => {
+          editor?.chain().focus().toggleBold().run();
+        }}
+        boldEnabled={editor?.isActive("bold") ?? false} />
     );
   };
 

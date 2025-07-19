@@ -73,6 +73,9 @@ import {
 import type { JSONContent } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
 
+export let activeScratchpadEditor: Editor | null = null;
+export const getScratchpadEditor = () => activeScratchpadEditor;
+
 import type App from "../components/App";
 import type { AppState } from "../types";
 import { findBreakOffsetForHeight, measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
@@ -534,6 +537,7 @@ export const scratchpadWysiwyg = ({
     useEffect(() => {
       if (ed) {
         editor = ed as Editor;
+        activeScratchpadEditor = ed;
         if (autoSelect) {
           ed.view.focus();
         }
@@ -549,6 +553,11 @@ export const scratchpadWysiwyg = ({
         // }
         chain.setColor(element.strokeColor).run();
       }
+      return () => {
+        if (activeScratchpadEditor === ed) {
+          activeScratchpadEditor = null;
+        }
+      };
     }, [ed]);
 
     return <EditorContent editor={ed} />;
@@ -711,6 +720,7 @@ export const scratchpadWysiwyg = ({
 
     root.unmount();
     editable.remove();
+    activeScratchpadEditor = null;
   };
 
   const bindBlurEvent = (event?: MouseEvent) => {
