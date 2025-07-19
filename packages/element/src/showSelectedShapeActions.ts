@@ -10,6 +10,7 @@ export const showSelectedShapeActions = (
 ) =>
   Boolean(
     !appState.viewModeEnabled &&
+      appState.scratchpadViewMode !== "ideation" &&
       appState.openDialog?.name !== "elementLinkSelector" &&
       ((appState.activeTool.type !== "custom" &&
         (appState.editingTextElement ||

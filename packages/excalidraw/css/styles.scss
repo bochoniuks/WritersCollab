@@ -732,6 +732,13 @@ body.excalidraw-cursor-resize * {
     background: none;
   }
   
+  .excalidraw .scratchpad-config-toolbar {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
   .excalidraw .scratchpad-header {
     display: flex;
     align-items: center;

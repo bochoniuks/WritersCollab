@@ -552,6 +552,7 @@ import type { Action, ActionResult } from "../actions/types";
 import { measureTiptapDoc, measureTiptapDocWithWidth, wrapTiptapDoc } from "@excalidraw/element/parseTiptapDoc";
 import { GROUP_FLAG_CONFIG } from "../groupFlagConfig";
 import { centerScrollOn } from "../scene/scroll";
+import { ScratchpadToolbar } from "./ScratchpadToolbar";
 
 const AppContext = React.createContext<AppClassProperties>(null!);
 const AppPropsContext = React.createContext<AppProps>(null!);
@@ -1583,6 +1584,31 @@ class App extends React.Component<AppProps, AppState> {
     
   };
 
+  private renderScratchpadToolbar = () => {
+    const { scratchpadViewMode, ideationElementId } = this.state;
+    if (scratchpadViewMode !== "ideation" || !ideationElementId) {
+      return null;
+    }
+
+    const el = this.scene.getElement(ideationElementId);
+    if (!el || !isScratchpadElement(el)) {
+      return null;
+    }
+
+    const { x, y } = sceneCoordsToViewportCoords(
+      { sceneX: el.x, sceneY: el.y },
+      this.state,
+    );
+
+    return (
+      <ScratchpadToolbar
+        style={{ left: x - 48, top: y }}
+        onBold={() => {}}
+        boldEnabled={false /* update when multiple styles are tracked */}
+      />
+    );
+  };
+
   private renderFrameNames = () => {
     if (!this.state.frameRendering.enabled || !this.state.frameRendering.name) {
       if (this.state.editingFrame) {
@@ -2096,6 +2122,7 @@ class App extends React.Component<AppProps, AppState> {
                         )}
                         {this.renderFrameNames()}
                         {this.renderScratchpadHeaders()}
+                        {this.renderScratchpadToolbar()}
                         {this.state.activeLockedId && (
                           <UnlockPopup
                             app={this}
