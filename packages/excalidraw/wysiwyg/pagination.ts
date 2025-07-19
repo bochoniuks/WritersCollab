@@ -84,7 +84,9 @@ export const Pagination = Extension.create<PaginationOptions>({
                         
                         const breakPositions: number[] = [];
                         let pos = 0;
+                        // console.log(doc)
                         let remainingDoc = doc.toJSON();
+                        // console.log(remainingDoc)
 
                         while (true) {
                             const breakOffset = findBreakOffsetForHeight(
@@ -149,7 +151,7 @@ export const Pagination = Extension.create<PaginationOptions>({
                         lastBorder.style.top = `${start}px`;
                         lastBorder.style.height = `${pageHeight - start}px`;
                         borderLayer.appendChild(lastBorder);
-                        console.log(borderLayer)
+                        // console.log(borderLayer)
                     };
 
                     updateBorders();

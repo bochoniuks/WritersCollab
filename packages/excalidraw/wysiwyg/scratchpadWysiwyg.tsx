@@ -103,6 +103,26 @@ const getTransform = (
 
 type SubmitHandler = () => void;
 
+import { Fragment, Slice, Node as PMNode, Mark } from "prosemirror-model";
+// apply `mark` to all text nodes inside `slice`
+function addMarkToSlice(slice: Slice, mark: Mark): Slice {
+  const map = (fragment: Fragment): Fragment => {
+    const children: PMNode[] = [];
+    fragment.forEach(child => {
+      let node = child;
+      if (child.isText) {
+        node = child.mark(mark.addToSet(child.marks));
+      } else if (child.content.size) {
+        node = child.copy(map(child.content));
+      }
+      children.push(node);
+    });
+    return Fragment.fromArray(children);
+  };
+
+  return new Slice(map(slice.content), slice.openStart, slice.openEnd);
+}
+
 export const scratchpadWysiwyg = ({
   id,
   onChange,
@@ -476,6 +496,23 @@ export const scratchpadWysiwyg = ({
         ...pageExtensions
       ],
       content: prevDoc,
+      editorProps: {
+        handlePaste(view, event, slice) {
+          console.log(slice)
+          const fontName =
+            Object.entries(FONT_FAMILY).find(([, id]) =>
+              id === app.state.currentItemFontFamily)?.[0] ?? "Nunito";
+
+          const mark = view.state.schema.marks.textStyle.create({
+            fontFamily: fontName,
+            fontSize: `${app.state.currentItemFontSize}px`,
+          });
+
+          const patched = addMarkToSlice(slice, mark);
+          view.dispatch(view.state.tr.replaceSelection(patched));
+          return true;
+        },
+      },
       onCreate: () => {
         // page wrapper exists only after the editor mounts
         refreshPageElement();
@@ -488,6 +525,7 @@ export const scratchpadWysiwyg = ({
         }
         changeHistory.push({ from: prevDoc, to: doc, timestamp: Date.now() });
         prevDoc = doc;
+        // console.log(doc)
         updateWysiwygStyle();
         refreshPageElement();
       },
@@ -504,11 +542,11 @@ export const scratchpadWysiwyg = ({
         
         let doc = ed.getJSON();
         const chain = ed.chain();
-        if (!prevDoc?.content?.length) {
+        // if (!prevDoc?.content?.length) {
           chain
-            .setFontFamily(currentFontName ?? "Excalifont")
+            .setFontFamily(currentFontName ?? "Nunito")
             .setFontSize(`${app.state.currentItemFontSize}px`);
-        }
+        // }
         chain.setColor(element.strokeColor).run();
       }
     }, [ed]);
@@ -517,7 +555,7 @@ export const scratchpadWysiwyg = ({
   };
 
   const root = createRoot(editable);
-  console.log(root)
+  // console.log(root)
   root.render(<ScratchpadEditor />);
 
   const refreshPageElement = () => {
