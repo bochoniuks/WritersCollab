@@ -73,8 +73,11 @@ import {
 import type { JSONContent } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
 
-export let activeScratchpadEditor: Editor | null = null;
-export const getScratchpadEditor = () => activeScratchpadEditor;
+import { atom, editorJotaiStore } from "../editor-jotai";
+
+export const activeScratchpadEditorAtom = atom<Editor | null>(null);
+export const getScratchpadEditor = () =>
+  editorJotaiStore.get(activeScratchpadEditorAtom);
 
 import type App from "../components/App";
 import type { AppState } from "../types";
@@ -537,7 +540,7 @@ export const scratchpadWysiwyg = ({
     useEffect(() => {
       if (ed) {
         editor = ed as Editor;
-        activeScratchpadEditor = ed;
+        app.updateEditorAtom(activeScratchpadEditorAtom, ed);
         if (autoSelect) {
           ed.view.focus();
         }
@@ -554,9 +557,7 @@ export const scratchpadWysiwyg = ({
         chain.setColor(element.strokeColor).run();
       }
       return () => {
-        if (activeScratchpadEditor === ed) {
-          activeScratchpadEditor = null;
-        }
+        app.updateEditorAtom(activeScratchpadEditorAtom, null);
       };
     }, [ed]);
 
@@ -720,7 +721,7 @@ export const scratchpadWysiwyg = ({
 
     root.unmount();
     editable.remove();
-    activeScratchpadEditor = null;
+    app.updateEditorAtom(activeScratchpadEditorAtom, null);
   };
 
   const bindBlurEvent = (event?: MouseEvent) => {

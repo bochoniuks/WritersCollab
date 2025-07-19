@@ -74,7 +74,7 @@ import type {
   AppClassProperties,
 } from "../types";
 import { ScratchpadToolbar } from "./ScratchpadToolbar";
-import { getScratchpadEditor } from "../wysiwyg/scratchpadWysiwyg";
+import { activeScratchpadEditorAtom, getScratchpadEditor } from "../wysiwyg/scratchpadWysiwyg";
 
 interface LayerUIProps {
   actionManager: ActionManager;
@@ -237,6 +237,18 @@ const LayerUI = ({
     </Section>
   );
 
+  const ScratchpadToolbarWrapper = () => {
+    const editor = useAtomValue(activeScratchpadEditorAtom);
+    console.log(editor)
+    return (
+      <ScratchpadToolbar
+        style={{}}
+        onBold={() => editor?.chain().focus().toggleBold().run()}
+        boldEnabled={editor?.isActive("bold") ?? false}
+      />
+    );
+  };
+
   const renderScratchpadToolbar = () => {
     if (
       appState.scratchpadViewMode !== "ideation" ||
@@ -244,15 +256,7 @@ const LayerUI = ({
     ) {
       return null;
     }
-    const editor = getScratchpadEditor();
-    console.log(editor)
-    return (
-      <ScratchpadToolbar style={{}}
-        onBold={() => {
-          editor?.chain().focus().toggleBold().run();
-        }}
-        boldEnabled={editor?.isActive("bold") ?? false} />
-    );
+    return <ScratchpadToolbarWrapper />;
   };
 
 
