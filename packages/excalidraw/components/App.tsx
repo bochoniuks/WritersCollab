@@ -1584,30 +1584,6 @@ class App extends React.Component<AppProps, AppState> {
     
   };
 
-  private renderScratchpadToolbar = () => {
-    const { scratchpadViewMode, ideationElementId } = this.state;
-    if (scratchpadViewMode !== "ideation" || !ideationElementId) {
-      return null;
-    }
-
-    const el = this.scene.getElement(ideationElementId);
-    if (!el || !isScratchpadElement(el)) {
-      return null;
-    }
-
-    const { x, y } = sceneCoordsToViewportCoords(
-      { sceneX: el.x, sceneY: el.y },
-      this.state,
-    );
-
-    return (
-      <ScratchpadToolbar
-        style={{ left: x - 48, top: y }}
-        onBold={() => {}}
-        boldEnabled={false /* update when multiple styles are tracked */}
-      />
-    );
-  };
 
   private renderFrameNames = () => {
     if (!this.state.frameRendering.enabled || !this.state.frameRendering.name) {
@@ -2122,7 +2098,6 @@ class App extends React.Component<AppProps, AppState> {
                         )}
                         {this.renderFrameNames()}
                         {this.renderScratchpadHeaders()}
-                        {this.renderScratchpadToolbar()}
                         {this.state.activeLockedId && (
                           <UnlockPopup
                             app={this}

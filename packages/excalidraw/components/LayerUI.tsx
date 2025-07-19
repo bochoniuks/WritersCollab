@@ -73,6 +73,7 @@ import type {
   UIAppState,
   AppClassProperties,
 } from "../types";
+import { ScratchpadToolbar } from "./ScratchpadToolbar";
 
 interface LayerUIProps {
   actionManager: ActionManager;
@@ -235,6 +236,20 @@ const LayerUI = ({
     </Section>
   );
 
+  const renderScratchpadToolbar = () => {
+    if (
+      appState.scratchpadViewMode !== "ideation" ||
+      !appState.ideationElementId
+    ) {
+      return null;
+    }
+    return (
+      <ScratchpadToolbar style={{}}
+        onBold={() => {}} boldEnabled={false} />
+    );
+  };
+
+
   const renderFixedSideContainer = () => {
     const shouldRenderSelectedShapeActions = showSelectedShapeActions(
       appState,
@@ -253,6 +268,7 @@ const LayerUI = ({
           <Stack.Col gap={6} className={clsx("App-menu_top__left")}>
             {renderCanvasActions()}
             {shouldRenderSelectedShapeActions && renderSelectedShapeActions()}
+            {renderScratchpadToolbar()}
           </Stack.Col>
           {!appState.viewModeEnabled &&
             appState.openDialog?.name !== "elementLinkSelector" && (

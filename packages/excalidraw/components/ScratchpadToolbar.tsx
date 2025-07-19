@@ -16,9 +16,9 @@ export const ScratchpadToolbar = ({
 }: ScratchpadToolbarProps) => {
   return (
     <Island
-      padding={1}
-      className="App-toolbar scratchpad-config-toolbar"
-      style={style}
+        padding={1}
+        className="App-toolbar scratchpad-config-toolbar"
+        style={{ width: "max-content", zIndex: "var(--zIndex-layerUI)", ...style }}
     >
       <ToolButton
         type="icon"
