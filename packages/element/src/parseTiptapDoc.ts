@@ -343,6 +343,7 @@ export const findBreakOffsetForHeight = (
   // Reuse existing wrapping so we mirror browser line breaks
   const wrapped = wrapTiptapDoc(paragraph, maxWidth, opts);
   const lines = parseTiptapDoc(wrapped, opts);
+  console.log(wrapped)
 
   let height = 0;
   let offset = 0;

@@ -12,6 +12,7 @@ import {
   getLineHeight,
   ScratchpadPageSize,
   SCRATCHPAD_PAGE_SIZES,
+  DEFAULT_SCRATCHPAD_PAGE_MARGIN,
 } from "@excalidraw/common";
 
 import type { JSONContent } from "@tiptap/core";
@@ -296,7 +297,7 @@ export const newScratchpadElement = (
     fontFamily,
     fontSize,
     backgroundImage: null,
-    margin: opts.margin ?? { top: 0, right: 0, bottom: 0, left: 0 },
+    margin: opts.margin ?? { ...DEFAULT_SCRATCHPAD_PAGE_MARGIN },
     pageSize: opts.pageSize ?? null,
     paginationEnabled: opts.paginationEnabled ?? !!opts.pageSize,
     scrollTop: 0,

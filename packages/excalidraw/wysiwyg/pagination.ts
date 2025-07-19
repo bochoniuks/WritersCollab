@@ -8,12 +8,12 @@ import {
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import { Node } from 'prosemirror-model';
 import { findBreakOffsetForHeight } from '@excalidraw/element/parseTiptapDoc';
-import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE } from '@excalidraw/common';
+import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, DEFAULT_SCRATCHPAD_PAGE_MARGIN, SCRATCHPAD_PAGE_GAP } from '@excalidraw/common';
 
 export interface PaginationOptions {
   pageHeight: number;
   pageWidth: number;
-  pageMargin: number;
+  pageMargin: { top: number; right: number; bottom: number; left: number };
   label?: string;
   showPageNumber?: boolean;
 }
@@ -32,7 +32,7 @@ export const Pagination = Extension.create<PaginationOptions>({
         return {
             pageHeight: 1056,
             pageWidth: 816,
-            pageMargin: 96,
+            pageMargin: { ...DEFAULT_SCRATCHPAD_PAGE_MARGIN },
             label: 'Page',
             showPageNumber: true,
         };
@@ -54,7 +54,10 @@ export const Pagination = Extension.create<PaginationOptions>({
         if (editorContainer) {
             const htmlElement = editorContainer; // Cast to HTMLElement
             htmlElement.style.width = `${this.options.pageWidth}px`;
-            htmlElement.style.margin = `${this.options.pageMargin}px auto`;
+            htmlElement.style.marginTop = `${this.options.pageMargin.top}px`;
+            htmlElement.style.marginBottom = `${this.options.pageMargin.bottom}px`;
+            htmlElement.style.marginLeft = `${this.options.pageMargin.left}px`;
+            htmlElement.style.marginRight = `${this.options.pageMargin.right}px`;
         }
     },
     addProseMirrorPlugins() {
@@ -77,25 +80,25 @@ export const Pagination = Extension.create<PaginationOptions>({
                         let pageNumber = 1;
                         const options = pluginKey.getState(state) as PaginationOptions;
                         const { pageHeight, pageMargin, pageWidth, showPageNumber, label } = options;
-                        const effectivePageHeight = pageHeight - 2 * pageMargin;
+                        const effectivePageHeight = pageHeight - (pageMargin.left + pageMargin.right);
                         
                         const breakPositions: number[] = [];
                         let pos = 0;
                         let remainingDoc = doc.toJSON();
 
                         while (true) {
-                        const breakOffset = findBreakOffsetForHeight(
-                            remainingDoc,
-                            pageWidth - 2 * pageMargin,
-                            effectivePageHeight,
-                            { fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }
-                        );
-                        if (breakOffset <= 0) {
-                            break;
-                        }
-                        pos += breakOffset;
-                        breakPositions.push(pos);
-                        remainingDoc = doc.cut(pos).toJSON();
+                            const breakOffset = findBreakOffsetForHeight(
+                                remainingDoc,
+                                pageWidth - (pageMargin.left + pageMargin.right),
+                                effectivePageHeight,
+                                { fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }
+                            );
+                            if (breakOffset <= 0) {
+                                break;
+                            }
+                            pos += breakOffset;
+                            breakPositions.push(pos);
+                            remainingDoc = doc.cut(pos).toJSON();
                         }
 
                         for (const p of breakPositions) {
@@ -105,7 +108,9 @@ export const Pagination = Extension.create<PaginationOptions>({
                             pageBreak.className = "page-break";
                             pageBreak.setAttribute("data-page-break", "true");
                             pageBreak.style.border = "none";
-                            pageBreak.style.margin = "20px 0";
+                            pageBreak.style.height = `${SCRATCHPAD_PAGE_GAP}px`;
+                            pageBreak.style.marginTop = `${pageMargin.top}px`;
+                            pageBreak.style.marginBottom = `${pageMargin.bottom}px`;
                             pageNumber++;
                             return pageBreak;
                             })
@@ -126,7 +131,7 @@ export const Pagination = Extension.create<PaginationOptions>({
                         pluginKey.getState(view.state) as PaginationOptions;
                         const breaks = Array.from(view.dom.querySelectorAll<HTMLHRElement>('hr.page-break'));
 
-                        let start = -pageMargin;
+                        let start = -pageMargin.top;
                         breaks.forEach((hr) => {
                             const top = start;
                             const height = pageHeight;
@@ -136,7 +141,7 @@ export const Pagination = Extension.create<PaginationOptions>({
                             div.style.top = `${top}px`;
                             div.style.height = `${height}px`;
                             borderLayer.appendChild(div);
-                            start += pageHeight;
+                            start += pageHeight+SCRATCHPAD_PAGE_GAP;
                         });
 
                         const lastBorder = document.createElement('div');

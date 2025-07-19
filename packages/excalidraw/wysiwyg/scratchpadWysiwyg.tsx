@@ -451,12 +451,7 @@ export const scratchpadWysiwyg = ({
   const { width: pageW, height: pageH } = element.pageSize
     ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
     : { width: element.width, height: element.height };
-  const pageMargin = Math.max(
-    element.margin.top,
-    element.margin.right,
-    element.margin.bottom,
-    element.margin.left,
-  );
+  const pageMargin = { ...element.margin };
 
   const ScratchpadEditor = () => {
     const pageSize = element.pageSize
@@ -469,7 +464,7 @@ export const scratchpadWysiwyg = ({
             Pagination.configure({
               pageHeight: pageSize.height,
               pageWidth: pageSize.width,
-              pageMargin: element.margin.top,
+              pageMargin,
             }),
           ]
         : []),

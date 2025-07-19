@@ -54,6 +54,13 @@ export const SCRATCHPAD_PAGE_SIZES = {
 } as const;
 export type ScratchpadPageSize = keyof typeof SCRATCHPAD_PAGE_SIZES;
 
+export const DEFAULT_SCRATCHPAD_PAGE_MARGIN = {
+  top: 96,
+  right: 96,
+  bottom: 96,
+  left: 96,
+} as const;
+
 // spacing and colors used when rendering scratchpad pages
 export const SCRATCHPAD_PAGE_GAP = 40;
 export const SCRATCHPAD_PAGE_BORDER_COLOR = "#e0e0e0";

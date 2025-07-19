@@ -18,6 +18,7 @@ import {
   normalizeLink,
   getLineHeight,
   DEFAULT_FONT_SIZE,
+  DEFAULT_SCRATCHPAD_PAGE_MARGIN,
 } from "@excalidraw/common";
 import { getNonDeletedElements, isValidPolygon } from "@excalidraw/element";
 import { normalizeFixedPoint } from "@excalidraw/element";
@@ -310,7 +311,7 @@ const restoreElement = (
         fontFamily: element.fontFamily ?? DEFAULT_FONT_FAMILY,
         fontSize: element.fontSize ?? DEFAULT_FONT_SIZE,
         backgroundImage: element.backgroundImage ?? null,
-        margin: element.margin ?? { top: 0, right: 0, bottom: 0, left: 0 },
+        margin: element.margin ?? { ...DEFAULT_SCRATCHPAD_PAGE_MARGIN },
         pageSize: element.pageSize ?? null,
         paginationEnabled: element.paginationEnabled,
         scrollTop: element.scrollTop ?? 0,

@@ -115,7 +115,7 @@ declare module "tiptap-pagination-breaks" {
   export interface PaginationOptions {
     pageHeight: number;
     pageWidth: number;
-    pageMargin: number;
+    pageMargin: { top: number; right: number; bottom: number; left: number };
     label?: string;
     showPageNumber?: boolean;
   }
