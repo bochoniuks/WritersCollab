@@ -680,6 +680,7 @@ body.excalidraw-cursor-resize * {
 
   .excalidraw-wysiwyg {
       will-change: transform;
+      transform-origin: top left;
   }
 
   /* remove default paragraph margins inside the scratchpad editor */

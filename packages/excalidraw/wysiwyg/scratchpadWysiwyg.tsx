@@ -253,8 +253,6 @@ export const scratchpadWysiwyg = ({
 
 
         Object.assign(editable.style, {
-          left: `${viewportX}px`,
-          top: `${viewportY}px`, 
           width: `${width}px`,
           height: `${height}px`,
           font,
@@ -262,16 +260,10 @@ export const scratchpadWysiwyg = ({
           color: updatedElement.strokeColor,
           opacity: updatedElement.opacity / 100,
           filter: "var(--theme-filter)",
-          transform: getTransform(
-            updatedElement.width,
-            updatedElement.height,
-            app.state.scratchpadViewMode === "ideation"
-              ? 0
-              : updatedElement.angle,
-            appState,
-            updatedElement.width,
-            editorMaxHeight,
-          ),
+          transform: `translate(${viewportX}px, ${viewportY}px) ` +
+            getTransform(updatedElement.width, updatedElement.height,
+                        app.state.scratchpadViewMode === "ideation" ? 0 : updatedElement.angle,
+                        appState, updatedElement.width, editorMaxHeight),
           maxHeight: `${editorMaxHeight}px`,
         });
         app.scene.mutateElement(updatedElement, { x: coordX, y: coordY });
@@ -434,6 +426,8 @@ export const scratchpadWysiwyg = ({
 
   Object.assign(editable.style, {
     position: "absolute",
+    left: "0px",
+    top: "0px",
     // display: "inline-block",
     display: "inline-table",
     minHeight: "1em",
@@ -457,7 +451,8 @@ export const scratchpadWysiwyg = ({
     background: "transparent",
     overflowWrap: "break-word",
     boxSizing: "content-box",
-    top: `${getViewportCoords(element.x, element.y)[1]}px`,
+    // top: `${getViewportCoords(element.x, element.y)[1]}px`,
+    transform: `translate(${getViewportCoords(element.x, element.y)[0]}px, ${getViewportCoords(element.x, element.y)[1]}px)` 
   });
 
   editable.style.setProperty(
