@@ -23,7 +23,18 @@ export const measureText = (
   const fontSize = parseFloat(font);
   const height = getTextHeight(_text, fontSize, lineHeight);
   const width = getTextWidth(_text, font);
-  return { width, height };
+  // obtain full canvas metrics for underline/strike positioning
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d")!;
+  ctx.font = font;
+  const metrics = ctx.measureText(_text);
+
+  return {
+    width,
+    height,
+    actualBoundingBoxAscent: metrics.actualBoundingBoxAscent,
+    actualBoundingBoxDescent: metrics.actualBoundingBoxDescent,
+  };
 };
 
 const DUMMY_TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toLocaleUpperCase();

@@ -944,6 +944,28 @@ export const renderElement = (
           context.fillStyle = seg.color;
           context.fillText(seg.text, cursorX, pageTop + cursorY + baselineOffset);
           const metrics = measureText(seg.text, fontString, getLineHeight(seg.fontFamily));
+          const middle = pageTop + cursorY + baselineOffset - metrics.actualBoundingBoxAscent / 2;
+          const underlineY = pageTop + cursorY + baselineOffset + 2;
+
+          if (seg.strike) {
+            context.beginPath();
+            context.moveTo(cursorX, middle);
+            context.lineTo(cursorX + metrics.width, middle);
+            context.stroke();
+          }
+          if (seg.underline) {
+            context.beginPath();
+            context.moveTo(cursorX, underlineY);
+            context.lineTo(cursorX + metrics.width, underlineY);
+            context.stroke();
+          }
+
+
+
+
+
+
+
           cursorX += metrics.width;
           // lineHeight = Math.max(lineHeight, metrics.height);
         }

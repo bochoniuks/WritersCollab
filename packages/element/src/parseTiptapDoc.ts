@@ -15,6 +15,7 @@ export type TiptapSegment = | {
   color: string;
   fontWeight?: string; // e.g. "bold"
   fontStyle?: string;  // e.g. "italic"
+  underline?: boolean;   // new
   strike?: boolean;
 }
 | {
@@ -58,7 +59,7 @@ export const wrapTiptapDoc = (
         
         const fontName =
           Object.entries(FONT_FAMILY).find(([, id]) => id === seg.fontFamily)?.[0] ??
-          "Excalifont";
+          DEFAULT_FONT_FAMILY;
           
         const marks:JSONContent = [
             {
@@ -76,6 +77,9 @@ export const wrapTiptapDoc = (
         }
         if (seg.fontStyle === "italic") {
           marks.push({ type: "italic" });
+        }
+        if (seg.underline) {
+          marks.push({ type: "underline" });
         }
         if (seg.strike) {
           marks.push({ type: "strike" });
@@ -246,6 +250,7 @@ export const parseTiptapDoc = (
       color?: string;
       fontWeight?: string;
       fontStyle?: string;
+      underline?: boolean;
       strike?: boolean;
     } = {},
   ) => {
@@ -277,6 +282,9 @@ export const parseTiptapDoc = (
         if (mark.type === "italic") {
           style.fontStyle = "italic";
         }
+        if (mark.type === "underline") {
+          style.underline = true;
+        }
         if (mark.type === "strike") {
           style.strike = true;
         }
@@ -296,6 +304,7 @@ export const parseTiptapDoc = (
           color: style.color || defaultColor,
           fontWeight: style.fontWeight,
           fontStyle: style.fontStyle,
+          underline: style.underline,
           strike: style.strike,
         });
     } else if (node.type === "hardBreak") {   

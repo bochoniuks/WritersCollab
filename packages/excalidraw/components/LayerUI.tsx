@@ -239,12 +239,17 @@ const LayerUI = ({
 
   const ScratchpadToolbarWrapper = () => {
     const editor = useAtomValue(activeScratchpadEditorAtom);
-    console.log(editor)
     return (
       <ScratchpadToolbar
         style={{}}
         onBold={() => editor?.chain().focus().toggleBold().run()}
+        onItalic={() => editor?.chain().focus().toggleItalic().run()}
+        onUnderline={() => editor?.chain().focus().toggleUnderline().run()}
+        onStrike={() => editor?.chain().focus().toggleStrike().run()}
         boldEnabled={editor?.isActive("bold") ?? false}
+        italicEnabled={editor?.isActive("italic") ?? false}
+        underlineEnabled={editor?.isActive("underline") ?? false}
+        strikeEnabled={editor?.isActive("strike") ?? false}
       />
     );
   };

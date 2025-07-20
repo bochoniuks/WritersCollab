@@ -2624,6 +2624,11 @@
   resolved "https://registry.npmjs.org/@tiptap/extension-text/-/extension-text-2.14.0.tgz"
   integrity sha512-rHny566nGZHq61zRLwQ9BPG55W/O+eDKwUJl+LhrLiVWwzpvAl9QQYixtoxJKOY48VK41PKwxe3bgDYgNs/Fhg==
 
+"@tiptap/extension-underline@3.0.7":
+  version "3.0.7"
+  resolved "https://registry.npmjs.org/@tiptap/extension-underline/-/extension-underline-3.0.7.tgz"
+  integrity sha512-pw2v5kbkovaWaC1G2IxP7g94vmUMlRBzZlCnLEyfFxtGa9LVAsUFlFFWaYJEmq7ZPG/tblWCnFfEZuQqFVd8Sg==
+
 "@tiptap/pm@^2.14.0":
   version "2.14.0"
   resolved "https://registry.npmjs.org/@tiptap/pm/-/pm-2.14.0.tgz"

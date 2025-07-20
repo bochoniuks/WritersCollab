@@ -110,6 +110,7 @@ const getTransform = (
 type SubmitHandler = () => void;
 
 import { Fragment, Slice, Node as PMNode, Mark } from "prosemirror-model";
+import Underline from "@tiptap/extension-underline";
 // apply `mark` to all text nodes inside `slice`
 function addMarkToSlice(slice: Slice, mark: Mark): Slice {
   const map = (fragment: Fragment): Fragment => {
@@ -414,7 +415,7 @@ export const scratchpadWysiwyg = ({
   editable.dir = "auto";
   editable.tabIndex = 0;
   editable.dataset.type = "wysiwyg";
-  editable.classList.add("excalidraw-wysiwyg");
+  editable.classList.add("excalidraw-wysiwyg", "inherit-styles");
 
 
   let whiteSpace = "pre";
@@ -498,17 +499,15 @@ export const scratchpadWysiwyg = ({
       // PageBreak,
     ];
     const ed = useEditor({
-      extensions: [StarterKit.configure({ hardBreak: false }), TextStyle, Color, FontFamily, FontSize, StyledHardBreak,
+      extensions: [StarterKit.configure({ hardBreak: false }), TextStyle, Color, FontFamily, FontSize, StyledHardBreak, Underline,
         ...pageExtensions
       ],
       content: prevDoc,
       editorProps: {
         handlePaste(view, event, slice) {
-          console.log(slice)
-          const fontName =
-            Object.entries(FONT_FAMILY).find(([, id]) =>
-              id === app.state.currentItemFontFamily)?.[0] ?? "Nunito";
-
+          const fontName = "Nunito";
+          //   Object.entries(FONT_FAMILY).find(([, id]) =>
+          //     id === app.state.currentItemFontFamily)?.[0] ?? "Nunito";
           const mark = view.state.schema.marks.textStyle.create({
             fontFamily: fontName,
             fontSize: `${app.state.currentItemFontSize}px`,
@@ -531,7 +530,6 @@ export const scratchpadWysiwyg = ({
         }
         changeHistory.push({ from: prevDoc, to: doc, timestamp: Date.now() });
         prevDoc = doc;
-        // console.log(doc)
         updateWysiwygStyle();
         refreshPageElement();
       },
@@ -565,7 +563,6 @@ export const scratchpadWysiwyg = ({
   };
 
   const root = createRoot(editable);
-  // console.log(root)
   root.render(<ScratchpadEditor />);
 
   const refreshPageElement = () => {

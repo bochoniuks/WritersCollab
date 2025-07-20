@@ -695,6 +695,26 @@ body.excalidraw-cursor-resize * {
     outline: none;                /* ensure no focus ring */
   }
 
+  /* Inherit typography from container for block elements */
+  .excalidraw-wysiwyg.inherit-styles .ProseMirror h1,
+  .excalidraw-wysiwyg.inherit-styles .ProseMirror h2,
+  .excalidraw-wysiwyg.inherit-styles .ProseMirror h3,
+  .excalidraw-wysiwyg.inherit-styles .ProseMirror h4,
+  .excalidraw-wysiwyg.inherit-styles .ProseMirror h5,
+  .excalidraw-wysiwyg.inherit-styles .ProseMirror h6,
+  .excalidraw-wysiwyg.inherit-styles .ProseMirror p,
+  .excalidraw-wysiwyg.inherit-styles .ProseMirror ul,
+  .excalidraw-wysiwyg.inherit-styles .ProseMirror ol,
+  .excalidraw-wysiwyg.inherit-styles .ProseMirror blockquote,
+  .excalidraw-wysiwyg.inherit-styles .ProseMirror li {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    margin-top: inherit;
+    margin-bottom: inherit;
+  }
+
   .excalidraw-wysiwyg .ProseMirror p {
     margin-block-start: 0;
     margin-block-end: 0;

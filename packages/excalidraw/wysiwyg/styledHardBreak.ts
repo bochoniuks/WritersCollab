@@ -33,7 +33,7 @@ export const StyledHardBreak = HardBreak.extend({
                   const fontName =
                     Object.entries(FONT_FAMILY).find(
                       ([, id]) => id === DEFAULT_FONT_FAMILY,
-                    )?.[0] ?? "Excalifont";
+                    )?.[0] ?? DEFAULT_FONT_FAMILY;
                   marks = [
                     editor.schema.marks.textStyle.create({
                       fontFamily: fontName,

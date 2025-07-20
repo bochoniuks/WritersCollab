@@ -1232,6 +1232,54 @@ export const FormatBoldIcon = createIcon(
   tablerIconProps,
 );
 
+export const FormatItalicIcon = createIcon(
+  <g
+    stroke="currentColor"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={2}
+  >
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <line x1="4" y1="8" x2="20" y2="8" />
+    <line x1="4" y1="12" x2="12" y2="12" />
+    <line x1="4" y1="16" x2="16" y2="16" />
+  </g>,
+  tablerIconProps,
+);
+
+export const FormatUnderlineIcon = createIcon(
+  <g
+    stroke="currentColor"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={2}
+  >
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <line x1="4" y1="8" x2="20" y2="8" />
+    <line x1="4" y1="12" x2="12" y2="12" />
+    <line x1="4" y1="16" x2="16" y2="16" />
+  </g>,
+  tablerIconProps,
+);
+
+export const FormatStrikeIcon = createIcon(
+  <g
+    stroke="currentColor"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={2}
+  >
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <line x1="4" y1="8" x2="20" y2="8" />
+    <line x1="4" y1="12" x2="12" y2="12" />
+    <line x1="4" y1="16" x2="16" y2="16" />
+  </g>,
+  tablerIconProps,
+);
+
 // tabler-icons: line-dotted
 export const StrokeStyleDottedIcon = createIcon(
   <g strokeWidth="2">
