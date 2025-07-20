@@ -382,16 +382,17 @@ export const scratchpadWysiwyg = ({
       Object.assign(editable.style, {
         width: `${width}px`,
         height: `${height}px`,
-        left: `${viewportX}px`,
-        top: `${viewportY}px`,
-        transform: getTransform(
-          width,
-          height,
-          getTextElementAngle(updatedTextElement, container),
-          appState,
-          maxWidth,
-          editorMaxHeight,
-        ),
+        left: "0",
+        top: "0",
+        transform: `translate(${viewportX}px, ${viewportY}px) ` +
+          getTransform(
+            updatedElement.width,
+            updatedElement.height,
+            app.state.scratchpadViewMode === "ideation" ? 0 : updatedElement.angle,
+            appState,
+            updatedElement.width,
+            editorMaxHeight,
+          ),
         textAlign,
         verticalAlign,
         color: updatedTextElement.strokeColor,

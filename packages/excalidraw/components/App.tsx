@@ -1515,8 +1515,11 @@ class App extends React.Component<AppProps, AppState> {
 
       const commonStyle = {
         position: "absolute",
-        bottom: `${this.state.height + 10 - y + this.state.offsetTop}px`,
-        left: `${x}px`,
+        bottom: "0",
+        left: "0",
+        transform: `translate(${x}px, -${
+          this.state.height + 10 - y + this.state.offsetTop
+        }px)`,
         zIndex: 2,
       } as const;
       
