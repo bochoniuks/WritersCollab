@@ -96,16 +96,18 @@ const getTransform = (
 ) => {
   const { zoom } = appState;
   const degree = (180 * angle) / Math.PI;
-  let translateX = (width * (zoom.value - 1)) / 2;
-  let translateY = (height * (zoom.value - 1)) / 2;
-  if (width > maxWidth && zoom.value !== 1) {
-    translateX = (maxWidth * (zoom.value - 1)) / 2;
-  }
-  if (height > maxHeight && zoom.value !== 1) {
-    translateY = (maxHeight * (zoom.value - 1)) / 2;
-  }
+  // With transform-origin at top left, no centering adjustment is needed.
+  const translateX =
+    width > maxWidth && zoom.value !== 1
+      ? (maxWidth * (zoom.value - 1)) / 2
+      : 0;
+  const translateY =
+    height > maxHeight && zoom.value !== 1
+      ? (maxHeight * (zoom.value - 1)) / 2
+      : 0;
   return `translate(${translateX}px, ${translateY}px) scale(${zoom.value}) rotate(${degree}deg)`;
 };
+
 
 type SubmitHandler = () => void;
 
