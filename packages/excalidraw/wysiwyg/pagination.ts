@@ -86,20 +86,20 @@ export const Pagination = Extension.create<PaginationOptions>({
                         let pos = 0;
                         let remainingDoc = doc.toJSON();
 
-                        // while (true) {
-                        //     const breakOffset = findBreakOffsetForHeight(
-                        //         remainingDoc,
-                        //         pageWidth - (pageMargin.left + pageMargin.right),
-                        //         effectivePageHeight,
-                        //         { fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }
-                        //     );
-                        //     if (breakOffset <= 0) {
-                        //         break;
-                        //     }
-                        //     pos += breakOffset;
-                        //     breakPositions.push(pos);
-                        //     remainingDoc = doc.cut(pos).toJSON();
-                        // }
+                        while (true) {
+                            const breakOffset = findBreakOffsetForHeight(
+                                remainingDoc,
+                                pageWidth - (pageMargin.left + pageMargin.right),
+                                effectivePageHeight,
+                                { fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }
+                            );
+                            if (breakOffset <= 0) {
+                                break;
+                            }
+                            pos += breakOffset;
+                            breakPositions.push(pos);
+                            remainingDoc = doc.cut(pos).toJSON();
+                        }
 
                         for (const p of breakPositions) {
                         decorations.push(
@@ -119,44 +119,44 @@ export const Pagination = Extension.create<PaginationOptions>({
                         return DecorationSet.create(doc, decorations);
                     },
                 },
-                // view(view) {
-                //     const borderLayer = document.createElement('div');
-                //     borderLayer.className = 'page-border-layer';
-                //     borderLayer.setAttribute('data-pm-ignore', 'true');
-                //     (view.dom.parentNode as HTMLElement).appendChild(borderLayer);
+                view(view) {
+                    const borderLayer = document.createElement('div');
+                    borderLayer.className = 'page-border-layer';
+                    borderLayer.setAttribute('data-pm-ignore', 'true');
+                    (view.dom.parentNode as HTMLElement).appendChild(borderLayer);
 
-                //     const updateBorders = () => {
-                //         borderLayer.innerHTML = '';
-                //         const { pageHeight, pageMargin } =
-                //         pluginKey.getState(view.state) as PaginationOptions;
-                //         const breaks = Array.from(view.dom.querySelectorAll<HTMLHRElement>('hr.page-break'));
+                    const updateBorders = () => {
+                        borderLayer.innerHTML = '';
+                        const { pageHeight, pageMargin } =
+                        pluginKey.getState(view.state) as PaginationOptions;
+                        const breaks = Array.from(view.dom.querySelectorAll<HTMLHRElement>('hr.page-break'));
 
-                //         let start = -pageMargin.top;
-                //         breaks.forEach((hr) => {
-                //             const top = start;
-                //             const height = pageHeight;
-                //             // const height = hr.offsetTop + pageMargin - start;
-                //             const div = document.createElement('div');
-                //             div.className = 'page-border';
-                //             div.style.top = `${top}px`;
-                //             div.style.height = `${height}px`;
-                //             borderLayer.appendChild(div);
-                //             start += pageHeight+SCRATCHPAD_PAGE_GAP;
-                //         });
+                        let start = -pageMargin.top;
+                        breaks.forEach((hr) => {
+                            const top = start;
+                            const height = pageHeight;
+                            // const height = hr.offsetTop + pageMargin - start;
+                            const div = document.createElement('div');
+                            div.className = 'page-border';
+                            div.style.top = `${top}px`;
+                            div.style.height = `${height}px`;
+                            borderLayer.appendChild(div);
+                            start += pageHeight+SCRATCHPAD_PAGE_GAP;
+                        });
 
-                //         const lastBorder = document.createElement('div');
-                //         lastBorder.className = 'page-border';
-                //         lastBorder.style.top = `${start}px`;
-                //         lastBorder.style.height = `${pageHeight - start}px`;
-                //         borderLayer.appendChild(lastBorder);
-                //     };
+                        const lastBorder = document.createElement('div');
+                        lastBorder.className = 'page-border';
+                        lastBorder.style.top = `${start}px`;
+                        lastBorder.style.height = `${pageHeight - start}px`;
+                        borderLayer.appendChild(lastBorder);
+                    };
 
-                //     updateBorders();
-                //     return {
-                //         update: updateBorders,
-                //         destroy() { borderLayer.remove(); },
-                //     };
-                // },
+                    updateBorders();
+                    return {
+                        update: updateBorders,
+                        destroy() { borderLayer.remove(); },
+                    };
+                },
             }),
         ];
     },

@@ -30,7 +30,8 @@ export const ScratchpadToolbar = ({
     <Island
         padding={1}
         className="App-toolbar scratchpad-config-toolbar"
-        style={{ width: "max-content", zIndex: "var(--zIndex-layerUI)", ...style }}
+        style={{ display: "flex",
+        flexDirection: "column", width: "max-content", zIndex: "var(--zIndex-layerUI)", ...style }}
     >
       <ToolButton
         type="icon"
