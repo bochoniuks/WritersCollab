@@ -765,19 +765,23 @@ body.excalidraw-cursor-resize * {
     z-index: var(--zIndex-layerUI);
   }
 
-  .excalidraw .scratchpad-header {
+  .excalidraw .scratchpad-wrapper {
+    position: absolute;
     will-change: transform;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
   }
 
-  .excalidraw .scratchpad-header--compact .scratchpad-label,
-  .excalidraw .scratchpad-header--compact .App-toolbar__divider {
+  .excalidraw .scratchpad-wrapper .scratchpad-header {
+    position: absolute;
+    top: -20px;
+    left: 0;
+  }
+
+  .excalidraw .scratchpad-wrapper .scratchpad-header--compact .scratchpad-label,
+  .excalidraw .scratchpad-wrapper .scratchpad-header--compact .App-toolbar__divider {
     display: none;
   }
 
-  .excalidraw .scratchpad-header input {
+  .excalidraw .scratchpad-wrapper .scratchpad-header input {
     margin-left: 5px;
     background: var(--color-canvas-bg);
     border: none;

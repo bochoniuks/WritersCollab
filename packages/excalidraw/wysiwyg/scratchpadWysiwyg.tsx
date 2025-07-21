@@ -26,6 +26,7 @@ import {
 
 import {
   getLineHeightInPx,
+  getScratchpadTitle,
   isScratchpadElement,
   originalContainerCache,
   updateOriginalContainerCache,
@@ -113,6 +114,7 @@ type SubmitHandler = () => void;
 
 import { Fragment, Slice, Node as PMNode, Mark } from "prosemirror-model";
 import Underline from "@tiptap/extension-underline";
+import { arrowsMaximize, arrowsMinimize } from "../components/icons";
 // apply `mark` to all text nodes inside `slice`
 function addMarkToSlice(slice: Slice, mark: Mark): Slice {
   const map = (fragment: Fragment): Fragment => {
@@ -131,6 +133,85 @@ function addMarkToSlice(slice: Slice, mark: Mark): Slice {
 
   return new Slice(map(slice.content), slice.openStart, slice.openEnd);
 }
+
+const createScratchpadHeader = (
+    element: ExcalidrawScratchpadElement,
+    app: App,
+    getViewportCoords: (x: number, y: number) => [number, number],
+  ) => {
+    const header = document.createElement("div");
+    header.classList.add("scratchpad-name");
+
+    const label = document.createElement("span");
+    label.classList.add("scratchpad-label");
+    header.appendChild(label);
+
+    const divider = document.createElement("div");
+    divider.classList.add("App-toolbar__divider");
+    header.appendChild(divider);
+
+    const button = document.createElement("button");
+    button.classList.add(
+      "ToolIcon",
+      "ToolIcon_type_button",
+      "ToolIcon_type_icon"
+    );
+    header.appendChild(button);
+
+    const update = () => {
+      label.textContent = getScratchpadTitle(element);
+      const selected = !!app.state.selectedElementIds[element.id];
+      const inIdeation =
+        app.state.scratchpadViewMode === "ideation" &&
+        app.state.ideationElementId === element.id;
+
+      header.classList.toggle("Island", selected || inIdeation);
+      header.classList.toggle("ElementIsland", selected || inIdeation);
+      header.classList.toggle("scratchpad-header", selected || inIdeation);
+      divider.style.display = selected || inIdeation ? "" : "none";
+      button.style.display = selected || inIdeation ? "" : "none";
+      button.innerHTML = inIdeation ? arrowsMinimize : arrowsMaximize;
+      button.title = inIdeation ? "Canvas view" : "Ideation view";
+      button.setAttribute("aria-label", button.title);
+
+      const [x, y] = getViewportCoords(element.x, element.y);
+      header.style.position = "absolute";
+      header.style.bottom = "0";
+      header.style.left = "0";
+      header.style.transform = `translate(${x}px, -${
+        app.state.height + 10 - y + app.state.offsetTop
+      }px)`;
+      header.style.zIndex = "2";
+    };
+
+    header.addEventListener("pointerdown", (ev) => {
+      ev.stopPropagation();
+      if (!app.state.selectedElementIds[element.id]) {
+        app.setState({ selectedElementIds: { [element.id]: true } });
+      }
+    });
+
+    header.addEventListener("dblclick", () =>
+      app.setState({ editingScratchpad: element.id }),
+    );
+
+    header.addEventListener("wheel", (ev) => app.handleWheel(ev));
+
+    button.addEventListener("click", () => {
+      const inIdeation =
+        app.state.scratchpadViewMode === "ideation" &&
+        app.state.ideationElementId === element.id;
+      if (inIdeation) {
+        app.exitIdeationView(element);
+      } else {
+        app.enterIdeationView(element);
+      }
+    });
+
+    update();
+    return { header, update };
+  };
+
 
 export const scratchpadWysiwyg = ({
   id,
@@ -269,6 +350,7 @@ export const scratchpadWysiwyg = ({
           maxHeight: `${editorMaxHeight}px`,
         });
         app.scene.mutateElement(updatedElement, { x: coordX, y: coordY });
+        updateHeader();
       } 
     else if (updatedElement && isTextElement(updatedElement)) {
       const updatedTextElement = updatedElement;
@@ -405,12 +487,32 @@ export const scratchpadWysiwyg = ({
     }
   };
 
+  
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("scratchpad-wrapper");
+  Object.assign(wrapper.style, {
+    position: "absolute",
+    left: "0",
+    top: "0",
+    transform: `translate(${getViewportCoords(element.x, element.y)[0]}px,
+      ${getViewportCoords(element.x, element.y)[1]}px)`,
+    zIndex: "var(--zIndex-wysiwyg)",
+  });
+
+   const { header, update: updateHeader } = createScratchpadHeader(
+    element,
+    app,
+    getViewportCoords,
+  );
+
+
   const editable = document.createElement("div");
   editable.id = "editable";
   editable.dir = "auto";
   editable.tabIndex = 0;
   editable.dataset.type = "wysiwyg";
   editable.classList.add("excalidraw-wysiwyg", "inherit-styles");
+
 
 
   let whiteSpace = "pre";
@@ -427,7 +529,7 @@ export const scratchpadWysiwyg = ({
   });
 
   Object.assign(editable.style, {
-    position: "absolute",
+    position: "relative",
     left: "0px",
     top: "0px",
     // display: "inline-block",
@@ -454,7 +556,7 @@ export const scratchpadWysiwyg = ({
     overflowWrap: "break-word",
     boxSizing: "content-box",
     // top: `${getViewportCoords(element.x, element.y)[1]}px`,
-    transform: `translate(${getViewportCoords(element.x, element.y)[0]}px, ${getViewportCoords(element.x, element.y)[1]}px)` 
+    transform: "none" 
   });
 
   editable.style.setProperty(
@@ -466,6 +568,8 @@ export const scratchpadWysiwyg = ({
     "--page-overflow",
     element.paginationEnabled ? "visible" : "auto",
   );
+
+
   updateWysiwygStyle();
 
   let editor: ReturnType<typeof useEditor> | null = null;
@@ -716,6 +820,8 @@ export const scratchpadWysiwyg = ({
 
     root.unmount();
     editable.remove();
+    header.remove();
+    wrapper.remove();
     app.updateEditorAtom(activeScratchpadEditorAtom, null);
   };
 
@@ -835,6 +941,7 @@ export const scratchpadWysiwyg = ({
   if (canvas && "ResizeObserver" in window) {
     observer = new window.ResizeObserver(() => {
       updateWysiwygStyle();
+      updateHeader();
     });
     observer.observe(canvas);
   } else {
@@ -849,8 +956,11 @@ export const scratchpadWysiwyg = ({
     window.addEventListener("pointerdown", onPointerDown, { capture: true });
   });
   window.addEventListener("beforeunload", handleSubmit);
+
+  wrapper.appendChild(header);
+  wrapper.appendChild(editable);
   const target = excalidrawContainer?.querySelector(containerSelector);
-  target?.appendChild(editable);
+  target?.appendChild(wrapper);
 
   return handleSubmit;
 };

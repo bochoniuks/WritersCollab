@@ -2100,7 +2100,6 @@ class App extends React.Component<AppProps, AppState> {
                           />
                         )}
                         {this.renderFrameNames()}
-                        {this.renderScratchpadHeaders()}
                         {this.state.activeLockedId && (
                           <UnlockPopup
                             app={this}
