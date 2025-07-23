@@ -134,83 +134,6 @@ function addMarkToSlice(slice: Slice, mark: Mark): Slice {
   return new Slice(map(slice.content), slice.openStart, slice.openEnd);
 }
 
-const createScratchpadHeader = (
-    element: ExcalidrawScratchpadElement,
-    app: App,
-    getViewportCoords: (x: number, y: number) => [number, number],
-  ) => {
-    const header = document.createElement("div");
-    header.classList.add("scratchpad-name");
-
-    const label = document.createElement("span");
-    label.classList.add("scratchpad-label");
-    header.appendChild(label);
-
-    const divider = document.createElement("div");
-    divider.classList.add("App-toolbar__divider");
-    header.appendChild(divider);
-
-    const button = document.createElement("button");
-    button.classList.add(
-      "ToolIcon",
-      "ToolIcon_type_button",
-      "ToolIcon_type_icon"
-    );
-    header.appendChild(button);
-
-    const update = () => {
-      label.textContent = getScratchpadTitle(element);
-      const selected = !!app.state.selectedElementIds[element.id];
-      const inIdeation =
-        app.state.scratchpadViewMode === "ideation" &&
-        app.state.ideationElementId === element.id;
-
-      header.classList.toggle("Island", selected || inIdeation);
-      header.classList.toggle("ElementIsland", selected || inIdeation);
-      header.classList.toggle("scratchpad-header", selected || inIdeation);
-      divider.style.display = selected || inIdeation ? "" : "none";
-      button.style.display = selected || inIdeation ? "" : "none";
-      button.innerHTML = inIdeation ? arrowsMinimize : arrowsMaximize;
-      button.title = inIdeation ? "Canvas view" : "Ideation view";
-      button.setAttribute("aria-label", button.title);
-
-      const [x, y] = getViewportCoords(element.x, element.y);
-      header.style.position = "absolute";
-      header.style.bottom = "0";
-      header.style.left = "0";
-      header.style.transform = `translate(${x}px, -${
-        app.state.height + 10 - y + app.state.offsetTop
-      }px)`;
-      header.style.zIndex = "2";
-    };
-
-    header.addEventListener("pointerdown", (ev) => {
-      ev.stopPropagation();
-      if (!app.state.selectedElementIds[element.id]) {
-        app.setState({ selectedElementIds: { [element.id]: true } });
-      }
-    });
-
-    header.addEventListener("dblclick", () =>
-      app.setState({ editingScratchpad: element.id }),
-    );
-
-    header.addEventListener("wheel", (ev) => app.handleWheel(ev));
-
-    button.addEventListener("click", () => {
-      const inIdeation =
-        app.state.scratchpadViewMode === "ideation" &&
-        app.state.ideationElementId === element.id;
-      if (inIdeation) {
-        app.exitIdeationView(element);
-      } else {
-        app.enterIdeationView(element);
-      }
-    });
-
-    update();
-    return { header, update };
-  };
 
 
 export const scratchpadWysiwyg = ({
@@ -350,7 +273,6 @@ export const scratchpadWysiwyg = ({
           maxHeight: `${editorMaxHeight}px`,
         });
         app.scene.mutateElement(updatedElement, { x: coordX, y: coordY });
-        updateHeader();
       } 
     else if (updatedElement && isTextElement(updatedElement)) {
       const updatedTextElement = updatedElement;
@@ -498,12 +420,6 @@ export const scratchpadWysiwyg = ({
       ${getViewportCoords(element.x, element.y)[1]}px)`,
     zIndex: "var(--zIndex-wysiwyg)",
   });
-
-   const { header, update: updateHeader } = createScratchpadHeader(
-    element,
-    app,
-    getViewportCoords,
-  );
 
 
   const editable = document.createElement("div");
@@ -820,7 +736,6 @@ export const scratchpadWysiwyg = ({
 
     root.unmount();
     editable.remove();
-    header.remove();
     wrapper.remove();
     app.updateEditorAtom(activeScratchpadEditorAtom, null);
   };
@@ -941,7 +856,6 @@ export const scratchpadWysiwyg = ({
   if (canvas && "ResizeObserver" in window) {
     observer = new window.ResizeObserver(() => {
       updateWysiwygStyle();
-      updateHeader();
     });
     observer.observe(canvas);
   } else {
@@ -957,7 +871,6 @@ export const scratchpadWysiwyg = ({
   });
   window.addEventListener("beforeunload", handleSubmit);
 
-  wrapper.appendChild(header);
   wrapper.appendChild(editable);
   const target = excalidrawContainer?.querySelector(containerSelector);
   target?.appendChild(wrapper);

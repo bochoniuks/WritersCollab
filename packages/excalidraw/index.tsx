@@ -306,3 +306,5 @@ export { getDataURL } from "./data/blob";
 export { isElementLink } from "@excalidraw/element";
 
 export { setCustomTextMetricsProvider } from "@excalidraw/element";
+
+export { ScratchpadHeader } from "./components/ScratchpadHeader";  // new

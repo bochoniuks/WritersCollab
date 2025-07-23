@@ -553,6 +553,7 @@ import { measureTiptapDoc, measureTiptapDocWithWidth, wrapTiptapDoc } from "@exc
 import { GROUP_FLAG_CONFIG } from "../groupFlagConfig";
 import { centerScrollOn } from "../scene/scroll";
 import { ScratchpadToolbar } from "./ScratchpadToolbar";
+import { ScratchpadHeader } from "./ScratchpadHeader";
 
 const AppContext = React.createContext<AppClassProperties>(null!);
 const AppPropsContext = React.createContext<AppProps>(null!);
@@ -1452,139 +1453,53 @@ class App extends React.Component<AppProps, AppState> {
   };
 
   private renderScratchpadHeaders = () => {
-    const { theme, selectedElementIds, editingScratchpad, scratchpadViewMode, ideationElementId } = this.state;
-    const isDarkTheme = theme === THEME.DARK;
-    const scratchpads = this.scene.getNonDeletedElements().filter((sp) => {
-      return isScratchpadElement(sp) && (scratchpadViewMode !== "ideation" || (scratchpadViewMode === "ideation" && ideationElementId === sp.id))
-    }) as ExcalidrawScratchpadElement[];
-    const selectedScratchpads = scratchpads.filter((sp) => selectedElementIds[sp.id]);
-    // const singleSelected = selectedScratchpads.length === 1 ? selectedScratchpads[0] : null;
-    const selectedCount = Object.keys(selectedScratchpads).length;
-    
+    const {
+    theme,
+    selectedElementIds,
+    editingScratchpad,
+    scratchpadViewMode,
+    ideationElementId,
+    viewBackgroundColor,
+  } = this.state;
+  const scratchpads = this.scene
+    .getNonDeletedElements()
+    .filter((el) =>
+      isScratchpadElement(el) &&
+      (scratchpadViewMode !== "ideation" || ideationElementId === el.id),
+    ) as ExcalidrawScratchpadElement[];
 
-    return scratchpads.map(sp => {
-      const { x, y } = sceneCoordsToViewportCoords(
-        { sceneX: sp.x, sceneY: sp.y },
-        this.state,
-      );
-      const title = getScratchpadTitle(sp);
-      const isEditing = sp.id === editingScratchpad;
-      const isSelected = !!selectedElementIds[sp.id];
-      const inIdeationView =
-        scratchpadViewMode === "ideation" && ideationElementId === sp.id;
-      const showHeader = (selectedCount===1 && isSelected) || isEditing || inIdeationView;
-      let hideLabel = false;
+  const selectedScratchpads = scratchpads.filter((sp) => selectedElementIds[sp.id]);
+  const selectedCount = Object.keys(selectedScratchpads).length;
+  const isDarkTheme = theme === THEME.DARK;
 
-      const font = getFontString({ fontFamily: DEFAULT_FONT_FAMILY, fontSize: FRAME_STYLE.nameFontSize });
-      const labelMetrics = measureText(
-        title,
-        font,
-        FRAME_STYLE.nameLineHeight as ExcalidrawTextElement["lineHeight"],
-      );
-      const headerWidth = labelMetrics.width + 36;           // approx. button & padding
-      const availableWidth = sp.width * this.state.zoom.value;
-      hideLabel = headerWidth > availableWidth*0.8;
-
-      const label = isEditing ? (
-        <input
-          autoFocus
-          value={title}
-          onChange={(e) => this.scene.mutateElement(sp, { name: e.target.value })}
-          onBlur={() => this.setState({ editingScratchpad: null })}
-          onKeyDown={(evt) => {
-            if (evt.key === KEYS.ESCAPE || evt.key === KEYS.ENTER) {
-              this.setState({ editingScratchpad: null });
-            }
-          }}
-          style={{
-            background: this.state.viewBackgroundColor,
-            filter: isDarkTheme ? THEME_FILTER : "none",
-            border: "none",
-            boxShadow: "inset 0 0 0 1px var(--color-primary)",
-          }}
-          size={Math.max(title.length + 1, 20)}
-        />
-      ) : (
-        <span
-          className="scratchpad-label"
-          style={{ minWidth: "20ch", display: "inline-block" }}
-        >
-          {title}
-        </span>
-      );
-
-      const commonStyle = {
-        position: "absolute",
-        bottom: "0",
-        left: "0",
-        transform: `translate(${x}px, -${
-          this.state.height + 10 - y + this.state.offsetTop
-        }px)`,
-        zIndex: 2,
-      } as const;
-      
-      const ideationBtnIcon =
-        sp.id === ideationElementId && scratchpadViewMode === "ideation"
-          ? arrowsMinimize        // show collapse icon when already expanded
-          : arrowsMaximize;     // show expand icon otherwise
-      
-      if(showHeader) {
-        return (
-          <ElementIsland
-            key={sp.id}
-            className={clsx("scratchpad-header", hideLabel && "scratchpad-header--compact")}
-            padding={1}
-            style={{
-              ...commonStyle,
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-            }}
-            onDoubleClick={() => this.setState({ editingScratchpad: sp.id })}
-            onPointerDown={(ev: React.PointerEvent<HTMLDivElement>) => {
-              ev.stopPropagation();
-              if (!this.state.selectedElementIds[sp.id]) {
-                this.setState({ selectedElementIds: { [sp.id]: true } });
-              }
-            }}
-            onWheel={(ev: React.WheelEvent<HTMLDivElement>) => this.handleWheel(ev)}
-          >
-            {!hideLabel && label}
-            {!hideLabel && <div className="App-toolbar__divider" />}
-            <ToolButton
-              type="icon"
-              icon={ideationBtnIcon}
-              aria-label={
-                sp.id === ideationElementId && scratchpadViewMode === "ideation"
-                  ? "Canvas view"
-                  : "Ideation view"
-              }
-              title={
-                sp.id === ideationElementId && scratchpadViewMode === "ideation"
-                  ? "Canvas view"
-                  : "Ideation view"
-              }
-              onClick={() =>
-                sp.id === ideationElementId
-                  ? this.exitIdeationView(sp)
-                  : this.enterIdeationView(sp)
-              }
-            />
-          </ElementIsland>
-        );
-      }
-      return (
-        <div
-          key={sp.id}
-          className="scratchpad-name"
-          style={commonStyle}
-        >
-          {label}
-        </div>
-      );
-    })
-
-    
+  return scratchpads.map((sp) => (
+    <ScratchpadHeader
+        key={sp.id}
+        element={sp}
+        appState={this.state}
+        selectedCount={selectedCount}
+        isSelected={!!selectedElementIds[sp.id]}
+        isEditing={editingScratchpad === sp.id}
+        scratchpadViewMode={scratchpadViewMode}
+        ideationElementId={ideationElementId}
+        onChangeTitle={(name) => this.scene.mutateElement(sp, { name })}
+        onStartEdit={() => this.setState({ editingScratchpad: sp.id })}
+        onToggleView={() =>
+          sp.id === ideationElementId
+            ? this.exitIdeationView(sp)
+            : this.enterIdeationView(sp)
+        }
+        onPointerDown={(ev) => {
+          ev.stopPropagation();
+          if (!selectedElementIds[sp.id]) {
+            this.setState({ selectedElementIds: { [sp.id]: true } });
+          }
+        }}
+        onWheel={(ev) => this.handleWheel(ev)}
+        viewBackground={viewBackgroundColor}
+        isDarkTheme={isDarkTheme}
+      />
+    ));
   };
 
 
@@ -2100,6 +2015,7 @@ class App extends React.Component<AppProps, AppState> {
                           />
                         )}
                         {this.renderFrameNames()}
+                        {this.renderScratchpadHeaders()}
                         {this.state.activeLockedId && (
                           <UnlockPopup
                             app={this}

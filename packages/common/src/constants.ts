@@ -65,6 +65,7 @@ export const DEFAULT_SCRATCHPAD_PAGE_MARGIN = {
 export const SCRATCHPAD_PAGE_GAP = 40;
 export const SCRATCHPAD_PAGE_BORDER_COLOR = "#e0e0e0";
 export const SCRATCHPAD_PAGE_BACKGROUND = "#ffffff";
+export const SCRATCHPAD_HEADER_OFFSET = 10;    // new
 
 export const DRAGGING_THRESHOLD = 10; // px
 export const LINE_CONFIRM_THRESHOLD = 8; // px

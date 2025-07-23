@@ -86,7 +86,6 @@ export const Pagination = Extension.create<PaginationOptions>({
                         let pos = 0;
                         let remainingDoc = doc.toJSON();
 
-<<<<<<< HEAD
                         while (true) {
                             const breakOffset = findBreakOffsetForHeight(
                                 remainingDoc,
@@ -96,33 +95,12 @@ export const Pagination = Extension.create<PaginationOptions>({
                             );
                             if (breakOffset <= 0) {
                                 break;
-=======
-                        doc.descendants((node: Node, pos: number) => {
-                            if (!node.isBlock)
-                                return;
-                            const nodeDOM = this.editor.view.nodeDOM(pos);
-                            if (!(nodeDOM instanceof HTMLElement))
-                                return;
-                            const isList = node.type.name === 'bulletList' ||
-                                node.type.name === 'orderedList';
-                            const isListItem = node.type.name === 'listItem';
-                            // Calculate node height
-                            const nodeHeight = isListItem
-                                ? calculateListItemHeight(nodeDOM)
-                                : nodeDOM.offsetHeight;
-                            if (nodeHeight === 0)
-                                return;
-                            // Handle list items
-                            if (isList) {
-                                return;
->>>>>>> parent of 8e2fb23f (still improving page break)
                             }
                             pos += breakOffset;
                             breakPositions.push(pos);
                             remainingDoc = doc.cut(pos).toJSON();
                         }
 
-<<<<<<< HEAD
                         for (const p of breakPositions) {
                         decorations.push(
                             Decoration.widget(p, () => {
@@ -138,26 +116,6 @@ export const Pagination = Extension.create<PaginationOptions>({
                             })
                         );
                         }
-=======
-                            // Paginate individual list items
-                            if (isListItem) {
-                                if (currentPageHeight + nodeHeight > effectivePageHeight) {
-                                    decorations.push(createPageBreak(pos));
-                                    currentPageHeight = nodeHeight;
-                                } else {
-                                    currentPageHeight += nodeHeight;
-                                }
-                                return;
-                            }
-                            // Handle non-list blocks
-                            if (currentPageHeight + nodeHeight > effectivePageHeight) {
-                                decorations.push(createPageBreak(pos));
-                                currentPageHeight = nodeHeight;
-                            } else {
-                                currentPageHeight += nodeHeight;
-                            }
-                        });
->>>>>>> parent of 8e2fb23f (still improving page break)
                         return DecorationSet.create(doc, decorations);
                     },
                 },
