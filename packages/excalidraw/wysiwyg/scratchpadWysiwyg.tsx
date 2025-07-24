@@ -542,7 +542,6 @@ export const scratchpadWysiwyg = ({
         refreshPageElement();
       },
       onUpdate: ({ editor: ed }) => {
-        console.log(ed)
         let doc = ed.getJSON();
         
         if (onChange) {

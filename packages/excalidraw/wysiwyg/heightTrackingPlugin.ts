@@ -38,10 +38,9 @@ export const HeightTracking = Extension.create({
                 },
             },
             view(editorView: EditorView) {
-                // let prevState = editorView.state;
                 return {
                     update(view, prevState) {
-                        const start = performance.now();
+                        // const start = performance.now();
 
                         // skip recalculation if nothing changed
                         if (prevState.doc.eq(view.state.doc)) {
@@ -50,36 +49,18 @@ export const HeightTracking = Extension.create({
                         const prevHeights = heightTrackingPluginKey.getState(prevState) as HeightData;
                         const heights: HeightData = new Map();
 
-                        // const getHeight = (node: ProseMirrorNode, pos: number): number => {
-                        //     const element = view.domAtPos(pos).node as HTMLElement;
-                        //     return element.offsetHeight;
-                        // };
-
                         const visited = new Set<ProseMirrorNode>();
-                        // const recalc = (node: ProseMirrorNode, pos: number): void => {
-                        //     if (visited.has(node)) {
-                        //         return;
-                        //     }
-                        //     visited.add(node);
-                        //     heights.set(node, getHeight(node, pos));
-                        //     const resolved = view.state.doc.resolve(pos);
-                        //     if (resolved.depth > 0) {
-                        //         const parent = resolved.node(resolved.depth - 1);
-                        //         const parentPos = resolved.before(resolved.depth);
-                        //         recalc(parent, parentPos);
-                        //     }
-                        // };
-                        let calls = 0;
+
                         const diffStart = view.state.doc.content.findDiffStart(prevState.doc.content);
                         if (diffStart == null) {
                             return;
                         }
                         const diffEnd =
-                        view.state.doc.content.findDiffEnd(prevState.doc.content) ?? [
-                            view.state.doc.content.size,
-                            prevState.doc.content.size,
-                        ];
-                        const newEnd = diffEnd[0];
+                            view.state.doc.content.findDiffEnd(prevState.doc.content) ?? {
+                            a: view.state.doc.content.size,
+                            b: prevState.doc.content.size,
+                        };
+                        const newEnd = diffEnd.a;
 
                         const nodesToMeasure: Array<{ node: ProseMirrorNode; dom: HTMLElement }> = [];
 
@@ -108,15 +89,12 @@ export const HeightTracking = Extension.create({
                         }
 
                         if (!areHeightsEqual(prevHeights, heights)) {
-                            console.log(heights)
                             view.dispatch(
                                 view.state.tr.setMeta(heightTrackingPluginKey, heights),
                             );
                         }
-                        const end = performance.now();
-                        console.log("Calls: ", calls)
-                        console.log("HeightTracking update took", end - start, "ms");
-                        // prevState = view.state;
+                        // const end = performance.now();
+                        // console.log("HeightTracking update took", end - start, "ms");
                     },
                 };
             },
