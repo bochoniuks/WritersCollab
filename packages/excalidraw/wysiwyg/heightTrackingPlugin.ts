@@ -1,56 +1,68 @@
-import { Plugin } from 'prosemirror-state';
+import { Extension } from "@tiptap/core";
+import { Plugin, PluginKey } from "prosemirror-state";
+import type { EditorView } from "prosemirror-view";
+import type { Node as ProseMirrorNode } from "prosemirror-model";
 
-const heightTrackingPlugin = new Plugin({
-  state: {
-    init() {
-      return {};  // Store node heights in a dictionary, keyed by position
-    },
-    apply(tr, value) {
-      const meta = tr.getMeta('heightData');
-      if (meta) {
-        return { ...value, ...meta };  // Update node heights with new data
-      }
-      return value;
-    },
-  },
-  props: {
-    handleDOMEvents: {
-      update(view, event) {
-        const heights = {};
+export type HeightData = Record<number, number>;
 
-        // Calculate the height for the changed node
-        const getHeight = (node, pos) => {
-          const nodeElement = view.domAtPos(pos).node;
-          return nodeElement.offsetHeight;
-        };
+export const heightTrackingPluginKey =
+  new PluginKey<HeightData>("heightTracking");
 
-        // Function to recalculate heights starting from a changed node upwards
-        const recalculateHeight = (node, pos) => {
-          // Recalculate the height for the current node
-          heights[pos] = getHeight(node, pos);
+export const HeightTracking = Extension.create({
+  name: "heightTracking",
+  addProseMirrorPlugins() {
+    return [
+        new Plugin<HeightData>({
+            key: heightTrackingPluginKey,
+            state: {
+                init(): HeightData {
+                return {};
+                },
+                apply(tr, value) {
+                    const meta = tr.getMeta(heightTrackingPluginKey);
+                    return meta ? { ...value, ...meta } : value;
+                },
+            },
+            props: {
+                handleDOMEvents: {
+                update(view: EditorView, _event: Event) {
+                    const heights: HeightData = {};
 
-          // If the node has a parent, propagate the recalculation upwards
-          const parentPos = view.state.doc.resolve(pos).parent;
-          if (parentPos) {
-            // Call recursively for parent nodes if needed
-            recalculateHeight(parentPos.node, pos - 1); // Move up the document
-          }
-        };
+                    const getHeight = (node: ProseMirrorNode, pos: number): number => {
+                    const nodeElement = view.domAtPos(pos).node as HTMLElement;
+                    return nodeElement.offsetHeight;
+                    };
 
-        // Detect which nodes are affected and recalculate their heights
-        view.state.doc.nodesBetween(0, view.state.doc.content.size, (node, pos) => {
-          if (node.isText || node.isBlock) {
-            recalculateHeight(node, pos);  // Recalculate affected node's height
-          }
-        });
+                    const recalculateHeight = (node: ProseMirrorNode, pos: number): void => {
+                    heights[pos] = getHeight(node, pos);
 
-        // Dispatch the height updates in a transaction
-        if (Object.keys(heights).length > 0) {
-          view.dispatch(view.state.tr.setMeta('heightData', heights));
-        }
+                    const resolved = view.state.doc.resolve(pos);
+                    if (resolved.depth > 0) {
+                        const parentNode = resolved.node(resolved.depth - 1);
+                        const parentPos = resolved.before(resolved.depth);
+                        recalculateHeight(parentNode, parentPos);
+                    }
+                    };
 
-        return false;  // Allow the default behavior to continue
-      },
-    },
+                    view.state.doc.nodesBetween(
+                    0,
+                    view.state.doc.content.size,
+                    (node, pos) => {
+                        if (node.isText || node.isBlock) {
+                        recalculateHeight(node, pos);
+                        }
+                    },
+                    );
+                    console.log(heights)
+                    if (Object.keys(heights).length > 0) {
+                        view.dispatch(view.state.tr.setMeta(heightTrackingPluginKey, heights));
+                    }
+
+                    return false;
+                },
+                },
+            },
+            }),
+    ];
   },
 });

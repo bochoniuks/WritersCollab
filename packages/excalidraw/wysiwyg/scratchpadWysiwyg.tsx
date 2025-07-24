@@ -115,6 +115,7 @@ type SubmitHandler = () => void;
 import { Fragment, Slice, Node as PMNode, Mark } from "prosemirror-model";
 import Underline from "@tiptap/extension-underline";
 import { arrowsMaximize, arrowsMinimize } from "../components/icons";
+import { HeightTracking } from "./heightTrackingPlugin";
 // apply `mark` to all text nodes inside `slice`
 function addMarkToSlice(slice: Slice, mark: Mark): Slice {
   const map = (fragment: Fragment): Fragment => {
@@ -517,7 +518,7 @@ export const scratchpadWysiwyg = ({
       // PageBreak,
     ];
     const ed = useEditor({
-      extensions: [StarterKit.configure({ hardBreak: false }), TextStyle, Color, FontFamily, FontSize, StyledHardBreak, Underline,
+      extensions: [StarterKit.configure({ hardBreak: false }), TextStyle, Color, FontFamily, FontSize, StyledHardBreak, Underline, HeightTracking,
         ...pageExtensions
       ],
       content: prevDoc,
@@ -541,6 +542,7 @@ export const scratchpadWysiwyg = ({
         refreshPageElement();
       },
       onUpdate: ({ editor: ed }) => {
+        console.log(ed)
         let doc = ed.getJSON();
         
         if (onChange) {
