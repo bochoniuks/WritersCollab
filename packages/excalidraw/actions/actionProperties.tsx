@@ -1982,7 +1982,7 @@ export const actionToggleScratchpadPagination = register({
         if (toggled && size) {
           const contentWidth = size.width - el.margin.left - el.margin.right;
           const { height: docHeight } = measureTiptapDocWithWidth(
-            el.originalTiptapDoc,
+            el.tiptapDoc,
             contentWidth,
             { fontFamily: el.fontFamily, fontSize: el.fontSize }
           );

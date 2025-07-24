@@ -227,11 +227,11 @@ export const scratchpadWysiwyg = ({
         const contentHeight =
           baseSize.height - updatedElement.margin.top - updatedElement.margin.bottom;
 
-        const isEmptyDoc = !updatedElement.originalTiptapDoc.content?.length;
+        const isEmptyDoc = !updatedElement.tiptapDoc.content?.length;
         const measuredHeight = isEmptyDoc
             ? contentHeight
             : measureTiptapDocWithWidth(
-                updatedElement.originalTiptapDoc,
+                updatedElement.tiptapDoc,
                 contentWidth,
                 {
                   fontFamily: updatedElement.fontFamily,
@@ -491,7 +491,7 @@ export const scratchpadWysiwyg = ({
 
   let editor: ReturnType<typeof useEditor> | null = null;
   // let editor: Editor | null = null;
-  let prevDoc = element.originalTiptapDoc;
+  let prevDoc = element.tiptapDoc;
   const changeHistory = [...(element.changeHistory || [])];
 
   const { width: pageW, height: pageH } = element.pageSize

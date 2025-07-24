@@ -288,7 +288,6 @@ export const newScratchpadElement = (
   const scratchpadElementProps: ExcalidrawScratchpadElement = {
     ..._newElementBase<ExcalidrawScratchpadElement>("scratchpad", {...opts, width, height}),
     tiptapDoc,
-    originalTiptapDoc: tiptapDoc,
     containerId: opts.containerId || null,
     changeHistory: [],
     autoResize: opts.autoResize ?? !opts.pageSize,

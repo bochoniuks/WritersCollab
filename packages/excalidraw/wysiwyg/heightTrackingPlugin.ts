@@ -42,39 +42,70 @@ export const HeightTracking = Extension.create({
                 return {
                     update(view, prevState) {
                         const start = performance.now();
+
+                        // skip recalculation if nothing changed
+                        if (prevState.doc.eq(view.state.doc)) {
+                            return;
+                        }
                         const prevHeights = heightTrackingPluginKey.getState(prevState) as HeightData;
                         const heights: HeightData = new Map();
 
-                        const getHeight = (node: ProseMirrorNode, pos: number): number => {
-                            const element = view.domAtPos(pos).node as HTMLElement;
-                            return element.offsetHeight;
-                        };
+                        // const getHeight = (node: ProseMirrorNode, pos: number): number => {
+                        //     const element = view.domAtPos(pos).node as HTMLElement;
+                        //     return element.offsetHeight;
+                        // };
 
                         const visited = new Set<ProseMirrorNode>();
-                        const recalc = (node: ProseMirrorNode, pos: number): void => {
-                            if (visited.has(node)) {
-                                return;
-                            }
-                            visited.add(node);
-                            heights.set(node, getHeight(node, pos));
-                            const resolved = view.state.doc.resolve(pos);
+                        // const recalc = (node: ProseMirrorNode, pos: number): void => {
+                        //     if (visited.has(node)) {
+                        //         return;
+                        //     }
+                        //     visited.add(node);
+                        //     heights.set(node, getHeight(node, pos));
+                        //     const resolved = view.state.doc.resolve(pos);
+                        //     if (resolved.depth > 0) {
+                        //         const parent = resolved.node(resolved.depth - 1);
+                        //         const parentPos = resolved.before(resolved.depth);
+                        //         recalc(parent, parentPos);
+                        //     }
+                        // };
+                        let calls = 0;
+                        const diffStart = view.state.doc.content.findDiffStart(prevState.doc.content);
+                        if (diffStart == null) {
+                            return;
+                        }
+                        const diffEnd =
+                        view.state.doc.content.findDiffEnd(prevState.doc.content) ?? [
+                            view.state.doc.content.size,
+                            prevState.doc.content.size,
+                        ];
+                        const newEnd = diffEnd[0];
+
+                        const nodesToMeasure: Array<{ node: ProseMirrorNode; dom: HTMLElement }> = [];
+
+                        const collect = (node: ProseMirrorNode, pos: number): void => {
+                        if (visited.has(node)) return;
+                        visited.add(node);
+                        const dom = view.nodeDOM(pos) as HTMLElement | null;
+                        if (dom) nodesToMeasure.push({ node, dom });
+
+                        // also collect ancestors
+                        const resolved = view.state.doc.resolve(pos);
                             if (resolved.depth > 0) {
-                                const parent = resolved.node(resolved.depth - 1);
-                                const parentPos = resolved.before(resolved.depth);
-                                recalc(parent, parentPos);
+                                collect(resolved.node(resolved.depth - 1), resolved.before(resolved.depth));
                             }
                         };
-                        let calls = 0;
-                        view.state.doc.nodesBetween(
-                            0,
-                            view.state.doc.content.size,
-                            (node, pos) => {
-                                if (node.isText || node.isBlock) {
-                                    recalc(node, pos);
-                                    calls+=1;
-                                }
-                            },
-                        );
+
+                        view.state.doc.nodesBetween(diffStart, newEnd, (node, pos) => {
+                            if (node.isBlock) {      // text nodes skipped
+                                collect(node, pos);    // only gather nodes, no measurement yet
+                            }
+                        });
+
+                        // measure all collected nodes once
+                        for (const { node, dom } of nodesToMeasure) {
+                            heights.set(node, dom.offsetHeight);
+                        }
 
                         if (!areHeightsEqual(prevHeights, heights)) {
                             console.log(heights)

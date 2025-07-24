@@ -303,8 +303,6 @@ const restoreElement = (
       return restoreElementWithProperties(element, {
         tiptapDoc: element.tiptapDoc ?? { type: "doc", content: [] },
         name: element.name ?? "",
-        originalTiptapDoc:
-          element.originalTiptapDoc ?? element.tiptapDoc ?? { type: "doc", content: [] },
         changeHistory: element.changeHistory ?? [],
         containerId: element.containerId ?? null,
         autoResize: element.autoResize ?? true,

@@ -549,7 +549,7 @@ import type {
 } from "../types";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
-import { measureTiptapDoc, measureTiptapDocWithWidth, wrapTiptapDoc } from "@excalidraw/element/parseTiptapDoc";
+import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 import { GROUP_FLAG_CONFIG } from "../groupFlagConfig";
 import { centerScrollOn } from "../scene/scroll";
 import { ScratchpadToolbar } from "./ScratchpadToolbar";
@@ -2330,7 +2330,7 @@ class App extends React.Component<AppProps, AppState> {
       if (size) {
         const contentWidth = size.width - element.margin.left - element.margin.right;
         const { height: docHeight } = measureTiptapDocWithWidth(
-          element.originalTiptapDoc,
+          element.tiptapDoc,
           contentWidth,
           { fontFamily: element.fontFamily, fontSize: element.fontSize },
         );
@@ -5462,14 +5462,6 @@ class App extends React.Component<AppProps, AppState> {
           ? pageSize.width - element.margin.left - element.margin.right
           : width;
 
-        if (wrapDoc) {
-          doc = wrapTiptapDoc(doc, contentWidth, {
-            fontFamily: element.fontFamily,
-            fontSize: element.fontSize,
-            color: element.strokeColor,
-          });
-        }
-
         const { height: docHeight } = measureTiptapDocWithWidth(doc, contentWidth, {
           fontFamily: element.fontFamily,
           fontSize: element.fontSize,
@@ -5494,7 +5486,6 @@ class App extends React.Component<AppProps, AppState> {
           _el.id === element.id && isScratchpadElement(_el)
             ? newElementWith(_el, {
                 tiptapDoc: doc,
-                originalTiptapDoc: nextDoc,
                 width,
                 height,
                 isDeleted: isDeleted ?? _el.isDeleted,
@@ -5557,7 +5548,7 @@ class App extends React.Component<AppProps, AppState> {
       autoSelect: !this.device.isTouchScreen,
     });
     this.deselectElements();
-    updateElement(element.originalTiptapDoc, false, false);
+    updateElement(element.tiptapDoc, false, false);
   }
 
   private deselectElements() {

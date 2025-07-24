@@ -77,7 +77,7 @@ import type {
   ElementsMap,
   ExcalidrawElbowArrowElement,
 } from "./types";
-import { measureTiptapDoc, scaleTiptapDoc, wrapTiptapDoc } from "./parseTiptapDoc";
+import { measureTiptapDoc, scaleTiptapDoc } from "./parseTiptapDoc";
 
 // Returns true when transform (resizing/rotation) happened
 export const transformElements = (
@@ -579,17 +579,8 @@ const resizeSingleScratchpadElement = (
 
     const nextWidth = element.width * scale;
 
-    const scaledDoc = scaleTiptapDoc(element.originalTiptapDoc, scale);
-    const wrapped = wrapTiptapDoc(
-      scaledDoc,
-      Math.abs(nextWidth),
-      {
-        fontFamily: element.fontFamily,
-        fontSize: newFontSize,
-        color: element.strokeColor,
-      },
-    );
-    const metrics = measureTiptapDoc(wrapped, {
+    const scaledDoc = scaleTiptapDoc(element.tiptapDoc, scale);
+    const metrics = measureTiptapDoc(scaledDoc, {
       fontFamily: element.fontFamily,
       fontSize: newFontSize,
     });
@@ -653,8 +644,7 @@ const resizeSingleScratchpadElement = (
       height: nextHeight,
       x: nextX,
       y: nextY,
-      tiptapDoc: wrapped,
-      originalTiptapDoc: scaledDoc,
+      tiptapDoc: scaledDoc
     });
     return;
   }
@@ -695,14 +685,8 @@ const resizeSingleScratchpadElement = (
   }
 
   const newWidth = element.width * scaleX;
-  const wrapped = wrapTiptapDoc(
-    element.originalTiptapDoc,
-    Math.abs(newWidth),
-    { fontFamily: element.fontFamily,
-      fontSize: element.fontSize,
-      color: element.strokeColor },
-  );
-  const metrics = measureTiptapDoc(wrapped, {
+  const scaled = scaleTiptapDoc(element.tiptapDoc, newWidth / element.width);
+  const metrics = measureTiptapDoc(scaled, {
     fontFamily: element.fontFamily,
     fontSize: element.fontSize,
   });
@@ -746,7 +730,7 @@ const resizeSingleScratchpadElement = (
     height: Math.abs(metrics.height),
     x: newTopLeft[0],
     y: newTopLeft[1],
-    tiptapDoc: wrapped,
+    tiptapDoc: scaled,
     autoResize: false,
   });
 };

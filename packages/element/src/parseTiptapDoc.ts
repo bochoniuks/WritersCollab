@@ -27,89 +27,6 @@ export type TiptapSegment = | {
 export type TiptapLine = TiptapSegment[];
 
 
-export const wrapTiptapDoc = (
-  doc: JSONContent,
-  maxWidth: number,
-  opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {},
-) => {
-  const lines = parseTiptapDoc(doc, opts);
-  const result: JSONContent = { type: "doc", content: [] };
-  const newParagraph = () => ({ type: "paragraph", content: [] as JSONContent[] });
-
-  let current = newParagraph();
-  let width = 0;
-
-  for (const line of lines) {
-    for (const seg of line) {
-      if (seg.type === "hardBreak") {
-        current.content!.push({ type: "hardBreak" });
-        width = 0;
-        continue;
-      }
-      
-      const tokens = parseTokens(seg.text);
-      for (const token of tokens) {
-        const font = getFontString({
-          fontFamily: seg.fontFamily,
-          fontSize: seg.fontSize,
-          fontWeight: seg.fontWeight,
-          fontStyle: seg.fontStyle,
-        });
-        
-        
-        const fontName =
-          Object.entries(FONT_FAMILY).find(([, id]) => id === seg.fontFamily)?.[0] ??
-          DEFAULT_FONT_FAMILY;
-          
-        const marks:JSONContent = [
-            {
-              type: "textStyle",
-              attrs: {
-                fontFamily: fontName,
-                fontSize: `${seg.fontSize}px`,
-                color: seg.color,
-              },
-            },
-          ]
-
-        if (seg.fontWeight === "bold") {
-          marks.push({ type: "bold" });
-        }
-        if (seg.fontStyle === "italic") {
-          marks.push({ type: "italic" });
-        }
-        if (seg.underline) {
-          marks.push({ type: "underline" });
-        }
-        if (seg.strike) {
-          marks.push({ type: "strike" });
-        }
-        
-        const w = measureText(token, font, getLineHeight(seg.fontFamily)).width;
-
-        if (width && width + w > maxWidth) {
-          current.content!.push({ type: "hardBreak", marks: marks as Mark[] });
-          width = 0;
-        }
-
-        current.content!.push({
-          type: "text",
-          text: token,
-          marks: marks as Mark[],
-        });
-
-        width += w;
-      }
-    }
-
-    result.content!.push(current);
-    current = newParagraph();
-    width = 0;
-  }
-
-  return result;
-};
-
 export const scaleTiptapDoc = (
   doc: JSONContent,
   factor: number,
@@ -144,7 +61,7 @@ export const measureTiptapDocWithWidth = (
   doc: JSONContent,
   maxWidth: number,
   opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {},
-) => measureTiptapDoc(wrapTiptapDoc(doc, maxWidth, opts), opts);
+) => measureTiptapDoc(doc, opts);
 
 export const measureTiptapDoc = (
     doc: JSONContent,
@@ -350,8 +267,7 @@ export const findBreakOffsetForHeight = (
   opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {},
 ): number => {
   // Reuse existing wrapping so we mirror browser line breaks
-  const wrapped = wrapTiptapDoc(paragraph, maxWidth, opts);
-  const lines = parseTiptapDoc(wrapped, opts);
+  const lines = parseTiptapDoc(paragraph, opts);
   
 
   let height = 0;
