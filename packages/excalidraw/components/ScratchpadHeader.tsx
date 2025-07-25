@@ -80,7 +80,7 @@ export const ScratchpadHeader = ({
     position: "absolute",
     bottom: `${appState.height + SCRATCHPAD_HEADER_OFFSET - vpY + appState.offsetTop}px`,
     left: `${vpX}px`,
-    zIndex: 2,
+    zIndex: "var(--zIndex-layerUI)",
   } as const;
 
   const ideationBtnIcon =

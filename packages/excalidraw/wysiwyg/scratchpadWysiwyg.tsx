@@ -807,7 +807,7 @@ export const scratchpadWysiwyg = ({
       temporarilyDisableSubmit();
     } else if (
       (event.target instanceof HTMLCanvasElement ||
-       !(event.target as HTMLElement).closest(".scratchpad-wrapper")) &&
+       !(event.target as HTMLElement).closest(".scratchpad-wysiwyg")) &&
       // Vitest simply ignores stopPropagation, capture-mode, or rAF
       // so without introducing crazier hacks, nothing we can do
       !isTestEnv()
