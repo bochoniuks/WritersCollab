@@ -4195,6 +4195,15 @@ class App extends React.Component<AppProps, AppState> {
           const viewH = prevState.height / clampedZoom.value;
           const dx = (el.width * IDEATION_HORIZONTAL_SCROLL_FACTOR) / 2;
           const dy = viewH * IDEATION_VERTICAL_SCROLL_MARGIN_RATIO;
+          let minScrollY = -(y2 - viewH) - dy;
+          let maxScrollY = -y1 + dy;
+
+          if (minScrollY > maxScrollY) {
+            // viewport taller than the scratchpad → center it
+            const extra = (minScrollY - maxScrollY) / 2;
+            minScrollY -= extra;
+            maxScrollY += extra;
+          }
 
           const minScrollX = -(x2 - viewW) - dx;
           const maxScrollX = -x1 + dx;
@@ -4213,8 +4222,8 @@ class App extends React.Component<AppProps, AppState> {
             scrollX: nextScrollX,
             scrollY: clamp(
               (partialNextState.scrollY ?? prevState.scrollY) as number,
-              -(y2 - viewH) - dy,
-              -y1 + dy,
+              minScrollY,
+              maxScrollY,
             ),
           } as Pick<AppState, keyof AppState>;
         }
