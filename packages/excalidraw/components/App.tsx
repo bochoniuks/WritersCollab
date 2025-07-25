@@ -5535,7 +5535,11 @@ class App extends React.Component<AppProps, AppState> {
           this.store.scheduleCapture();
         }
         flushSync(() => {
-          this.setState({ newElement: null, editingTextElement: null });
+          this.setState({
+            newElement: null,
+            editingTextElement: null,
+            editingScratchpad: null,
+          });
         });
         if (this.state.activeTool.locked) {
           setCursorForShape(this.interactiveCanvas, this.state);
@@ -11989,7 +11993,8 @@ class App extends React.Component<AppProps, AppState> {
           event.target instanceof HTMLIFrameElement ||
           (event.target instanceof HTMLElement &&
             (event.target.closest(".excalidraw-wysiwyg") ||
-             event.target.closest(".ElementIsland")))
+             event.target.closest(".ElementIsland") ||
+             event.target.closest(".scratchpad-wrapper")))
         )
       ) {
         // prevent zooming the browser (but allow scrolling DOM)
