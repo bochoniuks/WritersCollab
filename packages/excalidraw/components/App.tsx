@@ -674,6 +674,8 @@ class App extends React.Component<AppProps, AppState> {
   };
   private prevScratchpadView: { scrollX: number; scrollY: number; zoom: Zoom } | null = null;
 
+  // reference to the active scratchpad editor cleanup
+  private destroyScratchpadEditor: (() => void) | null = null;
 
   public files: BinaryFiles = {};
   public imageCache: AppClassProperties["imageCache"] = new Map();
@@ -2266,6 +2268,10 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   private exitIdeationView(element: ExcalidrawScratchpadElement) {
+    // remove active scratchpad editor if any
+    this.destroyScratchpadEditor?.();
+    this.destroyScratchpadEditor = null;
+
     const prev = this.prevScratchpadView;
     this.prevScratchpadView = null;
     const size = element.pageSize
@@ -5495,7 +5501,7 @@ class App extends React.Component<AppProps, AppState> {
       );
     };
 
-    scratchpadWysiwyg({
+    this.destroyScratchpadEditor = scratchpadWysiwyg({
       id: element.id,
       canvas: this.canvas,
       getViewportCoords: (x, y) => {

@@ -76,9 +76,22 @@ export const ScratchpadHeader = ({
   const showHeader =
     (selectedCount === 1 && isSelected) || isEditing || inIdeationView;
 
+  const viewportY = vpY - appState.offsetTop;
+  const editorMaxHeight = (appState.height - viewportY) / appState.zoom.value;
+  const translateY =
+    element.height > editorMaxHeight && appState.zoom.value !== 1
+      ? (editorMaxHeight * (appState.zoom.value - 1)) / 2
+      : 0;
+      
   const commonStyle = {
     position: "absolute",
-    bottom: `${appState.height + SCRATCHPAD_HEADER_OFFSET - vpY + appState.offsetTop}px`,
+    bottom: `${
+        appState.height +
+        SCRATCHPAD_HEADER_OFFSET -
+        vpY +
+        appState.offsetTop -
+        translateY
+      }px`,
     left: `${vpX}px`,
     zIndex: "var(--zIndex-layerUI)",
   } as const;
