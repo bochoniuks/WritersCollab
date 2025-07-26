@@ -293,6 +293,7 @@ export const newScratchpadElement = (
     autoResize: opts.autoResize ?? !opts.pageSize,
     width,
     height,
+    canvasCache: null,
     fontFamily,
     fontSize,
     backgroundImage: null,

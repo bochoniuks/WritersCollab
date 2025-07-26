@@ -248,7 +248,10 @@ export type ExcalidrawScratchpadElement = _ExcalidrawElementBase & Readonly<{
   paginationEnabled: boolean; 
   scrollTop: number; 
   name: string | null;   
-}>;
+}>& {
+    // cached DOM rendering (not serialized)
+    canvasCache?: HTMLCanvasElement | null;
+  };
 
 export type Ordered<TElement extends ExcalidrawElement> = TElement & {
   index: FractionalIndex;

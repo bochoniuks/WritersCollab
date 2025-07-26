@@ -11,13 +11,11 @@ import { StyledHardBreak } from "./styledHardBreak";
 import Underline from "@tiptap/extension-underline";
 import { HeightTracking } from "./heightTrackingPlugin";
 
-const cache = new WeakMap<ExcalidrawScratchpadElement, HTMLCanvasElement>();
-
 export const generateScratchpadCanvas = async (
   element: ExcalidrawScratchpadElement,
 ): Promise<HTMLCanvasElement> => {
     console.log("Generating...")
-  const cached = cache.get(element);
+  const cached = element.canvasCache;
   if (cached) {
     console.log("returning...", cached)
     return cached;
@@ -29,8 +27,8 @@ export const generateScratchpadCanvas = async (
   const wrapper = document.createElement("div");
   Object.assign(wrapper.style, {
     position: "absolute",
-    left: "100px",
-    top: "100px",
+    left: "-9999px",
+    top: "-9999px",
     width: `${size.width}px`,
     height: `${size.height}px`,
     overflow: "hidden",
@@ -49,25 +47,34 @@ export const generateScratchpadCanvas = async (
   editor.destroy();
   document.body.appendChild(wrapper);
 
-  console.log(wrapper)
-  const canvas = await html2canvas(wrapper, 
-    { backgroundColor: null,
-    useCORS: true,      // handle external fonts or images
+//   const canvas = await html2canvas(wrapper, 
+//     { backgroundColor: null,
+//     useCORS: true,      // handle external fonts or images
+//   });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = size.width;
+  canvas.height = size.height;
+  canvas.getContext("2d", { willReadFrequently: true });
+
+  const result = await html2canvas(wrapper, {
+    backgroundColor: null,
+    useCORS: true,
+    canvas,
   });
-  console.log(wrapper)
+
   wrapper.remove();
 
-  cache.set(element, canvas);
-  console.log(canvas)
-  return canvas;
+  element.canvasCache = result;
+  return result;
 };
 
 export const getCachedScratchpadCanvas = (
   element: ExcalidrawScratchpadElement,
-): HTMLCanvasElement | null => cache.get(element) ?? null;
+): HTMLCanvasElement | null => element.canvasCache ?? null;
 
 export const invalidateScratchpadCanvas = (
   element: ExcalidrawScratchpadElement,
 ) => {
-  cache.delete(element);
+  element.canvasCache = null;
 };
