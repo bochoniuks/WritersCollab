@@ -78,6 +78,7 @@ import type {
 import type { StrokeOptions } from "perfect-freehand";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import { parseTiptapDoc } from "./parseTiptapDoc";
+import { generateScratchpadCanvas, getCachedScratchpadCanvas } from "@excalidraw/excalidraw/wysiwyg/scratchpadDomToSvg";
 
 // using a stronger invert (100% vs our regular 93%) and saturate
 // as a temp hack to make images in dark theme look closer to original
@@ -821,159 +822,32 @@ export const renderElement = (
       break;
     }
     case "scratchpad": {
-      const lines = parseTiptapDoc(element.tiptapDoc, {
-        fontFamily: element.fontFamily,
-        fontSize: element.fontSize,
-        color: element.strokeColor,
-      });
+      const pageSize = element.pageSize
+        ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
+        : { width: element.width, height: element.height };
 
       const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
       const cx = (x1 + x2) / 2 + appState.scrollX;
       const cy = (y1 + y2) / 2 + appState.scrollY;
-      const shiftX = (x2 - x1) / 2 - (element.x - x1);
-      const shiftY = (y2 - y1) / 2 - (element.y - y1);
 
       context.save();
       context.translate(cx, cy);
       context.rotate(element.angle);
-      context.translate(-shiftX, -shiftY); // position at element.x/y
-      
-      const pageSize = element.pageSize
-        ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
-        : { width: element.width, height: element.height };
-      const pageContentHeight =
-        pageSize.height - element.margin.top - element.margin.bottom;
-      const pages =
-        element.paginationEnabled && element.pageSize
-          ? Math.max(1, Math.ceil(element.height / pageSize.height))
-          : 1;
-      const isScrollableSinglePage = element.pageSize && !element.paginationEnabled;
+      context.translate(-pageSize.width / 2, -pageSize.height / 2);
 
+      // page background
+      context.fillStyle = SCRATCHPAD_PAGE_BACKGROUND;
+      context.strokeStyle = SCRATCHPAD_PAGE_BORDER_COLOR;
+      context.lineWidth = 1 / appState.zoom.value;
+      context.fillRect(0, 0, pageSize.width, pageSize.height);
+      context.strokeRect(0, 0, pageSize.width, pageSize.height);
 
-      // draw page rectangles
-      for (let i = 0; i < pages; i++) {
-        const y = i * (pageSize.height + SCRATCHPAD_PAGE_GAP);
-        context.fillStyle = SCRATCHPAD_PAGE_BACKGROUND;
-        context.strokeStyle = SCRATCHPAD_PAGE_BORDER_COLOR;
-        context.lineWidth = 1 / appState.zoom.value;
-        context.fillRect(0, y, pageSize.width, pageSize.height);
-        context.strokeRect(0, y, pageSize.width, pageSize.height);
-      }
-      
-      context.translate(element.margin.left, element.margin.top);
-      if (isScrollableSinglePage) {
-        const clipWidth =
-          pageSize.width - element.margin.left - element.margin.right;
-        const clipHeight =
-          pageSize.height - element.margin.top - element.margin.bottom;
-        context.save();
-        context.beginPath();
-        context.rect(0, 0, clipWidth, clipHeight);
-        context.clip();
-        context.translate(0, -element.scrollTop);
-      }
-
-      let pageTop = 0;
-
-      context.textAlign = "left";
-      context.textBaseline = "alphabetic";
-
-      const pageHeight =
-        element.pageSize && element.paginationEnabled
-          ? SCRATCHPAD_PAGE_SIZES[element.pageSize].height -
-              element.margin.top -
-              element.margin.bottom
-          : Infinity;
-
-      let cursorY = 0;
-      for (const line of lines) {
-        let baselineOffset = 0;
-        let bottomGap = 0;
-
-        const isBreakLine =
-          line.length === 0 || line.every((seg) => seg.type === "hardBreak");
-
-        if (isBreakLine) {
-          if (line.length > 0) {
-            for (const seg of line) {
-              const lineHeightPx = getLineHeightInPx(
-                seg.fontSize,
-                getLineHeight(seg.fontFamily),
-              );
-              bottomGap = Math.max(bottomGap, lineHeightPx);
-            }
-          } else {
-            const metrics = measureText(
-              "",
-              getFontString({ fontFamily: element.fontFamily, fontSize: element.fontSize }),
-              getLineHeight(element.fontFamily),
-            );
-            bottomGap = metrics.height;
-          }
-        } else {
-          for (const seg of line) {
-            if (seg.type === "hardBreak") {
-              continue;
-            }
-            const lineHeightPx = getLineHeightInPx(seg.fontSize, getLineHeight(seg.fontFamily));
-            const verticalOffset = getVerticalOffset(seg.fontFamily, seg.fontSize, lineHeightPx);
-            baselineOffset = Math.max(baselineOffset, verticalOffset);
-            bottomGap = Math.max(bottomGap, lineHeightPx - verticalOffset);
-          }
-        }
-        
-        
-        if (element.paginationEnabled && cursorY + baselineOffset + bottomGap > pageContentHeight) {
-          pageTop += pageSize.height + SCRATCHPAD_PAGE_GAP;
-          cursorY = 0;
-        }
-
-        let cursorX = 0;
-        
-        for (const seg of line) {
-          if (seg.type === "hardBreak") {
-            continue; // nothing to draw
-          }
-          const fontString = getFontString({
-            fontSize: seg.fontSize,
-            fontFamily: seg.fontFamily,
-            fontWeight: seg.fontWeight,
-            fontStyle: seg.fontStyle,
-          });
-          context.font = fontString;
-          context.fillStyle = seg.color;
-          context.fillText(seg.text, cursorX, pageTop + cursorY + baselineOffset);
-          const metrics = measureText(seg.text, fontString, getLineHeight(seg.fontFamily));
-          const middle = pageTop + cursorY + baselineOffset - metrics.actualBoundingBoxAscent / 2;
-          const underlineY = pageTop + cursorY + baselineOffset + 2;
-
-          if (seg.strike) {
-            context.beginPath();
-            context.moveTo(cursorX, middle);
-            context.lineTo(cursorX + metrics.width, middle);
-            context.stroke();
-          }
-          if (seg.underline) {
-            context.beginPath();
-            context.moveTo(cursorX, underlineY);
-            context.lineTo(cursorX + metrics.width, underlineY);
-            context.stroke();
-          }
-
-
-
-
-
-
-
-          cursorX += metrics.width;
-          // lineHeight = Math.max(lineHeight, metrics.height);
-        }
-        
-        cursorY += baselineOffset + bottomGap;
-      }
-      if (isScrollableSinglePage) {
-        context.restore();
+      // canvas snapshot of the scratchpad DOM
+      const snapshot = getCachedScratchpadCanvas(element);
+      if (snapshot) {
+        context.drawImage(snapshot, 0, 0);
+      } else {
+        generateScratchpadCanvas(element).catch(() => {});
       }
 
       context.restore();

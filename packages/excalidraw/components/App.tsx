@@ -554,6 +554,7 @@ import { GROUP_FLAG_CONFIG } from "../groupFlagConfig";
 import { centerScrollOn } from "../scene/scroll";
 import { ScratchpadToolbar } from "./ScratchpadToolbar";
 import { ScratchpadHeader } from "./ScratchpadHeader";
+import { generateScratchpadCanvas, invalidateScratchpadCanvas } from "../wysiwyg/scratchpadDomToSvg";
 
 const AppContext = React.createContext<AppClassProperties>(null!);
 const AppPropsContext = React.createContext<AppProps>(null!);
@@ -5528,11 +5529,14 @@ class App extends React.Component<AppProps, AppState> {
         const isDeleted = false;
 
         updateElement(nextDoc, isDeleted, true);
+        invalidateScratchpadCanvas(element);
+        generateScratchpadCanvas(element).catch(() => {});  // <– new call
+
         if (!isDeleted && viaKeyboard) {
           const elId = element.containerId ?? element.id;
           flushSync(() => {
             this.setState((prev) => ({
-              selectedElementIds: makeNextSelectedElementIds(
+              selectedElementIds: makeNextSelectedElementIds( 
                 { ...prev.selectedElementIds, [elId]: true },
                 prev,
               ),

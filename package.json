@@ -89,6 +89,7 @@
   "dependencies": {
     "@tiptap/extension-font-family": "2.14.0",
     "@tiptap/extension-underline": "3.0.7",
+    "html2canvas": "1.4.1",
     "tiptap-extension-font-size": "1.2.0",
     "tiptap-pagination-breaks": "1.0.3"
   }
