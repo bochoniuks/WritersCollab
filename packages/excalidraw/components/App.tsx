@@ -5530,7 +5530,7 @@ class App extends React.Component<AppProps, AppState> {
 
         updateElement(nextDoc, isDeleted, true);
         invalidateScratchpadCanvas(element);
-        generateScratchpadCanvas(element).catch(() => {});  // <– new call
+        generateScratchpadCanvas(element).catch((err) => console.log(err));  // <– new call
 
         if (!isDeleted && viaKeyboard) {
           const elId = element.containerId ?? element.id;
