@@ -27,8 +27,8 @@ export const generateScratchpadCanvas = async (
   const wrapper = document.createElement("div");
   Object.assign(wrapper.style, {
     position: "absolute",
-    left: "-9999px",
-    top: "-9999px",
+    left: "0",
+    top: "0",
     width: `${size.width}px`,
     height: `${size.height}px`,
     overflow: "hidden",
@@ -43,30 +43,30 @@ export const generateScratchpadCanvas = async (
      FontFamily, FontSize, StyledHardBreak, Underline, HeightTracking],
     content: element.tiptapDoc });
 
-  wrapper.innerHTML = editor.getHTML();
-  editor.destroy();
-  document.body.appendChild(wrapper);
+    wrapper.innerHTML = editor.getHTML();
+    editor.destroy();
+    document.body.appendChild(wrapper);
 
-//   const canvas = await html2canvas(wrapper, 
-//     { backgroundColor: null,
-//     useCORS: true,      // handle external fonts or images
+    const result = await html2canvas(wrapper, 
+        { backgroundColor: null,
+        useCORS: true,      // handle external fonts or images
+    });
+
+//   const canvas = document.createElement("canvas");
+//   canvas.width = size.width;
+//   canvas.height = size.height;
+//   canvas.getContext("2d", { willReadFrequently: true });
+
+//   const result = await html2canvas(wrapper, {
+//     backgroundColor: null,
+//     useCORS: true,
+//     canvas,
 //   });
-
-  const canvas = document.createElement("canvas");
-  canvas.width = size.width;
-  canvas.height = size.height;
-  canvas.getContext("2d", { willReadFrequently: true });
-
-  const result = await html2canvas(wrapper, {
-    backgroundColor: null,
-    useCORS: true,
-    canvas,
-  });
-
-  wrapper.remove();
-
-  element.canvasCache = result;
-  return result;
+    console.log(wrapper)
+    // wrapper.remove();
+    console.log(result)
+    element.canvasCache = result;
+    return result;
 };
 
 export const getCachedScratchpadCanvas = (
