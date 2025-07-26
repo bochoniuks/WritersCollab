@@ -71,7 +71,7 @@ export const generateScratchpadCanvas = async (
 
 export const getCachedScratchpadCanvas = (
   element: ExcalidrawScratchpadElement,
-): HTMLCanvasElement | null => element.canvasCache instanceof HTMLCanvasElement ? element.canvasCache : null;
+): HTMLCanvasElement | null => element.canvasCache ? element.canvasCache : null;
 
 export const invalidateScratchpadCanvas = (
   element: ExcalidrawScratchpadElement,
