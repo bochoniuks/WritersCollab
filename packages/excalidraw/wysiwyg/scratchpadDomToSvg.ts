@@ -47,7 +47,7 @@ export const generateScratchpadCanvas = async (
     editor.destroy();
     document.body.appendChild(wrapper);
 
-    const result = await html2canvas(wrapper, 
+    const result: HTMLCanvasElement = await html2canvas(wrapper, 
         { backgroundColor: null,
         useCORS: true,      // handle external fonts or images
     });
@@ -65,7 +65,9 @@ export const generateScratchpadCanvas = async (
     console.log(wrapper)
     // wrapper.remove();
     console.log(result)
+    console.log(typeof result);
     element.canvasCache = result;
+    console.log(element.canvasCache instanceof HTMLCanvasElement); // should log true
     return result;
 };
 
