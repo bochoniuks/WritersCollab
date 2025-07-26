@@ -845,12 +845,13 @@ export const renderElement = (
       // canvas snapshot of the scratchpad DOM
       // const snapshot = getCachedScratchpadCanvas(element);
       const snapshot = element.canvasCache
-      if (snapshot) {
-        console.log(snapshot)
-        console.log(snapshot instanceof Promise); // should log true
+      if (snapshot instanceof HTMLCanvasElement) {
         context.drawImage(snapshot, 0, 0);
-      } else {
+      } else if (!snapshot) {
+        // snapshot not yet generated – kick off generation
         generateScratchpadCanvas(element).catch((err) => console.log(err));
+      } else {
+        console.warn("Scratchpad snapshot is not a canvas", snapshot);
       }
 
       context.restore();

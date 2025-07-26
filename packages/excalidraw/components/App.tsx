@@ -5529,6 +5529,7 @@ class App extends React.Component<AppProps, AppState> {
         const isDeleted = false;
 
         updateElement(nextDoc, isDeleted, true);
+        element = this.scene.getElement(element.id) as ExcalidrawScratchpadElement;
         invalidateScratchpadCanvas(element);
         generateScratchpadCanvas(element).catch((err) => console.log(err));  // <– new call
 

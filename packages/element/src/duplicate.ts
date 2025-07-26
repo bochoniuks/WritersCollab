@@ -428,7 +428,7 @@ const _deepCopyElement = (val: any, depth: number = 0) => {
       if (Object.prototype.hasOwnProperty.call(val, key)) {
         // don't copy non-serializable objects like these caches. They'll be
         // populated when the element is rendered.
-        if (depth === 0 && (key === "shape" || key === "canvas")) {
+        if (depth === 0 && (key === "shape" || key === "canvas" || key === "canvasCache")) {
           continue;
         }
         tmp[key] = _deepCopyElement(val[key], depth + 1);

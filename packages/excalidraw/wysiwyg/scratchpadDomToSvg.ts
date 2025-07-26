@@ -27,8 +27,8 @@ export const generateScratchpadCanvas = async (
   const wrapper = document.createElement("div");
   Object.assign(wrapper.style, {
     position: "absolute",
-    left: "0",
-    top: "0",
+    left: "-9999px",
+    top: "-9999px",
     width: `${size.width}px`,
     height: `${size.height}px`,
     overflow: "hidden",
@@ -47,23 +47,23 @@ export const generateScratchpadCanvas = async (
     editor.destroy();
     document.body.appendChild(wrapper);
 
-    const result: HTMLCanvasElement = await html2canvas(wrapper, 
-        { backgroundColor: null,
-        useCORS: true,      // handle external fonts or images
+    // const result: HTMLCanvasElement = await html2canvas(wrapper, 
+    //     { backgroundColor: null,
+    //     useCORS: true,      // handle external fonts or images
+    // });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = size.width;
+    canvas.height = size.height;
+    canvas.getContext("2d", { willReadFrequently: true });
+
+    const result = await html2canvas(wrapper, {
+        backgroundColor: null,
+        useCORS: true,
+        canvas,
     });
-
-//   const canvas = document.createElement("canvas");
-//   canvas.width = size.width;
-//   canvas.height = size.height;
-//   canvas.getContext("2d", { willReadFrequently: true });
-
-//   const result = await html2canvas(wrapper, {
-//     backgroundColor: null,
-//     useCORS: true,
-//     canvas,
-//   });
     console.log(wrapper)
-    // wrapper.remove();
+    wrapper.remove();
     console.log(result)
     console.log(typeof result);
     element.canvasCache = result;
