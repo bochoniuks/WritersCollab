@@ -844,8 +844,7 @@ export const renderElement = (
 
       // canvas snapshot of the scratchpad DOM
       const snapshot = getCachedScratchpadCanvas(element);
-      console.log(snapshot)
-      if (snapshot) {
+      if (snapshot instanceof HTMLCanvasElement) {
         context.drawImage(snapshot, 0, 0);
       } else {
         generateScratchpadCanvas(element).catch((err) => console.log(err));
