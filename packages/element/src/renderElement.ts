@@ -78,7 +78,7 @@ import type {
 import type { StrokeOptions } from "perfect-freehand";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import { parseTiptapDoc } from "./parseTiptapDoc";
-import { generateScratchpadCanvas, getCachedScratchpadCanvas } from "@excalidraw/excalidraw/wysiwyg/scratchpadDomToSvg";
+import { getCachedScratchpadCanvas } from "@excalidraw/excalidraw/wysiwyg/scratchpadDomToSvg";
 
 // using a stronger invert (100% vs our regular 93%) and saturate
 // as a temp hack to make images in dark theme look closer to original
@@ -222,7 +222,7 @@ const generateElementCanvas = (
   appState: StaticCanvasAppState,
 ): ExcalidrawElementWithCanvas | null => {
   const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d")!;
+  const context = canvas.getContext("2d", { willReadFrequently: true })!;
   const padding = getCanvasPadding(element);
 
   const { width, height, scale } = cappedElementCanvasSize(
@@ -277,7 +277,7 @@ const generateElementCanvas = (
 
   const boundTextElement = getBoundTextElement(element, elementsMap);
   const boundTextCanvas = document.createElement("canvas");
-  const boundTextCanvasContext = boundTextCanvas.getContext("2d")!;
+  const boundTextCanvasContext = boundTextCanvas.getContext("2d", { willReadFrequently: true })!;
 
   if (isArrowElement(element) && boundTextElement) {
     const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
@@ -843,17 +843,10 @@ export const renderElement = (
       context.strokeRect(0, 0, pageSize.width, pageSize.height);
 
       // canvas snapshot of the scratchpad DOM
-      // const snapshot = getCachedScratchpadCanvas(element);
-      const snapshot = element.canvasCache
+      const snapshot = getCachedScratchpadCanvas(element)
       if (snapshot instanceof HTMLCanvasElement) {
         context.drawImage(snapshot, 0, 0);
-      } else if (!snapshot) {
-        // snapshot not yet generated – kick off generation
-        generateScratchpadCanvas(element)
-        .catch((err) => console.log(err));
-      } else {
-        console.warn("Scratchpad snapshot is not a canvas", snapshot);
-      }
+      } 
 
       context.restore();
       break;
@@ -901,7 +894,7 @@ export const renderElement = (
         if (isArrowElement(element) && boundTextElement) {
           const tempCanvas = document.createElement("canvas");
 
-          const tempCanvasContext = tempCanvas.getContext("2d")!;
+          const tempCanvasContext = tempCanvas.getContext("2d", { willReadFrequently: true })!;
 
           // Take max dimensions of arrow canvas so that when canvas is rotated
           // the arrow doesn't get clipped

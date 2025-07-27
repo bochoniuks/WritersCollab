@@ -249,6 +249,8 @@ export type ExcalidrawScratchpadElement = _ExcalidrawElementBase & Readonly<{
   scrollTop: number; 
   name: string | null;   
 }>& {
+    // serialized snapshot of the scratchpad canvas
+    canvasSnapshot?: string | null;
     // cached DOM rendering (not serialized)
     canvasCache?: HTMLCanvasElement | null;
   };

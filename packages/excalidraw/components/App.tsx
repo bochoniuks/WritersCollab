@@ -554,7 +554,7 @@ import { GROUP_FLAG_CONFIG } from "../groupFlagConfig";
 import { centerScrollOn } from "../scene/scroll";
 import { ScratchpadToolbar } from "./ScratchpadToolbar";
 import { ScratchpadHeader } from "./ScratchpadHeader";
-import { generateScratchpadCanvas, invalidateScratchpadCanvas } from "../wysiwyg/scratchpadDomToSvg";
+import { generateScratchpadCanvas, loadCanvasFromSnapshot } from "../wysiwyg/scratchpadDomToSvg";
 
 const AppContext = React.createContext<AppClassProperties>(null!);
 const AppPropsContext = React.createContext<AppProps>(null!);
@@ -2084,6 +2084,7 @@ class App extends React.Component<AppProps, AppState> {
     });
   };
 
+
   public onExportImage = async (
     type: keyof typeof EXPORT_IMAGE_TYPES,
     elements: ExportedElements,
@@ -2294,11 +2295,6 @@ class App extends React.Component<AppProps, AppState> {
       scrollTop: 0,
       ...(size && { width: size.width, height: size.height }),
     });
-    
-    invalidateScratchpadCanvas(element);
-    generateScratchpadCanvas(element)
-    .then(() => this.scene.triggerUpdate())
-    .catch((err) => console.log(err));
 
     const elementsMap = this.scene.getElementsMapIncludingDeleted();
     const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
@@ -2330,7 +2326,6 @@ class App extends React.Component<AppProps, AppState> {
         this.state.ideationElementId,
       ) as ExcalidrawScratchpadElement | null;
       if (el) {
-        console.log("exciting ideation")
         this.exitIdeationView(el);
       }
     }
@@ -2546,6 +2541,7 @@ class App extends React.Component<AppProps, AppState> {
     if (actionResult.files) {
       this.addMissingFiles(actionResult.files, actionResult.replaceFiles);
       this.addNewImagesToImageCache();
+      this.addScratchpadSnapshotsToCache();        // new line
     }
 
     if (actionResult.appState || editingTextElement || this.state.contextMenu) {
@@ -3711,6 +3707,7 @@ class App extends React.Component<AppProps, AppState> {
       () => {
         if (opts.files) {
           this.addNewImagesToImageCache();
+          this.addScratchpadSnapshotsToCache();        // new line
         }
       },
     );
@@ -4287,6 +4284,7 @@ class App extends React.Component<AppProps, AppState> {
       this.scene.triggerUpdate();
 
       this.addNewImagesToImageCache();
+      this.addScratchpadSnapshotsToCache(); 
     },
   );
 
@@ -5545,7 +5543,7 @@ class App extends React.Component<AppProps, AppState> {
 
         updateElement(nextDoc, isDeleted, true);
         element = this.scene.getElement(element.id) as ExcalidrawScratchpadElement;
-        invalidateScratchpadCanvas(element);
+        // invalidateScratchpadCanvas(element);
         generateScratchpadCanvas(element)
         .then(() => this.scene.triggerUpdate())
         .catch((err) => console.log(err));  // <– new call
@@ -10896,6 +10894,7 @@ class App extends React.Component<AppProps, AppState> {
           const cachedImageData = this.imageCache.get(fileId);
           if (!cachedImageData) {
             this.addNewImagesToImageCache();
+            this.addScratchpadSnapshotsToCache();  // new line
             await this.updateImageCache([imageElement]);
           }
           if (cachedImageData?.image instanceof Promise) {
@@ -10990,7 +10989,7 @@ class App extends React.Component<AppProps, AppState> {
       const canvas = document.createElement("canvas");
       canvas.height = height;
       canvas.width = width;
-      const context = canvas.getContext("2d")!;
+      const context = canvas.getContext("2d", { willReadFrequently: true })!;
 
       context.drawImage(img, 0, 0, width, height);
 
@@ -11190,6 +11189,23 @@ class App extends React.Component<AppProps, AppState> {
       if (updatedFiles.size) {
         this.scene.triggerUpdate();
       }
+    }
+  };
+
+  // rebuild canvasCache from saved snapshots
+  private addScratchpadSnapshotsToCache = async (
+    elements: ExcalidrawScratchpadElement[] = this.scene
+      .getNonDeletedElements()
+      .filter(
+        (el): el is Ordered<NonDeleted<ExcalidrawScratchpadElement>> => isScratchpadElement(el),
+      ),
+  ) => {
+    const pending = elements.filter(
+      (el) => el.canvasSnapshot && !el.canvasCache,
+    );
+    if (pending.length) {
+      await Promise.all(pending.map(loadCanvasFromSnapshot));
+      this.scene.triggerUpdate();
     }
   };
 

@@ -25,7 +25,7 @@ export const measureText = (
   const width = getTextWidth(_text, font);
   // obtain full canvas metrics for underline/strike positioning
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
   ctx.font = font;
   const metrics = ctx.measureText(_text);
 
@@ -144,7 +144,7 @@ class CanvasTextMetricsProvider implements TextMetricsProvider {
    * > The advance width is the distance between the glyph's initial pen position and the next glyph's initial pen position.
    */
   public getLineWidth(text: string, fontString: FontString): number {
-    const context = this.canvas.getContext("2d")!;
+    const context = this.canvas.getContext("2d", { willReadFrequently: true })!;
     context.font = fontString;
     const metrics = context.measureText(text);
     const advanceWidth = metrics.width;

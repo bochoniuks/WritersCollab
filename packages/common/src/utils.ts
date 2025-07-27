@@ -629,7 +629,7 @@ export const getVersion = () => {
 // Adapted from https://github.com/Modernizr/Modernizr/blob/master/feature-detects/emoji.js
 export const supportsEmoji = () => {
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) {
     return false;
   }

@@ -10,16 +10,30 @@ import FontSize from "tiptap-extension-font-size";
 import { StyledHardBreak } from "./styledHardBreak";
 import Underline from "@tiptap/extension-underline";
 import { HeightTracking } from "./heightTrackingPlugin";
+import { loadHTMLImageElement } from "@excalidraw/element";
+import { DataURL } from "../types";
+
+export const loadCanvasFromSnapshot = async (
+  element: ExcalidrawScratchpadElement,
+): Promise<HTMLCanvasElement | null> => {
+  if (!element.canvasSnapshot) {
+    return null;
+  }
+  const image = await loadHTMLImageElement(element.canvasSnapshot as DataURL);
+  const size = element.pageSize
+    ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
+    : { width: element.width, height: element.height };
+  const canvas = document.createElement("canvas");
+  canvas.width = size.width;
+  canvas.height = size.height;
+  canvas.getContext("2d", { willReadFrequently: true })!.drawImage(image, 0, 0);
+  element.canvasCache = canvas;
+  return canvas;
+};
 
 export const generateScratchpadCanvas = async (
   element: ExcalidrawScratchpadElement,
 ): Promise<HTMLCanvasElement> => {
-    console.log("Generating...")
-  const cached = element.canvasCache;
-  if (cached) {
-    console.log("returning...", cached)
-    return cached;
-  }
   const size = element.pageSize
     ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
     : { width: element.width, height: element.height };
@@ -46,37 +60,40 @@ export const generateScratchpadCanvas = async (
     wrapper.innerHTML = editor.getHTML();
     editor.destroy();
     document.body.appendChild(wrapper);
+    
+    if (element.canvasCache instanceof HTMLCanvasElement){
 
-    // const result: HTMLCanvasElement = await html2canvas(wrapper, 
-    //     { backgroundColor: null,
-    //     useCORS: true,      // handle external fonts or images
-    // });
-
-    const canvas = document.createElement("canvas");
+    }
+    const canvas = (element.canvasCache instanceof HTMLCanvasElement) ? element.canvasCache : document.createElement("canvas");
     canvas.width = size.width;
     canvas.height = size.height;
-    canvas.getContext("2d", { willReadFrequently: true });
+
+
+    // if (context) {
+    // // Explicitly ensure the context has the correct setting.
+    //     context.willReadFrequently = true;
+    // }
 
     const result = await html2canvas(wrapper, {
         backgroundColor: null,
         useCORS: true,
         canvas,
     });
-    console.log(wrapper)
     wrapper.remove();
-    console.log(result)
-    console.log(typeof result);
     element.canvasCache = result;
-    console.log(element.canvasCache instanceof HTMLCanvasElement); // should log true
+    element.canvasSnapshot = result.toDataURL();
     return result;
 };
 
 export const getCachedScratchpadCanvas = (
   element: ExcalidrawScratchpadElement,
-): HTMLCanvasElement | null => element.canvasCache ? element.canvasCache : null;
-
-export const invalidateScratchpadCanvas = (
-  element: ExcalidrawScratchpadElement,
-) => {
-  element.canvasCache = null;
+): HTMLCanvasElement | null => {
+  if (element.canvasCache instanceof HTMLCanvasElement) {
+    return element.canvasCache;
+  }
+  if (element.canvasSnapshot) {
+    // initialise canvasCache from saved data
+    loadCanvasFromSnapshot(element);
+  }
+  return element.canvasCache || null;
 };

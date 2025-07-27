@@ -313,6 +313,7 @@ const restoreElement = (
         pageSize: element.pageSize ?? null,
         paginationEnabled: element.paginationEnabled,
         scrollTop: element.scrollTop ?? 0,
+        canvasSnapshot: element.canvasSnapshot ?? null,
       });
     case "freedraw": {
       return restoreElementWithProperties(element, {

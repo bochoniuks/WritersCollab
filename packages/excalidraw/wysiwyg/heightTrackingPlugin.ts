@@ -93,8 +93,6 @@ export const HeightTracking = Extension.create({
                                 view.state.tr.setMeta(heightTrackingPluginKey, heights),
                             );
                         }
-                        // const end = performance.now();
-                        // console.log("HeightTracking update took", end - start, "ms");
                     },
                 };
             },

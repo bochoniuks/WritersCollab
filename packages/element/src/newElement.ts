@@ -294,6 +294,7 @@ export const newScratchpadElement = (
     width,
     height,
     canvasCache: null,
+    canvasSnapshot: null,
     fontFamily,
     fontSize,
     backgroundImage: null,

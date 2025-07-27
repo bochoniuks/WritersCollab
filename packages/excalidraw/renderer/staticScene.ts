@@ -325,7 +325,6 @@ const _renderStaticScene = ({
             appState,
           );
         } else {
-          console.log(element)
           renderElement(
             element,
             elementsMap,

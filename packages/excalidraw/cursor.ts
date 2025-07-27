@@ -50,7 +50,7 @@ export const setEraserCursor = (
     eraserCanvasCache.theme = theme;
     eraserCanvasCache.height = cursorImageSizePx;
     eraserCanvasCache.width = cursorImageSizePx;
-    const context = eraserCanvasCache.getContext("2d")!;
+    const context = eraserCanvasCache.getContext("2d", { willReadFrequently: true })!;
     context.lineWidth = 1;
     context.beginPath();
     context.arc(
