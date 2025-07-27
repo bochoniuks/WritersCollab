@@ -781,6 +781,7 @@ class App extends React.Component<AppProps, AppState> {
     this.scene = new Scene();
 
     this.canvas = document.createElement("canvas");
+    this.canvas.getContext("2d", { willReadFrequently: true });
     this.rc = rough.canvas(this.canvas);
     this.renderer = new Renderer(this.scene);
     this.visibleElements = [];
@@ -2273,6 +2274,15 @@ class App extends React.Component<AppProps, AppState> {
     this.destroyScratchpadEditor?.();
     this.destroyScratchpadEditor = null;
 
+    const current = this.scene.getElement(
+      element.id,
+    ) as ExcalidrawScratchpadElement | null;
+    if (!current) {
+      return;
+    }
+    element = current;
+
+    
     const prev = this.prevScratchpadView;
     this.prevScratchpadView = null;
     const size = element.pageSize
@@ -2285,6 +2295,11 @@ class App extends React.Component<AppProps, AppState> {
       ...(size && { width: size.width, height: size.height }),
     });
     
+    invalidateScratchpadCanvas(element);
+    generateScratchpadCanvas(element)
+    .then(() => this.scene.triggerUpdate())
+    .catch((err) => console.log(err));
+
     const elementsMap = this.scene.getElementsMapIncludingDeleted();
     const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
     const { scrollX, scrollY } = centerScrollOn({
@@ -5531,7 +5546,9 @@ class App extends React.Component<AppProps, AppState> {
         updateElement(nextDoc, isDeleted, true);
         element = this.scene.getElement(element.id) as ExcalidrawScratchpadElement;
         invalidateScratchpadCanvas(element);
-        generateScratchpadCanvas(element).catch((err) => console.log(err));  // <– new call
+        generateScratchpadCanvas(element)
+        .then(() => this.scene.triggerUpdate())
+        .catch((err) => console.log(err));  // <– new call
 
         if (!isDeleted && viaKeyboard) {
           const elId = element.containerId ?? element.id;

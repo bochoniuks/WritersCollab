@@ -411,16 +411,16 @@ export const scratchpadWysiwyg = ({
   };
 
   
-  const wrapper = document.createElement("div");
-  wrapper.classList.add("scratchpad-wrapper");
-  Object.assign(wrapper.style, {
-    position: "absolute",
-    left: "0",
-    top: "0",
-    // transform: `translate(${getViewportCoords(element.x, element.y)[0]}px,
-    //   ${getViewportCoords(element.x, element.y)[1]}px)`,
-    zIndex: "var(--zIndex-wysiwyg)",
-  });
+  // const wrapper = document.createElement("div");
+  // wrapper.classList.add("scratchpad-wrapper");
+  // Object.assign(wrapper.style, {
+  //   position: "absolute",
+  //   left: "0",
+  //   top: "0",
+  //   // transform: `translate(${getViewportCoords(element.x, element.y)[0]}px,
+  //   //   ${getViewportCoords(element.x, element.y)[1]}px)`,
+  //   zIndex: "var(--zIndex-wysiwyg)",
+  // });
 
 
   const editable = document.createElement("div");
@@ -737,7 +737,7 @@ export const scratchpadWysiwyg = ({
 
     root.unmount();
     editable.remove();
-    wrapper.remove();
+    // wrapper.remove();
     app.updateEditorAtom(activeScratchpadEditorAtom, null);
   };
 
@@ -806,8 +806,9 @@ export const scratchpadWysiwyg = ({
     ) {
       temporarilyDisableSubmit();
     } else if (
-      (event.target instanceof HTMLCanvasElement ||
-       !(event.target as HTMLElement).closest(".scratchpad-wysiwyg")) &&
+      (target instanceof HTMLCanvasElement ||
+      ((target instanceof HTMLElement || target instanceof SVGElement) &&
+      !(target as HTMLElement).closest(".scratchpad-wysiwyg"))) &&
       // Vitest simply ignores stopPropagation, capture-mode, or rAF
       // so without introducing crazier hacks, nothing we can do
       !isTestEnv()
@@ -873,9 +874,9 @@ export const scratchpadWysiwyg = ({
   });
   window.addEventListener("beforeunload", handleSubmit);
 
-  wrapper.appendChild(editable);
+  // wrapper.appendChild(editable);
   const target = excalidrawContainer?.querySelector(containerSelector);
-  target?.appendChild(wrapper);
+  target?.appendChild(editable);
 
   return handleSubmit;
 };

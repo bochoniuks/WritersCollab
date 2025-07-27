@@ -74,7 +74,7 @@ export const EyeDropper: React.FC<{
 
     let isHoldingPointerDown = false;
 
-    const ctx = app.canvas.getContext("2d")!;
+    const ctx = app.canvas.getContext("2d",  { willReadFrequently: true })!;
 
     const getCurrentColor = ({
       clientX,
