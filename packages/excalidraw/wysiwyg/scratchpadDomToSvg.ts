@@ -61,18 +61,9 @@ export const generateScratchpadCanvas = async (
     editor.destroy();
     document.body.appendChild(wrapper);
     
-    if (element.canvasCache instanceof HTMLCanvasElement){
-
-    }
     const canvas = (element.canvasCache instanceof HTMLCanvasElement) ? element.canvasCache : document.createElement("canvas");
     canvas.width = size.width;
     canvas.height = size.height;
-
-
-    // if (context) {
-    // // Explicitly ensure the context has the correct setting.
-    //     context.willReadFrequently = true;
-    // }
 
     const result = await html2canvas(wrapper, {
         backgroundColor: null,

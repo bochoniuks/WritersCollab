@@ -428,8 +428,11 @@ export const scratchpadWysiwyg = ({
   editable.dir = "auto";
   editable.tabIndex = 0;
   editable.dataset.type = "wysiwyg";
-  editable.classList.add("excalidraw-wysiwyg", "inherit-styles");
-
+  editable.classList.add(
+    "excalidraw-wysiwyg",
+    "inherit-styles",
+    "scratchpad-wysiwyg",
+  );
 
 
   let whiteSpace = "pre";
@@ -514,7 +517,7 @@ export const scratchpadWysiwyg = ({
             }),
           ]
         : []),
-      // PageWrapper.configure({ pageHeight: pageSize.height }),
+      PageWrapper.configure({ pageHeight: pageSize.height }),
       // PageBreak,
     ];
     const ed = useEditor({
@@ -724,7 +727,7 @@ export const scratchpadWysiwyg = ({
     }
 
     window.removeEventListener("resize", updateWysiwygStyle);
-    window.removeEventListener("wheel", stopEvent, true);
+    window.removeEventListener("wheel", stopEvent, { capture: true });
     window.removeEventListener("pointerdown", onPointerDown);
     window.removeEventListener("pointerup", bindBlurEvent);
     window.removeEventListener("blur", handleSubmit);
@@ -865,7 +868,13 @@ export const scratchpadWysiwyg = ({
     window.addEventListener("resize", updateWysiwygStyle);
   }
 
+  if (app.state.scratchpadViewMode !== "ideation") {
+    console.log("inside")
+    window.addEventListener("wheel", stopEvent, { capture: true, passive: false });
+  }
+
   editable.onpointerdown = (event) => event.stopPropagation();
+  editable.onwheel = (event) => event.stopPropagation();
 
   // rAF (+ capture to by doubly sure) so we don't catch te pointerdown that
   // triggered the wysiwyg

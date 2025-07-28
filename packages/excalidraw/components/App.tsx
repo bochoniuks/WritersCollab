@@ -12062,8 +12062,10 @@ class App extends React.Component<AppProps, AppState> {
         this.state.editingTextElement &&
         isScratchpadElement(this.state.editingTextElement) &&
         this.state.editingTextElement.pageSize &&
-        !this.state.editingTextElement.paginationEnabled
+        !this.state.editingTextElement.paginationEnabled &&
+        this.state.scratchpadViewMode !== "ideation"
       ) {
+
         // wheel scroll belongs to the scratchpad
         return;
       }
