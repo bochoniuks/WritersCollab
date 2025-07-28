@@ -461,7 +461,8 @@ export const scratchpadWysiwyg = ({
     border: 0,
     outline: 0,
     resize: "none",
-    overflow: "hidden",
+    overflowX: "hidden",
+    overflowY: "auto",             // < new line
     font,
     lineHeight,
     // must be specified because in dark mode canvas creates a stacking context
@@ -652,12 +653,12 @@ export const scratchpadWysiwyg = ({
 
   // indentation helpers removed for tiptap editor
 
-  const stopEvent = (event: Event) => {
-    if (event.target instanceof HTMLCanvasElement) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  };
+  // const stopEvent = (event: Event) => {
+  //   if (event.target instanceof HTMLCanvasElement) {
+  //     event.preventDefault();
+  //     event.stopPropagation();
+  //   }
+  // };
 
   // using a state variable instead of passing it to the handleSubmit callback
   // so that we don't need to create separate a callback for event handlers
@@ -727,7 +728,7 @@ export const scratchpadWysiwyg = ({
     }
 
     window.removeEventListener("resize", updateWysiwygStyle);
-    window.removeEventListener("wheel", stopEvent, { capture: true });
+    // window.removeEventListener("wheel", stopEvent, { capture: true });
     window.removeEventListener("pointerdown", onPointerDown);
     window.removeEventListener("pointerup", bindBlurEvent);
     window.removeEventListener("blur", handleSubmit);
@@ -868,10 +869,10 @@ export const scratchpadWysiwyg = ({
     window.addEventListener("resize", updateWysiwygStyle);
   }
 
-  if (app.state.scratchpadViewMode !== "ideation") {
-    console.log("inside")
-    window.addEventListener("wheel", stopEvent, { capture: true, passive: false });
-  }
+  // if (app.state.scratchpadViewMode !== "ideation") {
+  //   console.log("inside")
+  //   window.addEventListener("wheel", stopEvent, { capture: true, passive: false });
+  // }
 
   editable.onpointerdown = (event) => event.stopPropagation();
   editable.onwheel = (event) => event.stopPropagation();
