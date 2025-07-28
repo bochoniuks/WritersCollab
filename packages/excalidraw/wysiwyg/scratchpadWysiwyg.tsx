@@ -214,7 +214,9 @@ export const scratchpadWysiwyg = ({
 
       editable.style.setProperty(
         "--page-overflow",
-        element.paginationEnabled ? "visible" : "auto",
+        element.paginationEnabled || app.state.scratchpadViewMode === "ideation"
+          ? "visible"
+          : "auto",
       );
 
         const baseSize =
@@ -271,7 +273,10 @@ export const scratchpadWysiwyg = ({
             getTransform(updatedElement.width, updatedElement.height,
                         app.state.scratchpadViewMode === "ideation" ? 0 : updatedElement.angle,
                         appState, updatedElement.width, editorMaxHeight),
-          maxHeight: `${editorMaxHeight}px`,
+          maxHeight:
+            app.state.scratchpadViewMode === "ideation"
+              ? "none"
+              : `${editorMaxHeight}px`,
         });
         app.scene.mutateElement(updatedElement, { x: coordX, y: coordY });
       } 
@@ -462,7 +467,9 @@ export const scratchpadWysiwyg = ({
     outline: 0,
     resize: "none",
     overflowX: "hidden",
-    overflowY: "auto",             // < new line
+    overflowY: app.state.scratchpadViewMode === "ideation"
+      ? "visible"
+      : "auto",
     font,
     lineHeight,
     // must be specified because in dark mode canvas creates a stacking context
@@ -487,7 +494,9 @@ export const scratchpadWysiwyg = ({
   );
   editable.style.setProperty(
     "--page-overflow",
-    element.paginationEnabled ? "visible" : "auto",
+    element.paginationEnabled || app.state.scratchpadViewMode === "ideation"
+      ? "visible"
+      : "auto",
   );
 
 
