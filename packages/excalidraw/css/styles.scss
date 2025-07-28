@@ -757,7 +757,7 @@ body.excalidraw-cursor-resize * {
     background: none;
   }
   
-  .excalidraw-wysiwyg .scratchpad-wysiwyg .page {
+  .excalidraw-wysiwyg.scratchpad-wysiwyg .page {
     overflow-y: var(--page-overflow, auto);
     overflow-x: hidden;
     padding: var(--page-padding);
