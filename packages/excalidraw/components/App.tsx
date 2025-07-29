@@ -113,6 +113,7 @@ import {
   IDEATION_VERTICAL_SCROLL_MARGIN_RATIO,
   MAX_IDEATION_VISIBLE_PAGES,
   DEFAULT_FONT_FAMILY,
+  DEFAULT_SCRATCHPAD_PAGE_MARGIN,
 } from "@excalidraw/common";
 
 import { addToGroup, bumpVersion, duplicateElement, getCommonBounds, getElementAbsoluteCoords, getScratchpadTitle } from "@excalidraw/element";
@@ -6125,7 +6126,7 @@ class App extends React.Component<AppProps, AppState> {
             : container.angle
           : (0 as Radians),
         frameId: topLayerFrame ? topLayerFrame.id : null,
-        margin: {top: 10, bottom: 10, left: 10, right: 10},
+        margin: DEFAULT_SCRATCHPAD_PAGE_MARGIN,
         pageSize: "A4",
         paginationEnabled: this.state.currentScratchpadPaginationEnabled,
       });

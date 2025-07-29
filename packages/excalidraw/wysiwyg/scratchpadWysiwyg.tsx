@@ -277,6 +277,10 @@ export const scratchpadWysiwyg = ({
             app.state.scratchpadViewMode === "ideation"
               ? "none"
               : `${editorMaxHeight}px`,
+          paddingTop: updatedElement.pageSize ? `${updatedElement.margin.top}px` : "0",
+          paddingRight: updatedElement.pageSize ? `${updatedElement.margin.right}px` : "0",
+          paddingBottom: updatedElement.pageSize ? `${updatedElement.margin.bottom}px` : "0",
+          paddingLeft: updatedElement.pageSize ? `${updatedElement.margin.left}px` : "0",
         });
         app.scene.mutateElement(updatedElement, { x: coordX, y: coordY });
       } 
@@ -462,7 +466,7 @@ export const scratchpadWysiwyg = ({
     minHeight: "1em",
     backfaceVisibility: "hidden",
     margin: 0,
-    padding: 0,
+    // padding: 0,
     border: 0,
     outline: 0,
     resize: "none",
@@ -484,7 +488,11 @@ export const scratchpadWysiwyg = ({
     overflowWrap: "break-word",
     boxSizing: "content-box",
     // top: `${getViewportCoords(element.x, element.y)[1]}px`,
-    transform: "none" 
+    transform: "none",
+    paddingTop: element.pageSize ? `${element.margin.top}px` : "0",
+    paddingRight: element.pageSize ? `${element.margin.right}px` : "0",
+    paddingBottom: element.pageSize ? `${element.margin.bottom}px` : "0",
+    paddingLeft: element.pageSize ? `${element.margin.left}px` : "0",
   });
 
   editable.style.setProperty(

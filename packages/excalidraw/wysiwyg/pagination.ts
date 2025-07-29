@@ -53,12 +53,15 @@ export const Pagination = Extension.create<PaginationOptions>({
         // Apply the page width and margin to the editor's container
         const editorContainer = this.editor.view.dom.closest('.ProseMirror') as HTMLElement;
         if (editorContainer) {
-            const htmlElement = editorContainer; // Cast to HTMLElement
-            htmlElement.style.width = `${this.options.pageWidth}px`;
-            htmlElement.style.marginTop = `${this.options.pageMargin.top}px`;
-            htmlElement.style.marginBottom = `${this.options.pageMargin.bottom}px`;
-            htmlElement.style.marginLeft = `${this.options.pageMargin.left}px`;
-            htmlElement.style.marginRight = `${this.options.pageMargin.right}px`;
+            const htmlElement = editorContainer;
+            const { pageWidth, pageMargin } = this.options;
+            const innerWidth = pageWidth - pageMargin.left - pageMargin.right;
+            htmlElement.style.width = `${innerWidth}px`;
+            htmlElement.style.margin = '0';
+            htmlElement.style.paddingTop = `${pageMargin.top}px`;
+            htmlElement.style.paddingBottom = `${pageMargin.bottom}px`;
+            htmlElement.style.paddingLeft = `${pageMargin.left}px`;
+            htmlElement.style.paddingRight = `${pageMargin.right}px`;
         }
     },
     addProseMirrorPlugins() {
@@ -81,7 +84,7 @@ export const Pagination = Extension.create<PaginationOptions>({
                         let pageNumber = 1;
                         const options = pluginKey.getState(state) as PaginationOptions;
                         const { pageHeight, pageMargin, pageWidth, showPageNumber, label } = options;
-                        const effectivePageHeight = pageHeight - (pageMargin.left + pageMargin.right);
+                        const effectivePageHeight = pageHeight - (pageMargin.top + pageMargin.bottom);
                         
                         const breakPositions: number[] = [];
                         const heightData = heightTrackingPluginKey.getState(state) as HeightData;
@@ -92,19 +95,20 @@ export const Pagination = Extension.create<PaginationOptions>({
                                 return true;
                             }
                             const nodeHeight = heightData?.get(node) ?? 0;
-                            // console.log("height: ", nodeHeight, "Accumulated: ", accumulated)
-                            // console.log(node)
 
 
                             if (position !== 0 && accumulated + nodeHeight > effectivePageHeight) {
                                 breakPositions.push(position);
-                                // console.log("**** Page ",pageC,"****")
-                                // pageC+=1;
+                                console.log("position: ", position, " Accumulated: ", accumulated, "nodeHeight: ", nodeHeight)
                                 accumulated = nodeHeight;
+                                
+                                // console.log(position)
+
                             } else {
                                 accumulated += nodeHeight;
                             }
                         });
+                        
 
                         for (const p of breakPositions) {
                             decorations.push(
@@ -116,7 +120,7 @@ export const Pagination = Extension.create<PaginationOptions>({
                                     pageBreak.style.height = `${SCRATCHPAD_PAGE_GAP}px`;
                                     pageBreak.style.marginTop = `${pageMargin.top}px`;
                                     pageBreak.style.marginBottom = `${pageMargin.bottom}px`;
-                                    console.log(pageBreak)
+                                    // console.log(pageBreak)
                                     pageNumber++;
                                     return pageBreak;
                                 })
@@ -126,8 +130,13 @@ export const Pagination = Extension.create<PaginationOptions>({
                     },
                 },
                 view(view) {
+                    const {  pageWidth, pageMargin } =
+                        pluginKey.getState(view.state) as PaginationOptions;
                     const borderLayer = document.createElement('div');
                     borderLayer.className = 'page-border-layer';
+                    Object.assign(borderLayer.style, {
+                        width: `${pageWidth + (pageMargin.left+pageMargin.right)}px`,
+                    })
                     borderLayer.setAttribute('data-pm-ignore', 'true');
                     (view.dom.parentNode as HTMLElement).appendChild(borderLayer);
 
@@ -137,7 +146,7 @@ export const Pagination = Extension.create<PaginationOptions>({
                         pluginKey.getState(view.state) as PaginationOptions;
                         const breaks = Array.from(view.dom.querySelectorAll<HTMLHRElement>('hr.page-break'));
 
-                        let start = -pageMargin.top;
+                        let start = 0;
                         breaks.forEach((hr) => {
                             const top = start;
                             const height = pageHeight;
