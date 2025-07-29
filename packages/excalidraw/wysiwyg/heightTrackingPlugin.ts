@@ -22,27 +22,28 @@ const areHeightsEqual = (prev: HeightData, next: HeightData): boolean => {
     return true;
 };
 
-export const runHeightTracking = (view: EditorView) => {
+const collectHeights = (
+  view: EditorView,
+  start = 0,
+  end = view.state.doc.content.size,
+): HeightData => {
   const heights: HeightData = new Map();
   const visited = new Set<ProseMirrorNode>();
   const nodes: Array<{ node: ProseMirrorNode; dom: HTMLElement }> = [];
 
-  const collect = (node: ProseMirrorNode, pos: number) => {
-    if (visited.has(node)) {
-      return;
-    }
+  const collect = (node: ProseMirrorNode, pos: number): void => {
+    if (visited.has(node)) return;
     visited.add(node);
     const dom = view.nodeDOM(pos) as HTMLElement | null;
-    if (dom) {
-      nodes.push({ node, dom });
-    }
+    if (dom) nodes.push({ node, dom });
+
     const resolved = view.state.doc.resolve(pos);
     if (resolved.depth > 0) {
       collect(resolved.node(resolved.depth - 1), resolved.before(resolved.depth));
     }
   };
 
-  view.state.doc.descendants((node, pos) => {
+  view.state.doc.nodesBetween(start, end, (node, pos) => {
     if (node.isBlock) {
       collect(node, pos);
     }
@@ -51,7 +52,12 @@ export const runHeightTracking = (view: EditorView) => {
   for (const { node, dom } of nodes) {
     heights.set(node, dom.offsetHeight);
   }
-  console.log(heights)
+
+  return heights;
+};
+
+export const runHeightTracking = (view: EditorView) => {
+  const heights = collectHeights(view);
   view.dispatch(view.state.tr.setMeta(heightTrackingPluginKey, heights));
 };
 
@@ -74,16 +80,10 @@ export const HeightTracking = Extension.create({
             view(editorView: EditorView) {
                 return {
                     update(view, prevState) {
-                        // const start = performance.now();
-
-                        // skip recalculation if nothing changed
                         if (prevState.doc.eq(view.state.doc)) {
                             return;
                         }
                         const prevHeights = heightTrackingPluginKey.getState(prevState) as HeightData;
-                        const heights: HeightData = new Map();
-
-                        const visited = new Set<ProseMirrorNode>();
 
                         const diffStart = view.state.doc.content.findDiffStart(prevState.doc.content);
                         if (diffStart == null) {
@@ -96,31 +96,7 @@ export const HeightTracking = Extension.create({
                         };
                         const newEnd = diffEnd.a;
 
-                        const nodesToMeasure: Array<{ node: ProseMirrorNode; dom: HTMLElement }> = [];
-
-                        const collect = (node: ProseMirrorNode, pos: number): void => {
-                        if (visited.has(node)) return;
-                        visited.add(node);
-                        const dom = view.nodeDOM(pos) as HTMLElement | null;
-                        if (dom) nodesToMeasure.push({ node, dom });
-
-                        // also collect ancestors
-                        const resolved = view.state.doc.resolve(pos);
-                            if (resolved.depth > 0) {
-                                collect(resolved.node(resolved.depth - 1), resolved.before(resolved.depth));
-                            }
-                        };
-
-                        view.state.doc.nodesBetween(diffStart, newEnd, (node, pos) => {
-                            if (node.isBlock) {      // text nodes skipped
-                                collect(node, pos);    // only gather nodes, no measurement yet
-                            }
-                        });
-
-                        // measure all collected nodes once
-                        for (const { node, dom } of nodesToMeasure) {
-                            heights.set(node, dom.offsetHeight);
-                        }
+                        const heights = collectHeights(view, diffStart, newEnd);
 
                         if (!areHeightsEqual(prevHeights, heights)) {
                             view.dispatch(
