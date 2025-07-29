@@ -7,7 +7,7 @@ import TextStyle from "@tiptap/extension-text-style";
 import FontSize from "tiptap-extension-font-size";
 import Color from "@tiptap/extension-color";
 // import { Pagination } from "tiptap-pagination-breaks"; 
-import { Pagination } from "./pagination"; 
+import { Pagination, runPagination } from "./pagination"; 
 // import { PageBreak } from "./pageBreak";
 
 import {
@@ -548,6 +548,9 @@ export const scratchpadWysiwyg = ({
           const patched = addMarkToSlice(slice, mark);
           view.dispatch(view.state.tr.replaceSelection(patched));
           runHeightTracking(view);
+          if (element.paginationEnabled) {            // re-run pagination
+            runPagination(view);
+          }
           return true;
         },
       },
@@ -555,6 +558,9 @@ export const scratchpadWysiwyg = ({
         // page wrapper exists only after the editor mounts
         refreshPageElement();
         runHeightTracking(ed.view);
+        if (element.paginationEnabled) {
+          runPagination(ed.view);
+        }
       },
       onUpdate: ({ editor: ed }) => {
         let doc = ed.getJSON();
@@ -588,6 +594,9 @@ export const scratchpadWysiwyg = ({
         // }
         chain.setColor(element.strokeColor).run();
         runHeightTracking(ed.view);
+        if (element.paginationEnabled) {
+          runPagination(ed.view);
+        }
       }
       return () => {
         app.updateEditorAtom(activeScratchpadEditorAtom, null);

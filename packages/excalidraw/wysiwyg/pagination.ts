@@ -5,10 +5,11 @@ import {
   EditorState,
   Transaction,
 } from 'prosemirror-state';
-import { Decoration, DecorationSet } from 'prosemirror-view';
+import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
 import { Node } from 'prosemirror-model';
 import { findBreakOffsetForHeight } from '@excalidraw/element/parseTiptapDoc';
 import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, DEFAULT_SCRATCHPAD_PAGE_MARGIN, SCRATCHPAD_PAGE_GAP } from '@excalidraw/common';
+import { HeightData, heightTrackingPluginKey } from './heightTrackingPlugin';
 
 export interface PaginationOptions {
   pageHeight: number;
@@ -83,23 +84,27 @@ export const Pagination = Extension.create<PaginationOptions>({
                         const effectivePageHeight = pageHeight - (pageMargin.left + pageMargin.right);
                         
                         const breakPositions: number[] = [];
-                        let pos = 0;
-                        let remainingDoc = doc.toJSON();
-
-                        while (true) {
-                            const breakOffset = findBreakOffsetForHeight(
-                                remainingDoc,
-                                pageWidth - (pageMargin.left + pageMargin.right),
-                                effectivePageHeight,
-                                { fontFamily: DEFAULT_FONT_FAMILY, fontSize: DEFAULT_FONT_SIZE }
-                            );
-                            if (breakOffset <= 0) {
-                                break;
+                        const heightData = heightTrackingPluginKey.getState(state) as HeightData;
+                        let accumulated = 0;
+                        let pageC = 1
+                        state.doc.descendants((node, position) => {
+                            if (!node.isBlock) {
+                                return true;
                             }
-                            pos += breakOffset;
-                            breakPositions.push(pos);
-                            remainingDoc = doc.cut(pos).toJSON();
-                        }
+                            const nodeHeight = heightData?.get(node) ?? 0;
+                            // console.log("height: ", nodeHeight, "Accumulated: ", accumulated)
+                            // console.log(node)
+
+
+                            if (position !== 0 && accumulated + nodeHeight > effectivePageHeight) {
+                                breakPositions.push(position);
+                                // console.log("**** Page ",pageC,"****")
+                                // pageC+=1;
+                                accumulated = nodeHeight;
+                            } else {
+                                accumulated += nodeHeight;
+                            }
+                        });
 
                         for (const p of breakPositions) {
                             decorations.push(
@@ -176,6 +181,12 @@ export const Pagination = Extension.create<PaginationOptions>({
         ];
     },
 });
+
+
+export const runPagination = (view: EditorView) => {      // new helper
+  view.dispatch(view.state.tr.setMeta('paginationOptions', {}));
+};
+
 function calculateListItemHeight(element: HTMLElement): number {
     const style = window.getComputedStyle(element);
     const marginTop = parseFloat(style.marginTop) || 0;
