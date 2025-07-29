@@ -115,7 +115,7 @@ type SubmitHandler = () => void;
 import { Fragment, Slice, Node as PMNode, Mark } from "prosemirror-model";
 import Underline from "@tiptap/extension-underline";
 import { arrowsMaximize, arrowsMinimize } from "../components/icons";
-import { HeightTracking } from "./heightTrackingPlugin";
+import { HeightTracking, runHeightTracking } from "./heightTrackingPlugin";
 // apply `mark` to all text nodes inside `slice`
 function addMarkToSlice(slice: Slice, mark: Mark): Slice {
   const map = (fragment: Fragment): Fragment => {
@@ -527,11 +527,11 @@ export const scratchpadWysiwyg = ({
             }),
           ]
         : []),
-      PageWrapper.configure({ pageHeight: pageSize.height }),
+      // PageWrapper.configure({ pageHeight: pageSize.height }),
       // PageBreak,
     ];
     const ed = useEditor({
-      extensions: [StarterKit.configure({ hardBreak: false }), TextStyle, Color, FontFamily, FontSize, StyledHardBreak, Underline, HeightTracking,
+      extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize, Underline, HeightTracking,
         ...pageExtensions
       ],
       content: prevDoc,
@@ -547,12 +547,14 @@ export const scratchpadWysiwyg = ({
 
           const patched = addMarkToSlice(slice, mark);
           view.dispatch(view.state.tr.replaceSelection(patched));
+          runHeightTracking(view);
           return true;
         },
       },
-      onCreate: () => {
+      onCreate: ({ editor: ed }) => {
         // page wrapper exists only after the editor mounts
         refreshPageElement();
+        runHeightTracking(ed.view);
       },
       onUpdate: ({ editor: ed }) => {
         let doc = ed.getJSON();
@@ -585,6 +587,7 @@ export const scratchpadWysiwyg = ({
             .setFontSize(`${app.state.currentItemFontSize}px`);
         // }
         chain.setColor(element.strokeColor).run();
+        runHeightTracking(ed.view);
       }
       return () => {
         app.updateEditorAtom(activeScratchpadEditorAtom, null);

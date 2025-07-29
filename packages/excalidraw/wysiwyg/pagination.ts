@@ -102,19 +102,20 @@ export const Pagination = Extension.create<PaginationOptions>({
                         }
 
                         for (const p of breakPositions) {
-                        decorations.push(
-                            Decoration.widget(p, () => {
-                            const pageBreak = document.createElement("hr");
-                            pageBreak.className = "page-break";
-                            pageBreak.setAttribute("data-page-break", "true");
-                            pageBreak.style.border = "none";
-                            pageBreak.style.height = `${SCRATCHPAD_PAGE_GAP}px`;
-                            pageBreak.style.marginTop = `${pageMargin.top}px`;
-                            pageBreak.style.marginBottom = `${pageMargin.bottom}px`;
-                            pageNumber++;
-                            return pageBreak;
-                            })
-                        );
+                            decorations.push(
+                                Decoration.widget(p, () => {
+                                    const pageBreak = document.createElement("hr");
+                                    pageBreak.className = "page-break";
+                                    pageBreak.setAttribute("data-page-break", "true");
+                                    pageBreak.style.border = "none";
+                                    pageBreak.style.height = `${SCRATCHPAD_PAGE_GAP}px`;
+                                    pageBreak.style.marginTop = `${pageMargin.top}px`;
+                                    pageBreak.style.marginBottom = `${pageMargin.bottom}px`;
+                                    console.log(pageBreak)
+                                    pageNumber++;
+                                    return pageBreak;
+                                })
+                            );
                         }
                         return DecorationSet.create(doc, decorations);
                     },
