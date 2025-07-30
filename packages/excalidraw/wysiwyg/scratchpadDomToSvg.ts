@@ -12,6 +12,8 @@ import Underline from "@tiptap/extension-underline";
 import { HeightTracking } from "./heightTrackingPlugin";
 import { loadHTMLImageElement } from "@excalidraw/element";
 import { DataURL } from "../types";
+import { DocumentWithPages } from "./documentWithPages";
+import { Page } from "./page";
 
 export const loadCanvasFromSnapshot = async (
   element: ExcalidrawScratchpadElement,
@@ -53,8 +55,18 @@ export const generateScratchpadCanvas = async (
   });
 
   const editor = new Editor({
-     extensions: [StarterKit.configure({ hardBreak: false }), TextStyle, Color,
-     FontFamily, FontSize, StyledHardBreak, Underline, HeightTracking],
+     extensions: [
+      DocumentWithPages,
+      StarterKit.configure({ document: false, hardBreak: false }),
+      TextStyle,
+      Color,
+      FontFamily,
+      FontSize,
+      StyledHardBreak,
+      Underline,
+      HeightTracking,
+      Page,
+    ],
     content: element.tiptapDoc });
 
     wrapper.innerHTML = editor.getHTML();

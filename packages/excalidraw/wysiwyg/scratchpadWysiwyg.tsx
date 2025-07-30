@@ -7,7 +7,7 @@ import TextStyle from "@tiptap/extension-text-style";
 import FontSize from "tiptap-extension-font-size";
 import Color from "@tiptap/extension-color";
 // import { Pagination } from "tiptap-pagination-breaks"; 
-import { Pagination, runPagination } from "./pagination"; 
+// import { Pagination, runPagination } from "./pagination"; 
 // import { PageBreak } from "./pageBreak";
 
 import {
@@ -116,6 +116,9 @@ import { Fragment, Slice, Node as PMNode, Mark } from "prosemirror-model";
 import Underline from "@tiptap/extension-underline";
 import { arrowsMaximize, arrowsMinimize } from "../components/icons";
 import { HeightTracking, runHeightTracking } from "./heightTrackingPlugin";
+import { Page } from "./page";
+import { PageReflow, runPageReflow } from "./pageReflow";
+import { DocumentWithPages } from "./documentWithPages";
 // apply `mark` to all text nodes inside `slice`
 function addMarkToSlice(slice: Slice, mark: Mark): Slice {
   const map = (fragment: Fragment): Fragment => {
@@ -525,22 +528,34 @@ export const scratchpadWysiwyg = ({
       ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
       : { width: element.width, height: element.height };
     
-    const pageExtensions = [
-      ...(element.paginationEnabled
-        ? [
-            Pagination.configure({
-              pageHeight: pageSize.height,
-              pageWidth: pageSize.width,
-              pageMargin,
-            }),
-          ]
-        : []),
+    // const pageExtensions = [
+    //   ...(element.paginationEnabled
+    //     ? [
+    //         Pagination.configure({
+    //           pageHeight: pageSize.height,
+    //           pageWidth: pageSize.width,
+    //           pageMargin,
+    //         }),
+    //       ]
+    //     : []),
       // PageWrapper.configure({ pageHeight: pageSize.height }),
       // PageBreak,
+    // ];
+    const pageExtensions = [
+      Page,
+      PageReflow.configure({ pageHeight: pageSize.height - pageMargin.top - pageMargin.bottom }),
     ];
     const ed = useEditor({
-      extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize, Underline, HeightTracking,
-        ...pageExtensions
+      extensions: [
+          DocumentWithPages,
+          StarterKit.configure({ document: false }),
+          TextStyle,
+          Color,
+          FontFamily,
+          FontSize,
+          Underline,
+          HeightTracking,
+          ...pageExtensions,
       ],
       content: prevDoc,
       editorProps: {
@@ -557,7 +572,7 @@ export const scratchpadWysiwyg = ({
           view.dispatch(view.state.tr.replaceSelection(patched));
           runHeightTracking(view);
           if (element.paginationEnabled) {            // re-run pagination
-            runPagination(view);
+            runPageReflow(view);
           }
           return true;
         },
@@ -567,7 +582,7 @@ export const scratchpadWysiwyg = ({
         refreshPageElement();
         runHeightTracking(ed.view);
         if (element.paginationEnabled) {
-          runPagination(ed.view);
+          runPageReflow(ed.view);
         }
       },
       onUpdate: ({ editor: ed }) => {
@@ -603,7 +618,7 @@ export const scratchpadWysiwyg = ({
         chain.setColor(element.strokeColor).run();
         runHeightTracking(ed.view);
         if (element.paginationEnabled) {
-          runPagination(ed.view);
+          runPageReflow(ed.view);
         }
       }
       return () => {

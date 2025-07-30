@@ -262,7 +262,8 @@ export const newScratchpadElement = (
   const fontSize = opts.fontSize ?? DEFAULT_FONT_SIZE;
 
   const tiptapDoc: JSONContent =
-    opts.tiptapDoc ?? { type: "doc", content: [] };
+    opts.tiptapDoc ?? {  type: "doc",
+    content: [{ type: "page", content: [] }], };
 
   const metrics = measureText(
     "",
