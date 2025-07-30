@@ -84,7 +84,6 @@ import type App from "../components/App";
 import type { AppState } from "../types";
 import { findBreakOffsetForHeight, measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 import FontFamily from "@tiptap/extension-font-family";
-import { PageWrapper } from "./pageWrapper";
 import { StyledHardBreak } from "./styledHardBreak";
 
 const getTransform = (

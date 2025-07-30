@@ -19,6 +19,6 @@ export const Page = Node.create<PageOptions>({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ["div", mergeAttributes({ class: "page" }, HTMLAttributes), 0];
+    return ["div", mergeAttributes({ class: "page " }, HTMLAttributes), 0];
   },
 });
