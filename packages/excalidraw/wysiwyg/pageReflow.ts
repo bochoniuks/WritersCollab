@@ -37,11 +37,12 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             const { schema } = curr;
             const blocks: Array<{ node: any; pos: number }> = [];
             curr.doc.descendants((node, pos) => {
-                if (pos === 0) {
-                    return;                // ignore the root document node
+                if (pos === 0 || node.type.name === "page") {
+                    return true;                      // skip doc and page nodes but traverse inside them
                 }
-                if (node.type.name !== "page") {
+                if (node.isBlock) {                   // collect only block-level content
                     blocks.push({ node, pos });
+                    return false;                     // no need to visit inline children
                 }
             });
 
