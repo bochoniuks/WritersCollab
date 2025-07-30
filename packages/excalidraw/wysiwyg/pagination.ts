@@ -90,20 +90,38 @@ export const Pagination = Extension.create<PaginationOptions>({
                         const heightData = heightTrackingPluginKey.getState(state) as HeightData;
                         let accumulated = 0;
                         let pageC = 1
+                        console.log("------------------------------------")
                         state.doc.descendants((node, position) => {
                             if (!node.isBlock) {
                                 return true;
                             }
                             const nodeHeight = heightData?.get(node) ?? 0;
 
-
                             if (position !== 0 && accumulated + nodeHeight > effectivePageHeight) {
-                                breakPositions.push(position);
-                                console.log("position: ", position, " Accumulated: ", accumulated, "nodeHeight: ", nodeHeight)
-                                accumulated = nodeHeight;
-                                
-                                // console.log(position)
+                                let hasBlockChildren = false;
+                                node.forEach(child => {
+                                    if (child.isBlock) {
+                                        hasBlockChildren = true;
+                                    }
+                                });
 
+                                if (hasBlockChildren) {
+                                    let innerAccum = accumulated;
+                                    node.forEach((child, offset) => {
+                                        const childHeight = heightData?.get(child) ?? 0;
+                                        if (child.isBlock && innerAccum + childHeight > effectivePageHeight) {
+                                            breakPositions.push(position + offset + 1);
+                                            innerAccum = childHeight;
+                                        } else {
+                                            innerAccum += childHeight;
+                                        }
+                                    });
+                                    accumulated = innerAccum;
+                                    return false; // prevent the traversal from double-processing children
+                                }
+
+                                breakPositions.push(position);
+                                accumulated = nodeHeight;
                             } else {
                                 accumulated += nodeHeight;
                             }

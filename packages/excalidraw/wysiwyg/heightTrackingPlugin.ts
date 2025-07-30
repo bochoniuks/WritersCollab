@@ -27,33 +27,33 @@ const collectHeights = (
   start = 0,
   end = view.state.doc.content.size,
 ): HeightData => {
-  const heights: HeightData = new Map();
-  const visited = new Set<ProseMirrorNode>();
-  const nodes: Array<{ node: ProseMirrorNode; dom: HTMLElement }> = [];
+    const heights: HeightData = new Map();
+    const visited = new Set<ProseMirrorNode>();
+    const nodes: Array<{ node: ProseMirrorNode; dom: HTMLElement }> = [];
 
-  const collect = (node: ProseMirrorNode, pos: number): void => {
-    if (visited.has(node)) return;
-    visited.add(node);
-    const dom = view.nodeDOM(pos) as HTMLElement | null;
-    if (dom) nodes.push({ node, dom });
+    const collect = (node: ProseMirrorNode, pos: number): void => {
+        if (visited.has(node)) return;
+        visited.add(node);
+        const dom = view.nodeDOM(pos) as HTMLElement | null;
+        if (dom) nodes.push({ node, dom });
 
-    const resolved = view.state.doc.resolve(pos);
-    if (resolved.depth > 0) {
-      collect(resolved.node(resolved.depth - 1), resolved.before(resolved.depth));
+        const resolved = view.state.doc.resolve(pos);
+        if (resolved.depth > 0) {
+        collect(resolved.node(resolved.depth - 1), resolved.before(resolved.depth));
+        }
+    };
+
+    view.state.doc.nodesBetween(start, end, (node, pos) => {
+        if (node.isBlock) {
+            collect(node, pos);
+        }
+    });
+    console.log(nodes)
+    for (const { node, dom } of nodes) {
+        heights.set(node, dom.offsetHeight);
     }
-  };
 
-  view.state.doc.nodesBetween(start, end, (node, pos) => {
-    if (node.isBlock) {
-      collect(node, pos);
-    }
-  });
-
-  for (const { node, dom } of nodes) {
-    heights.set(node, dom.offsetHeight);
-  }
-
-  return heights;
+    return heights;
 };
 
 export const runHeightTracking = (view: EditorView) => {
