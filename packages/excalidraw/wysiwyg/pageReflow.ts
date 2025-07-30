@@ -65,10 +65,14 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 pages.push(schema.nodes.page.create(null, content));
             }
             const newDoc = schema.nodes.doc.create(null, pages);
+            
             if (curr.doc.eq(newDoc)) {
                 return null;
             }
-            return curr.tr.replaceWith(0, curr.doc.content.size, newDoc.content);
+            const tr = curr.tr.replaceWith(0, curr.doc.content.size, newDoc.content);
+            const mappedSel = curr.selection.map(tr.doc, tr.mapping);
+            tr.setSelection(mappedSel);
+            return tr;
         },
       }),
     ];
