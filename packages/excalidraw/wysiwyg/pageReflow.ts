@@ -1,7 +1,8 @@
 import { Extension } from "@tiptap/core";
-import { Plugin, PluginKey } from "prosemirror-state";
+import { Plugin, PluginKey, TextSelection } from "prosemirror-state";
 import { HeightData, heightTrackingPluginKey } from "./heightTrackingPlugin";
 import type { EditorView } from "prosemirror-view";
+import type { Node as ProseMirrorNode } from "prosemirror-model";
 
 export interface PageReflowOptions {
   pageHeight: number;
@@ -36,6 +37,13 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 heightTrackingPluginKey.getState(curr) as HeightData;
             const { schema } = curr;
             const blocks: Array<{ node: any; pos: number }> = [];
+
+            const { anchor, head } = curr.selection;
+            const anchorInfo = blocks.find(b => anchor >= b.pos && anchor < b.pos + b.node.nodeSize);
+            const headInfo = blocks.find(b => head >= b.pos && head < b.pos + b.node.nodeSize);
+            const anchorOff = anchorInfo ? anchor - anchorInfo.pos : anchor;
+            const headOff = headInfo ? head - headInfo.pos : head;
+
             curr.doc.descendants((node, pos) => {
                 if (pos === 0 || node.type.name === "page") {
                     return true;                      // skip doc and page nodes but traverse inside them
@@ -66,12 +74,18 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             }
             const newDoc = schema.nodes.doc.create(null, pages);
             
+            const posMap = new Map<ProseMirrorNode, number>();
+                newDoc.descendants((node, pos) => {
+                posMap.set(node, pos);
+            });
+            const anchorPos = anchorInfo ? posMap.get(anchorInfo.node)! + anchorOff : anchor;
+            const headPos = headInfo ? posMap.get(headInfo.node)! + headOff : head;
+
             if (curr.doc.eq(newDoc)) {
                 return null;
             }
             const tr = curr.tr.replaceWith(0, curr.doc.content.size, newDoc.content);
-            const mappedSel = curr.selection.map(tr.doc, tr.mapping);
-            tr.setSelection(mappedSel);
+            tr.setSelection(TextSelection.create(tr.doc, anchorPos, headPos));
             return tr;
         },
       }),
