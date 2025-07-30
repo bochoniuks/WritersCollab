@@ -700,61 +700,10 @@ body.excalidraw-cursor-resize * {
     outline: none;                /* ensure no focus ring */
   }
 
-  /* Inherit typography from container for block elements */
-  // .excalidraw-wysiwyg.inherit-styles .ProseMirror h1,
-  // .excalidraw-wysiwyg.inherit-styles .ProseMirror h2,
-  // .excalidraw-wysiwyg.inherit-styles .ProseMirror h3,
-  // .excalidraw-wysiwyg.inherit-styles .ProseMirror h4,
-  // .excalidraw-wysiwyg.inherit-styles .ProseMirror h5,
-  // .excalidraw-wysiwyg.inherit-styles .ProseMirror h6,
-  // .excalidraw-wysiwyg.inherit-styles .ProseMirror p,
-  // .excalidraw-wysiwyg.inherit-styles .ProseMirror ul,
-  // .excalidraw-wysiwyg.inherit-styles .ProseMirror ol,
-  // .excalidraw-wysiwyg.inherit-styles .ProseMirror blockquote,
-  // .excalidraw-wysiwyg.inherit-styles .ProseMirror li {
-  //   font-family: inherit;
-  //   font-size: inherit;
-  //   font-weight: inherit;
-  //   line-height: inherit;
-  //   margin-top: inherit;
-  //   margin-bottom: inherit;
-  // }
 
   .excalidraw-wysiwyg .ProseMirror p {
     margin-block-start: 0;
     margin-block-end: 0;
-  }
-
-  .excalidraw-wysiwyg .page-break {
-    display: block;
-    border: none;
-    margin: 20px 0;
-    height: 20px;
-  }
-
-  .excalidraw-wysiwyg .page-break .page-number {
-    position: absolute;
-    right: 0;
-    top: -10px;
-    font-size: 12px;
-    color: #666;
-    background: white;
-    padding: 0 4px;
-  }
-
-  .excalidraw-wysiwyg .page-border-layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  .excalidraw-wysiwyg .page-border {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    box-sizing: border-box;
-    border: 1px solid #e0e0e0;
-    background: none;
   }
   
   .excalidraw-wysiwyg.scratchpad-wysiwyg .page {
@@ -771,29 +720,6 @@ body.excalidraw-cursor-resize * {
     z-index: var(--zIndex-layerUI);
   }
 
-  .excalidraw .scratchpad-wrapper {
-    position: absolute;
-    will-change: transform;
-  }
-
-  .excalidraw .scratchpad-wrapper .scratchpad-header {
-    position: absolute;
-    top: -20px;
-    left: 0;
-  }
-
-  .excalidraw .scratchpad-wrapper .scratchpad-header--compact .scratchpad-label,
-  .excalidraw .scratchpad-wrapper .scratchpad-header--compact .App-toolbar__divider {
-    display: none;
-  }
-
-  .excalidraw .scratchpad-wrapper .scratchpad-header input {
-    margin-left: 5px;
-    background: var(--color-canvas-bg);
-    border: none;
-    box-shadow: inset 0 0 0 1px var(--color-primary);
-    min-width: 20ch;
-  }
 
   .excalidraw .scratchpad-label {
     margin-left: 5px;

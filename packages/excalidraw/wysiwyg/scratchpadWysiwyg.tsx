@@ -421,18 +421,6 @@ export const scratchpadWysiwyg = ({
     }
   };
 
-  
-  // const wrapper = document.createElement("div");
-  // wrapper.classList.add("scratchpad-wrapper");
-  // Object.assign(wrapper.style, {
-  //   position: "absolute",
-  //   left: "0",
-  //   top: "0",
-  //   // transform: `translate(${getViewportCoords(element.x, element.y)[0]}px,
-  //   //   ${getViewportCoords(element.x, element.y)[1]}px)`,
-  //   zIndex: "var(--zIndex-wysiwyg)",
-  // });
-
 
   const editable = document.createElement("div");
   editable.id = "editable";
