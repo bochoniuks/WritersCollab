@@ -31,13 +31,17 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             if (!shouldReflow) {
                 return null;
             }
+
             const heightData =
                 heightTrackingPluginKey.getState(curr) as HeightData;
             const { schema } = curr;
             const blocks: Array<{ node: any; pos: number }> = [];
             curr.doc.descendants((node, pos) => {
+                if (pos === 0) {
+                    return;                // ignore the root document node
+                }
                 if (node.type.name !== "page") {
-                blocks.push({ node, pos });
+                    blocks.push({ node, pos });
                 }
             });
 
@@ -48,12 +52,12 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             for (const { node } of blocks) {
                 const h = heightData?.get(node) ?? 0;
                 if (accum + h > pageHeight && content.length) {
-                pages.push(schema.nodes.page.create(null, content));
-                content = [node];
-                accum = h;
+                    pages.push(schema.nodes.page.create(null, content));
+                    content = [node];
+                    accum = h;
                 } else {
-                content.push(node);
-                accum += h;
+                    content.push(node);
+                    accum += h;
                 }
             }
             if (content.length) {

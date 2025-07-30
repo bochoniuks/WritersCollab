@@ -582,6 +582,7 @@ export const scratchpadWysiwyg = ({
         if (onChange) {
           onChange(doc);
         }
+        console.log(doc)
         changeHistory.push({ from: prevDoc, to: doc, timestamp: Date.now() });
         prevDoc = doc;
         updateWysiwygStyle();
