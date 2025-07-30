@@ -710,6 +710,8 @@ body.excalidraw-cursor-resize * {
     overflow-y: var(--page-overflow, auto);
     overflow-x: hidden;
     padding: var(--page-padding);
+    border: 1px solid var(--page-border-color, #e0e0e0);
+    margin-bottom: var(--page-gap, 40px);
   }
 
   .excalidraw .scratchpad-config-toolbar {

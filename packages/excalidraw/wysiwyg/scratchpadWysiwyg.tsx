@@ -22,6 +22,8 @@ import {
   getVerticalOffset,
   FONT_FAMILY,
   SCRATCHPAD_PAGE_SIZES,
+  SCRATCHPAD_PAGE_BORDER_COLOR,
+  SCRATCHPAD_PAGE_GAP,
 } from "@excalidraw/common";
 
 import {
@@ -496,6 +498,8 @@ export const scratchpadWysiwyg = ({
       ? "visible"
       : "auto",
   );
+  editable.style.setProperty("--page-border-color", SCRATCHPAD_PAGE_BORDER_COLOR);
+  editable.style.setProperty("--page-gap", `${SCRATCHPAD_PAGE_GAP}px`);
 
 
   updateWysiwygStyle();

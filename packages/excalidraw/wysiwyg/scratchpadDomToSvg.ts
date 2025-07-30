@@ -1,5 +1,5 @@
 import html2canvas from "html2canvas";
-import { SCRATCHPAD_PAGE_SIZES, getFontString } from "@excalidraw/common";
+import { SCRATCHPAD_PAGE_BORDER_COLOR, SCRATCHPAD_PAGE_GAP, SCRATCHPAD_PAGE_SIZES, getFontString } from "@excalidraw/common";
 import type { ExcalidrawScratchpadElement } from "@excalidraw/element/types";
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
@@ -52,6 +52,8 @@ export const generateScratchpadCanvas = async (
     font: getFontString({ fontFamily: element.fontFamily, fontSize: element.fontSize }),
     color: element.strokeColor,
     background: "transparent",
+    "--page-border-color": SCRATCHPAD_PAGE_BORDER_COLOR,
+    "--page-gap": `${SCRATCHPAD_PAGE_GAP}px`,
   });
 
   const editor = new Editor({
