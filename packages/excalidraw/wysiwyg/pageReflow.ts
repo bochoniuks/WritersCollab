@@ -36,7 +36,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             const heightData =
                 heightTrackingPluginKey.getState(curr) as HeightData;
             const { schema } = curr;
-            const blocks: Array<{ node: any; pos: number }> = [];
+            const blocks: Array<{ node: any; pos: number; listId?: string }> = [];
 
             const { anchor, head } = curr.selection;
             const anchorInfo = blocks.find(b => anchor >= b.pos && anchor < b.pos + b.node.nodeSize);
@@ -48,6 +48,13 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 if (pos === 0 || node.type.name === "page") {
                     return true;                      // skip doc and page nodes but traverse inside them
                 }
+                if (node.type.name === "bulletList") {
+                    const id = node.attrs.listId;
+                    node.forEach((li, offset) => {
+                    blocks.push({ node: li, pos: pos + offset + 1, listId: id });
+                    });
+                    return false;                   // prevent pushing the list node itself
+                }
                 if (node.isBlock) {                   // collect only block-level content
                     blocks.push({ node, pos });
                     return false;                     // no need to visit inline children
@@ -57,9 +64,30 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             const pages: any[] = [];
             let accum = 0;
             let content: any[] = [];
+            let currentList: ProseMirrorNode[] = [];   // <— add
+            let lastListId: string | undefined;        // <— add
 
-            for (const { node } of blocks) {
+            for (const { node, listId } of blocks) {
                 const h = heightData?.get(node) ?? 0;
+
+                if (listId) {  // list item
+                    if (accum + h > pageHeight && currentList.length) {
+                    content.push(schema.nodes.bulletList.create({ listId }, currentList));
+                    pages.push(schema.nodes.page.create(null, content));
+                    content = [];
+                    currentList = [];
+                    accum = 0;
+                    }
+                    currentList.push(node);
+                    accum += h;
+                    continue;
+                }
+
+                if (currentList.length) {
+                    content.push(schema.nodes.bulletList.create({ listId: lastListId }, currentList));
+                    currentList = [];
+                }
+
                 if (accum + h > pageHeight && content.length) {
                     pages.push(schema.nodes.page.create(null, content));
                     content = [node];
@@ -67,6 +95,10 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 } else {
                     content.push(node);
                     accum += h;
+                }
+
+                if (currentList.length) {
+                    content.push(schema.nodes.bulletList.create({ listId: lastListId }, currentList));
                 }
             }
             if (content.length) {

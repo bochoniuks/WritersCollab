@@ -120,6 +120,7 @@ import { HeightTracking, runHeightTracking } from "./heightTrackingPlugin";
 import { Page } from "./page";
 import { PageReflow, runPageReflow } from "./pageReflow";
 import { DocumentWithPages } from "./documentWithPages";
+import { PaginatedBulletList } from "./bulletList";
 // apply `mark` to all text nodes inside `slice`
 function addMarkToSlice(slice: Slice, mark: Mark): Slice {
   const map = (fragment: Fragment): Fragment => {
@@ -539,7 +540,8 @@ export const scratchpadWysiwyg = ({
     const ed = useEditor({
       extensions: [
           DocumentWithPages,
-          StarterKit.configure({ document: false }),
+          StarterKit.configure({ document: false, bulletList: false }),
+          PaginatedBulletList,
           TextStyle,
           Color,
           FontFamily,
