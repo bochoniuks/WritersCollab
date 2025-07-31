@@ -73,12 +73,13 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 const h = heightData?.get(node) ?? 0;
 
                 if (listId) {  // list item
+                    lastListId = listId;  
                     if (accum + h > pageHeight && currentList.length) {
-                    content.push(schema.nodes.bulletList.create({ listId }, currentList));
-                    pages.push(schema.nodes.page.create(null, content));
-                    content = [];
-                    currentList = [];
-                    accum = 0;
+                        content.push(schema.nodes.bulletList.create({ listId }, currentList));
+                        pages.push(schema.nodes.page.create(null, content));
+                        content = [];
+                        currentList = [];
+                        accum = 0;
                     }
                     currentList.push(node);
                     accum += h;
@@ -103,6 +104,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                     content.push(schema.nodes.bulletList.create({ listId: lastListId }, currentList));
                 }
             }
+            
             if (content.length) {
                 pages.push(schema.nodes.page.create(null, content));
             }

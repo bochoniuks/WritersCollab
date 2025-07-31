@@ -50,7 +50,7 @@ const collectHeights = (
     });
     console.log(nodes)
     for (const { node, dom } of nodes) {
-        heights.set(node, dom.offsetHeight);
+        heights.set(node, dom.getBoundingClientRect().height);
     }
 
     return heights;

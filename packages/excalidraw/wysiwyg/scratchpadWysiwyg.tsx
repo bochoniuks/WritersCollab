@@ -598,7 +598,7 @@ export const scratchpadWysiwyg = ({
         updateWysiwygStyle();
         refreshPageElement();
       },
-    }, [element.paginationEnabled, element.pageSize],);
+    }, [element.paginationEnabled, element.pageSize, element.margin],);
 
     useEffect(() => {
       if (ed) {
