@@ -229,9 +229,7 @@ export const scratchpadWysiwyg = ({
             ? SCRATCHPAD_PAGE_SIZES[updatedElement.pageSize]
             : { width: updatedElement.width, height: updatedElement.height };
 
-        // NEW ↓
-        editable.style.setProperty("--page-width", `${baseSize.width}px`);
-        editable.style.setProperty("--page-height", `${baseSize.height}px`);
+
 
         const contentWidth =
           baseSize.width - updatedElement.margin.left - updatedElement.margin.right;
