@@ -39,10 +39,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             const blocks: Array<{ node: any; pos: number; listId?: string }> = [];
 
             const { anchor, head } = curr.selection;
-            const anchorInfo = blocks.find(b => anchor >= b.pos && anchor < b.pos + b.node.nodeSize);
-            const headInfo = blocks.find(b => head >= b.pos && head < b.pos + b.node.nodeSize);
-            const anchorOff = anchorInfo ? anchor - anchorInfo.pos : anchor;
-            const headOff = headInfo ? head - headInfo.pos : head;
+            
 
             curr.doc.descendants((node, pos) => {
                 if (pos === 0 || node.type.name === "page") {
@@ -60,6 +57,11 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                     return false;                     // no need to visit inline children
                 }
             });
+
+            const anchorInfo = blocks.find(b => anchor >= b.pos && anchor < b.pos + b.node.nodeSize);
+            const headInfo = blocks.find(b => head >= b.pos && head < b.pos + b.node.nodeSize);
+            const anchorOff = anchorInfo ? anchor - anchorInfo.pos : anchor;
+            const headOff = headInfo ? head - headInfo.pos : head;
 
             const pages: any[] = [];
             let accum = 0;
