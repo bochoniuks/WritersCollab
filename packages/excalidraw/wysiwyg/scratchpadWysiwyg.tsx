@@ -229,6 +229,10 @@ export const scratchpadWysiwyg = ({
             ? SCRATCHPAD_PAGE_SIZES[updatedElement.pageSize]
             : { width: updatedElement.width, height: updatedElement.height };
 
+        // NEW ↓
+        editable.style.setProperty("--page-width", `${baseSize.width}px`);
+        editable.style.setProperty("--page-height", `${baseSize.height}px`);
+
         const contentWidth =
           baseSize.width - updatedElement.margin.left - updatedElement.margin.right;
         const contentHeight =
@@ -488,6 +492,10 @@ export const scratchpadWysiwyg = ({
     paddingLeft: element.pageSize ? `${element.margin.left}px` : "0",
   });
 
+  const pageSize = element.pageSize
+          ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
+          : null;
+
   editable.style.setProperty(
     "--page-padding",
     `${element.margin.top}px ${element.margin.right}px ` +
@@ -501,6 +509,8 @@ export const scratchpadWysiwyg = ({
   );
   editable.style.setProperty("--page-border-color", SCRATCHPAD_PAGE_BORDER_COLOR);
   editable.style.setProperty("--page-gap", `${SCRATCHPAD_PAGE_GAP}px`);
+  editable.style.setProperty("--page-width", `${pageSize?.width}px`);
+  editable.style.setProperty("--page-height", `${pageSize?.height}px`);
 
 
   updateWysiwygStyle();
