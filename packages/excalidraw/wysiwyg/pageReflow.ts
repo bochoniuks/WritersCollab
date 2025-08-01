@@ -48,7 +48,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 if (node.type.name === "bulletList") {
                     const id = node.attrs.listId;
                     node.forEach((li, offset) => {
-                    blocks.push({ node: li, pos: pos + offset + 1, listId: id });
+                        blocks.push({ node: li, pos: pos + offset + 1, listId: id });
                     });
                     return false;                   // prevent pushing the list node itself
                 }
@@ -68,43 +68,45 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             let content: any[] = [];
             let currentList: ProseMirrorNode[] = [];   // <— add
             let lastListId: string | undefined;        // <— add
-
+            let pageCount = 1;
             for (const { node, listId } of blocks) {
                 const h = heightData?.get(node) ?? 0;
+                console.log(node)
 
-                if (listId) {  // list item
-                    lastListId = listId;  
-                    if (accum + h > pageHeight && currentList.length) {
-                        content.push(schema.nodes.bulletList.create({ listId }, currentList));
-                        pages.push(schema.nodes.page.create(null, content));
-                        content = [];
-                        currentList = [];
-                        accum = 0;
-                    }
-                    currentList.push(node);
-                    accum += h;
-                    continue;
-                }
+                // if (listId) {  // list item
+                //     lastListId = listId;  
+                //     if (accum + h > pageHeight && currentList.length) {
+                //         content.push(schema.nodes.bulletList.create({ listId }, currentList));
+                //         pages.push(schema.nodes.page.create(null, content));
+                //         console.log("Page: ", accum)
+                //         content = [];
+                //         currentList = [];
+                //         accum = 0;
+                //     }
+                //     currentList.push(node);
+                //     accum += h;
+                //     continue;
+                // }
 
-                if (currentList.length) {
-                    content.push(schema.nodes.bulletList.create({ listId: lastListId }, currentList));
-                    currentList = [];
-                }
+                // if (currentList.length) {
+                //     content.push(schema.nodes.bulletList.create({ listId: lastListId }, currentList));
+                //     currentList = [];
+                // }
 
                 if (accum + h > pageHeight && content.length) {
+                    console.log("accum: ",accum, "pageHeight: ",pageHeight)
                     pages.push(schema.nodes.page.create(null, content));
+                    console.log("Page Closed: ", pageCount, " - ", accum)
+                    pageCount += 1;
                     content = [node];
                     accum = h;
                 } else {
                     content.push(node);
                     accum += h;
-                }
-
-                if (currentList.length) {
-                    content.push(schema.nodes.bulletList.create({ listId: lastListId }, currentList));
+                    console.log("Page: ", pageCount, " - ", accum, " - [",h,"]")
                 }
             }
-            
+
             if (content.length) {
                 pages.push(schema.nodes.page.create(null, content));
             }

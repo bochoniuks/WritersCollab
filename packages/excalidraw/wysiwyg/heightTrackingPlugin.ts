@@ -50,7 +50,10 @@ const collectHeights = (
     });
     console.log(nodes)
     for (const { node, dom } of nodes) {
-        heights.set(node, dom.getBoundingClientRect().height);
+        const clientRec = dom.getBoundingClientRect()
+        console.log(dom)
+        console.log(clientRec.width, clientRec.height)
+        heights.set(node, clientRec.height);
     }
 
     return heights;
@@ -96,7 +99,9 @@ export const HeightTracking = Extension.create({
                         };
                         const newEnd = diffEnd.a;
 
-                        const heights = collectHeights(view, diffStart, newEnd);
+                        const changedHeights = collectHeights(view, diffStart, newEnd);
+                        const heights = new Map(prevHeights);
+                        changedHeights.forEach((h, n) => heights.set(n, h));
 
                         if (!areHeightsEqual(prevHeights, heights)) {
                             view.dispatch(
