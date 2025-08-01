@@ -54,9 +54,14 @@ export const generateScratchpadCanvas = async (
     zIndex: -10
   });
 
+  const firstPageDoc =
+    element.tiptapDoc.content && element.tiptapDoc.content.length > 0
+      ? { ...element.tiptapDoc, content: [element.tiptapDoc.content[0]] }
+      : element.tiptapDoc;
+
   const editor = new Editor({
     extensions: getScratchpadExtensions(element, { maxPages: 1 }),
-    content: element.tiptapDoc,
+    content: firstPageDoc,
   });
 
     await new Promise((r) => requestAnimationFrame(r));
