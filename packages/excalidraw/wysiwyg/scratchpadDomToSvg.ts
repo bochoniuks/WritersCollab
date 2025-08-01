@@ -17,6 +17,7 @@ import { Page } from "./page";
 import { PaginatedBulletList } from "./bulletList";
 import { PageReflow } from "./pageReflow";
 import { createScratchpadContainer, getScratchpadExtensions } from "./scratchpadEditor";
+import { zIndex } from "html2canvas/dist/types/css/property-descriptors/z-index";
 
 export const loadCanvasFromSnapshot = async (
   element: ExcalidrawScratchpadElement,
@@ -46,25 +47,26 @@ export const generateScratchpadCanvas = async (
   const wrapper = createScratchpadContainer(element);
   Object.assign(wrapper.style, {
     position: "absolute",
-    left: "0",
-    top: "0",
+    left: "-9999px",
+    top: "-9999px",
     width: `${size.width}px`,
     height: `${size.height}px`,
+    zIndex: -10
   });
 
   const editor = new Editor({
     extensions: getScratchpadExtensions(element),
     content: element.tiptapDoc,
   });
-    
-  
-
 
     await new Promise((r) => requestAnimationFrame(r));
 
     wrapper.innerHTML = editor.getHTML();
     editor.destroy();
-    document.body.appendChild(wrapper);
+    const container =
+      document.querySelector<HTMLDivElement>(".excalidraw-textEditorContainer") ??
+      document.body;
+    container.appendChild(wrapper);
     
     // 
     const canvas = (element.canvasCache instanceof HTMLCanvasElement) ? element.canvasCache : document.createElement("canvas");
@@ -76,7 +78,7 @@ export const generateScratchpadCanvas = async (
         useCORS: true,
         canvas,
     });
-    // wrapper.remove();
+    wrapper.remove();
     element.canvasCache = result;
     element.canvasSnapshot = result.toDataURL();
     console.log("New Scratchpad Canvas captured")
