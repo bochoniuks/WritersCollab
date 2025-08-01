@@ -55,7 +55,7 @@ export const generateScratchpadCanvas = async (
   });
 
   const editor = new Editor({
-    extensions: getScratchpadExtensions(element),
+    extensions: getScratchpadExtensions(element, { maxPages: 1 }),
     content: element.tiptapDoc,
   });
 

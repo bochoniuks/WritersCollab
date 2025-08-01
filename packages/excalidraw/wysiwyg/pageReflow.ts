@@ -6,6 +6,7 @@ import type { Node as ProseMirrorNode } from "prosemirror-model";
 
 export interface PageReflowOptions {
   pageHeight: number;
+  maxPages?: number;
 }
 
 export const runPageReflow = (view: EditorView) => {
@@ -18,10 +19,11 @@ export const pageReflowKey = new PluginKey("pageReflow");
 export const PageReflow = Extension.create<PageReflowOptions>({
   name: "pageReflow",
   addOptions() {
-    return { pageHeight: 0 };
+    return { pageHeight: 0, maxPages: Infinity };
   },
   addProseMirrorPlugins() {
     const pageHeight = this.options.pageHeight;
+    const maxPages = this.options.maxPages ?? Infinity;
     return [
       new Plugin({
         key: pageReflowKey,
@@ -77,6 +79,9 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                         content.push(schema.nodes.bulletList.create({ listId }, currentList));
                         pages.push(schema.nodes.page.create(null, content));
                         console.log("Page: ", accum)
+                        if (pages.length >= maxPages) {
+                            break;
+                        }
                         content = [];
                         currentList = [];
                         accum = 0;
@@ -95,6 +100,9 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                     console.log("accum: ",accum, "pageHeight: ",pageHeight)
                     pages.push(schema.nodes.page.create(null, content));
                     console.log("Page Closed: ", pageCount, " - ", accum)
+                    if (pages.length >= maxPages) {
+                        break;
+                    }
                     pageCount += 1;
                     content = [node];
                     accum = h;
@@ -105,7 +113,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 }
             }
 
-            if (content.length) {
+            if (pages.length < maxPages && content.length) {
                 pages.push(schema.nodes.page.create(null, content));
             }
             const newDoc = schema.nodes.doc.create(null, pages);

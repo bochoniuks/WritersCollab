@@ -24,6 +24,7 @@ import { PaginatedBulletList } from "./bulletList";
  */
 export const getScratchpadExtensions = (
   element: ExcalidrawScratchpadElement,
+  options: { maxPages?: number } = {},
 ) => {
   const pageSize = element.pageSize
     ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
@@ -42,6 +43,7 @@ export const getScratchpadExtensions = (
     Page,
     PageReflow.configure({
       pageHeight: pageSize.height - element.margin.top - element.margin.bottom,
+      maxPages: options.maxPages,
     }),
   ];
 };
