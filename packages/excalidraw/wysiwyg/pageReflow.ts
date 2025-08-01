@@ -26,9 +26,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
       new Plugin({
         key: pageReflowKey,
         appendTransaction(trs, prev, curr) {
-            const shouldReflow =
-                trs.some(tr => tr.docChanged) ||
-                trs.some(tr => tr.getMeta(pageReflowKey));
+            const shouldReflow = trs.some(tr => tr.getMeta(pageReflowKey));
             if (!shouldReflow) {
                 return null;
             }

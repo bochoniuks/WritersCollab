@@ -2,6 +2,7 @@ import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import type { Node as ProseMirrorNode } from "prosemirror-model";
+import { runPageReflow } from "./pageReflow";
 
 export type HeightData = Map<ProseMirrorNode, number>;
 
@@ -107,6 +108,7 @@ export const HeightTracking = Extension.create({
                             view.dispatch(
                                 view.state.tr.setMeta(heightTrackingPluginKey, heights),
                             );
+                            runPageReflow(view);
                         }
                     },
                 };
