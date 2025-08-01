@@ -74,7 +74,8 @@ export const generateScratchpadCanvas = async (
     container.appendChild(wrapper);
     
     // 
-    const canvas = (element.canvasCache instanceof HTMLCanvasElement) ? element.canvasCache : document.createElement("canvas");
+    // const canvas = (element.canvasCache instanceof HTMLCanvasElement) ? element.canvasCache : document.createElement("canvas");
+    const canvas = document.createElement("canvas");
     canvas.width = size.width;
     canvas.height = size.height;
 
