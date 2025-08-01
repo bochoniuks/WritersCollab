@@ -494,10 +494,10 @@ export const scratchpadWysiwyg = ({
       onCreate: ({ editor: ed }) => {
         // page wrapper exists only after the editor mounts
         refreshPageElement();
-        runHeightTracking(ed.view);
-        if (element.paginationEnabled) {
-          runPageReflow(ed.view);
-        }
+        // runHeightTracking(ed.view);
+        // if (element.paginationEnabled) {
+        //   runPageReflow(ed.view);
+        // }
       },
       onUpdate: ({ editor: ed }) => {
         let doc = ed.getJSON();
