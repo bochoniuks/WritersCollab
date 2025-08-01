@@ -16,6 +16,7 @@ import { DocumentWithPages } from "./documentWithPages";
 import { Page } from "./page";
 import { PaginatedBulletList } from "./bulletList";
 import { PageReflow } from "./pageReflow";
+import { createScratchpadContainer, getScratchpadExtensions } from "./scratchpadEditor";
 
 export const loadCanvasFromSnapshot = async (
   element: ExcalidrawScratchpadElement,
@@ -42,38 +43,22 @@ export const generateScratchpadCanvas = async (
     ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
     : { width: element.width, height: element.height };
 
-  const wrapper = document.createElement("div");
-
+  const wrapper = createScratchpadContainer(element);
   Object.assign(wrapper.style, {
     position: "absolute",
     left: "0",
     top: "0",
     width: `${size.width}px`,
     height: `${size.height}px`,
-    overflow: "hidden",
-    // padding: `${element.margin.top}px ${element.margin.right}px ${element.margin.bottom}px ${element.margin.left}px`,
-    font: getFontString({ fontFamily: element.fontFamily, fontSize: element.fontSize }),
-    color: element.strokeColor,
-    background: "transparent",
-    // "--page-border-color": SCRATCHPAD_PAGE_BORDER_COLOR,
-    // "--page-gap": `${SCRATCHPAD_PAGE_GAP}px`,
   });
 
   const editor = new Editor({
-     extensions: [
-      DocumentWithPages,
-          StarterKit.configure({ document: false, bulletList: false }),
-          PaginatedBulletList,
-          TextStyle,
-          Color,
-          FontFamily,
-          FontSize,
-          Underline,
-          HeightTracking,
-          Page,
-          PageReflow.configure({ pageHeight: size.height - element.margin.top - element.margin.bottom }),
-    ],
-    content: element.tiptapDoc });
+    extensions: getScratchpadExtensions(element),
+    content: element.tiptapDoc,
+  });
+    
+  
+
 
     await new Promise((r) => requestAnimationFrame(r));
 
@@ -91,7 +76,7 @@ export const generateScratchpadCanvas = async (
         useCORS: true,
         canvas,
     });
-    wrapper.remove();
+    // wrapper.remove();
     element.canvasCache = result;
     element.canvasSnapshot = result.toDataURL();
     console.log("New Scratchpad Canvas captured")

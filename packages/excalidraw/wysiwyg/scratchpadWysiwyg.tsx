@@ -121,6 +121,7 @@ import { Page } from "./page";
 import { PageReflow, runPageReflow } from "./pageReflow";
 import { DocumentWithPages } from "./documentWithPages";
 import { PaginatedBulletList } from "./bulletList";
+import { createScratchpadContainer, getScratchpadExtensions } from "./scratchpadEditor";
 // apply `mark` to all text nodes inside `slice`
 function addMarkToSlice(slice: Slice, mark: Mark): Slice {
   const map = (fragment: Fragment): Fragment => {
@@ -427,16 +428,7 @@ export const scratchpadWysiwyg = ({
   };
 
 
-  const editable = document.createElement("div");
-  editable.id = "editable";
-  editable.dir = "auto";
-  editable.tabIndex = 0;
-  editable.dataset.type = "wysiwyg";
-  editable.classList.add(
-    "excalidraw-wysiwyg",
-    "inherit-styles",
-    "scratchpad-wysiwyg",
-  );
+
 
 
   let whiteSpace = "pre";
@@ -452,64 +444,13 @@ export const scratchpadWysiwyg = ({
     fontSize: element.fontSize,
   });
 
-  Object.assign(editable.style, {
-    position: "relative",
-    left: "0px",
-    top: "0px",
-    // display: "inline-block",
-    display: "inline-table",
-    minHeight: "1em",
-    backfaceVisibility: "hidden",
-    margin: 0,
-    // padding: 0,
-    border: 0,
-    outline: 0,
-    resize: "none",
-    overflowX: "hidden",
-    overflowY: app.state.scratchpadViewMode === "ideation"
-      ? "visible"
-      : "auto",
-    font,
-    lineHeight,
-    // must be specified because in dark mode canvas creates a stacking context
-    zIndex: "var(--zIndex-wysiwyg)",
-    wordBreak,
-    // prevent line wrapping (`whitespace: nowrap` doesn't work on FF)
-    whiteSpace,
-    // background: element.backgroundImage
-    //   ? `url(${element.backgroundImage}) no-repeat center / 100% 100%`
-    //   : "transparent",
-    background: "transparent",
-    overflowWrap: "break-word",
-    boxSizing: "content-box",
-    // top: `${getViewportCoords(element.x, element.y)[1]}px`,
-    transform: "none",
-    // paddingTop: element.pageSize ? `${element.margin.top}px` : "0",
-    // paddingRight: element.pageSize ? `${element.margin.right}px` : "0",
-    // paddingBottom: element.pageSize ? `${element.margin.bottom}px` : "0",
-    // paddingLeft: element.pageSize ? `${element.margin.left}px` : "0",
-  });
-
-  const pageSize = element.pageSize
-          ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
-          : null;
-
-  editable.style.setProperty(
-    "--page-padding",
-    `${element.margin.top}px ${element.margin.right}px ` +
-    `${element.margin.bottom}px ${element.margin.left}px`
+  const editable = createScratchpadContainer(
+    element,
+    app.state.scratchpadViewMode,
   );
-  editable.style.setProperty(
-    "--page-overflow",
-    element.paginationEnabled || app.state.scratchpadViewMode === "ideation"
-      ? "visible"
-      : "auto",
-  );
-  editable.style.setProperty("--page-border-color", SCRATCHPAD_PAGE_BORDER_COLOR);
-  editable.style.setProperty("--page-gap", `${SCRATCHPAD_PAGE_GAP}px`);
-  editable.style.setProperty("--page-width", `${pageSize?.width}px`);
-  editable.style.setProperty("--page-height", `${pageSize?.height}px`);
+  editable.id = "editable";
 
+ 
 
   updateWysiwygStyle();
 
@@ -528,36 +469,8 @@ export const scratchpadWysiwyg = ({
       ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
       : { width: element.width, height: element.height };
     
-    // const pageExtensions = [
-    //   ...(element.paginationEnabled
-    //     ? [
-    //         Pagination.configure({
-    //           pageHeight: pageSize.height,
-    //           pageWidth: pageSize.width,
-    //           pageMargin,
-    //         }),
-    //       ]
-    //     : []),
-      // PageWrapper.configure({ pageHeight: pageSize.height }),
-      // PageBreak,
-    // ];
-    const pageExtensions = [
-      Page,
-      PageReflow.configure({ pageHeight: pageSize.height - pageMargin.top - pageMargin.bottom }),
-    ];
     const ed = useEditor({
-      extensions: [
-          DocumentWithPages,
-          StarterKit.configure({ document: false, bulletList: false }),
-          PaginatedBulletList,
-          TextStyle,
-          Color,
-          FontFamily,
-          FontSize,
-          Underline,
-          HeightTracking,
-          ...pageExtensions,
-      ],
+      extensions: getScratchpadExtensions(element),
       content: prevDoc,
       editorProps: {
         handlePaste(view, event, slice) {
