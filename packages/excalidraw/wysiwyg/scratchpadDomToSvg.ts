@@ -14,6 +14,8 @@ import { loadHTMLImageElement } from "@excalidraw/element";
 import { DataURL } from "../types";
 import { DocumentWithPages } from "./documentWithPages";
 import { Page } from "./page";
+import { PaginatedBulletList } from "./bulletList";
+import { PageReflow } from "./pageReflow";
 
 export const loadCanvasFromSnapshot = async (
   element: ExcalidrawScratchpadElement,
@@ -41,40 +43,45 @@ export const generateScratchpadCanvas = async (
     : { width: element.width, height: element.height };
 
   const wrapper = document.createElement("div");
+
   Object.assign(wrapper.style, {
     position: "absolute",
-    left: "-9999px",
-    top: "-9999px",
+    left: "0",
+    top: "0",
     width: `${size.width}px`,
     height: `${size.height}px`,
     overflow: "hidden",
-    padding: `${element.margin.top}px ${element.margin.right}px ${element.margin.bottom}px ${element.margin.left}px`,
+    // padding: `${element.margin.top}px ${element.margin.right}px ${element.margin.bottom}px ${element.margin.left}px`,
     font: getFontString({ fontFamily: element.fontFamily, fontSize: element.fontSize }),
     color: element.strokeColor,
     background: "transparent",
-    "--page-border-color": SCRATCHPAD_PAGE_BORDER_COLOR,
-    "--page-gap": `${SCRATCHPAD_PAGE_GAP}px`,
+    // "--page-border-color": SCRATCHPAD_PAGE_BORDER_COLOR,
+    // "--page-gap": `${SCRATCHPAD_PAGE_GAP}px`,
   });
 
   const editor = new Editor({
      extensions: [
       DocumentWithPages,
-      StarterKit.configure({ document: false, hardBreak: false }),
-      TextStyle,
-      Color,
-      FontFamily,
-      FontSize,
-      StyledHardBreak,
-      Underline,
-      HeightTracking,
-      Page,
+          StarterKit.configure({ document: false, bulletList: false }),
+          PaginatedBulletList,
+          TextStyle,
+          Color,
+          FontFamily,
+          FontSize,
+          Underline,
+          HeightTracking,
+          Page,
+          PageReflow.configure({ pageHeight: size.height - element.margin.top - element.margin.bottom }),
     ],
     content: element.tiptapDoc });
+
+    await new Promise((r) => requestAnimationFrame(r));
 
     wrapper.innerHTML = editor.getHTML();
     editor.destroy();
     document.body.appendChild(wrapper);
     
+    // 
     const canvas = (element.canvasCache instanceof HTMLCanvasElement) ? element.canvasCache : document.createElement("canvas");
     canvas.width = size.width;
     canvas.height = size.height;
@@ -87,6 +94,7 @@ export const generateScratchpadCanvas = async (
     wrapper.remove();
     element.canvasCache = result;
     element.canvasSnapshot = result.toDataURL();
+    console.log("New Scratchpad Canvas captured")
     return result;
 };
 
