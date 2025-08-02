@@ -11,7 +11,6 @@ export interface PageReflowOptions {
 
 export const runPageReflow = (view: EditorView) => {
   // Triggers the PageReflow plugin manually
-  console.log("Trigger page reflow")
   view.dispatch(view.state.tr.setMeta(pageReflowKey, {}));
 };
 
@@ -72,16 +71,13 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             let pageCount = 1;
             for (const { node, listId } of blocks) {
                 const h = heightData?.get(node) ?? 0;
-                console.log(node)
 
                 if (listId) {  // list item
                     lastListId = listId;  
                     if (accum + h > pageHeight && currentList.length) {
                         content.push(schema.nodes.bulletList.create({ listId }, currentList));
                         pages.push(schema.nodes.page.create(null, content));
-                        console.log("Page: ", accum)
                         if (pages.length >= maxPages) {
-                            console.log("Breaking")
                             break;
                         }
                         content = [];
@@ -99,11 +95,8 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 }
 
                 if (accum + h > pageHeight && content.length) {
-                    console.log("accum: ",accum, "pageHeight: ",pageHeight)
                     pages.push(schema.nodes.page.create(null, content));
-                    console.log("Page Closed: ", pageCount, " - ", accum)
                     if (pages.length >= maxPages) {
-                        console.log("Breaking")
                         break;
                     }
                     pageCount += 1;
@@ -112,7 +105,6 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 } else {
                     content.push(node);
                     accum += h;
-                    console.log("Page: ", pageCount, " - ", accum, " - [",h,"]")
                 }
             }
 

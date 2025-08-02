@@ -1,5 +1,9 @@
-import { getVisibleElements } from "@excalidraw/element";
+import { getElementAbsoluteCoords, getVisibleElements, Scene } from "@excalidraw/element";
 import {
+  IDEATION_HORIZONTAL_SCROLL_FACTOR,
+  IDEATION_VERTICAL_SCROLL_MARGIN_RATIO,
+  MAX_ZOOM,
+  MIN_ZOOM,
   sceneCoordsToViewportCoords,
   viewportCoordsToSceneCoords,
 } from "@excalidraw/common";
@@ -11,6 +15,8 @@ import { getCommonBounds } from "@excalidraw/element";
 import type { ExcalidrawElement } from "@excalidraw/element/types";
 
 import type { AppState, Offsets, PointerCoords, Zoom } from "../types";
+import { getNormalizedZoom } from "./normalize";
+import { clamp } from "@excalidraw/math";
 
 const isOutsideViewPort = (appState: AppState, cords: Array<number>) => {
   const [x1, y1, x2, y2] = cords;
@@ -89,4 +95,68 @@ export const calculateScrollCenter = (
     viewportDimensions: { width: appState.width, height: appState.height },
     zoom: appState.zoom,
   });
+};
+
+export const updateIdeationScrollClamp = (
+  nextState: Partial<AppState>,
+  prevState: AppState,
+  scene: Scene,
+): Partial<AppState> => {
+  if (prevState.scratchpadViewMode !== "ideation" || !prevState.ideationElementId) {
+    return nextState;
+  }
+
+  const element = scene.getElement(prevState.ideationElementId);
+  if (!element) {
+    return nextState;
+  }
+
+  const elementsMap = scene.getElementsMapIncludingDeleted();
+  const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
+
+
+  const zoom = (nextState.zoom ?? prevState.zoom) as Zoom;
+  const height = nextState.height ?? prevState.height;
+  const width = nextState.width ?? prevState.width;
+
+  const minZoom = Math.max(MIN_ZOOM, height / (y2 - y1));
+  const clampedZoom = {
+    value: getNormalizedZoom(clamp(zoom.value, minZoom, MAX_ZOOM)),
+  };
+
+  const viewW = width / clampedZoom.value;
+  const viewH = height / clampedZoom.value;
+  const dx = (element.width * IDEATION_HORIZONTAL_SCROLL_FACTOR) / 2;
+  const dy = viewH * IDEATION_VERTICAL_SCROLL_MARGIN_RATIO;
+
+  let minScrollY = -(y2 - viewH) + dy;
+  let maxScrollY = -y1 + dy;
+  if (minScrollY > maxScrollY) {
+    const extra = (minScrollY - maxScrollY) / 2;
+    minScrollY -= extra;
+    maxScrollY += extra;
+  }
+
+  const minScrollX = -(x2 - viewW) - dx;
+  const maxScrollX = -x1 + dx;
+
+  let scrollX = nextState.scrollX ?? prevState.scrollX;
+  if (viewW > element.width * IDEATION_HORIZONTAL_SCROLL_FACTOR) {
+    scrollX = viewW / 2 - (x1 + x2) / 2;
+  } else {
+    scrollX = clamp(scrollX, minScrollX, maxScrollX);
+  }
+
+  const scrollY = clamp(
+    nextState.scrollY ?? prevState.scrollY,
+    minScrollY,
+    maxScrollY,
+  );
+
+  return {
+  ...nextState,
+    zoom: clampedZoom,
+    scrollX,
+    scrollY,
+  };
 };

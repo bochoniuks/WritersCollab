@@ -87,7 +87,7 @@ export const generateScratchpadCanvas = async (
     wrapper.remove();
     element.canvasCache = result;
     element.canvasSnapshot = result.toDataURL();
-    console.log("New Scratchpad Canvas captured")
+
     return result;
 };
 

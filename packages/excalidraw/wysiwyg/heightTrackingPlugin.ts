@@ -49,15 +49,11 @@ const collectHeights = (
             collect(node, pos);
         }
     });
-    console.trace("collectHeights call")
     
     for (const { node, dom } of nodes) {
         const clientRec = dom.getBoundingClientRect()
-        // console.log(dom)
-        // console.log(clientRec.width, clientRec.height)
         heights.set(node, clientRec.height);
     }
-    console.log(heights)
     return heights;
 };
 

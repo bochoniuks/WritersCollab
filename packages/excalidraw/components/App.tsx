@@ -111,7 +111,6 @@ import {
   MAX_ZOOM,
   IDEATION_HORIZONTAL_SCROLL_FACTOR,
   IDEATION_VERTICAL_SCROLL_MARGIN_RATIO,
-  MAX_IDEATION_VISIBLE_PAGES,
   DEFAULT_FONT_FAMILY,
   DEFAULT_SCRATCHPAD_PAGE_MARGIN,
 } from "@excalidraw/common";
@@ -552,7 +551,7 @@ import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
 import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 import { GROUP_FLAG_CONFIG } from "../groupFlagConfig";
-import { centerScrollOn } from "../scene/scroll";
+import { centerScrollOn, updateIdeationScrollClamp } from "../scene/scroll";
 import { ScratchpadToolbar } from "./ScratchpadToolbar";
 import { ScratchpadHeader } from "./ScratchpadHeader";
 import { generateScratchpadCanvas, loadCanvasFromSnapshot } from "../wysiwyg/scratchpadDomToSvg";
@@ -2370,11 +2369,10 @@ class App extends React.Component<AppProps, AppState> {
 
     const elementsMap = this.scene.getElementsMapIncludingDeleted();
     const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
+    
 
     const scratchpadHeight = y2 - y1;
-    const visibleHeight = size
-      ? Math.min(size.height * MAX_IDEATION_VISIBLE_PAGES, scratchpadHeight)
-      : scratchpadHeight;
+    const visibleHeight = scratchpadHeight;
 
     const minZoom = Math.max(MIN_ZOOM, this.state.height / visibleHeight);
     const zoomVal = clamp(
@@ -4189,58 +4187,17 @@ class App extends React.Component<AppProps, AppState> {
       const nextState =
         typeof state === "function" ? state(prevState, props) : state;
 
-      const partialNextState = nextState as Partial<AppState>;
-      const zoom = (partialNextState.zoom ?? prevState.zoom) as Zoom;
-
-      if (
-        prevState.scratchpadViewMode === "ideation" &&
-        prevState.ideationElementId
-      ) {
-        const el = this.scene.getElement(prevState.ideationElementId);
-        if (el) {
-          const map = this.scene.getElementsMapIncludingDeleted();
-          const [x1, y1, x2, y2] = getElementAbsoluteCoords(el, map);
-          const minZoom = Math.max(MIN_ZOOM, prevState.height / (y2 - y1));
-          // const zoom = (nextState?.zoom ?? prevState.zoom) as Zoom;
-          const clampedZoom = {
-            value: getNormalizedZoom(clamp(zoom.value, minZoom, MAX_ZOOM)),
-          };
-          const viewW = prevState.width / clampedZoom.value;
-          const viewH = prevState.height / clampedZoom.value;
-          const dx = (el.width * IDEATION_HORIZONTAL_SCROLL_FACTOR) / 2;
-          const dy = viewH * IDEATION_VERTICAL_SCROLL_MARGIN_RATIO;
-          let minScrollY = -(y2 - viewH) + dy;
-          let maxScrollY = -y1 + dy;
-          if (minScrollY > maxScrollY) {
-            // viewport taller than the scratchpad → center it
-            const extra = (minScrollY - maxScrollY) / 2;
-            minScrollY -= extra;
-            maxScrollY += extra;
-          }
-
-          const minScrollX = -(x2 - viewW) - dx;
-          const maxScrollX = -x1 + dx;
-
-          let nextScrollX = (partialNextState.scrollX ?? prevState.scrollX) as number;
-          if (viewW > el.width * IDEATION_HORIZONTAL_SCROLL_FACTOR) {
-            // viewport is wider than the allowed scroll width – keep the scratchpad centered
-            nextScrollX = viewW / 2 - (x1 + x2) / 2;
-          } else {
-            nextScrollX = clamp(nextScrollX, minScrollX, maxScrollX);
-          }
-          return {
-            ...nextState,
-            zoom: clampedZoom,
-            scrollX: nextScrollX,
-            scrollY: clamp(
-              (partialNextState.scrollY ?? prevState.scrollY) as number,
-              minScrollY,
-              maxScrollY,
-            ),
-          } as Pick<AppState, keyof AppState>;
-        }
+      if (!nextState) {
+        return nextState;
       }
-      return nextState as AppState | Pick<AppState, keyof AppState> | null;
+      const partialNextState = nextState as Partial<AppState>;
+      const clampedNextState = updateIdeationScrollClamp(
+        partialNextState,
+        prevState,
+        this.scene,
+      );
+
+      return clampedNextState as AppState | Pick<AppState, keyof AppState> | null;
     };
 
     this.setState(updater);
