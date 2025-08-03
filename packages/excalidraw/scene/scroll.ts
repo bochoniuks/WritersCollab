@@ -129,13 +129,19 @@ export const updateIdeationScrollClamp = (
   const dx = (element.width * IDEATION_HORIZONTAL_SCROLL_FACTOR) / 2;
   const dy = viewH * IDEATION_VERTICAL_SCROLL_MARGIN_RATIO;
 
-  let minScrollY = -(y2 - viewH) + dy;
+  let minScrollY = -(y2 - viewH) - dy;
   let maxScrollY = -y1 + dy;
   if (minScrollY > maxScrollY) {
     const extra = (minScrollY - maxScrollY) / 2;
     minScrollY -= extra;
     maxScrollY += extra;
   }
+
+  const scrollY = clamp(
+    nextState.scrollY ?? prevState.scrollY,
+    minScrollY,
+    maxScrollY,
+  );
 
   const minScrollX = -(x2 - viewW) - dx;
   const maxScrollX = -x1 + dx;
@@ -147,11 +153,7 @@ export const updateIdeationScrollClamp = (
     scrollX = clamp(scrollX, minScrollX, maxScrollX);
   }
 
-  const scrollY = clamp(
-    nextState.scrollY ?? prevState.scrollY,
-    minScrollY,
-    maxScrollY,
-  );
+
 
   return {
   ...nextState,

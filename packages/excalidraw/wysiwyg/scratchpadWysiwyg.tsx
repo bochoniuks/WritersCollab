@@ -290,7 +290,7 @@ export const scratchpadWysiwyg = ({
           // paddingBottom: updatedElement.pageSize ? `${updatedElement.margin.bottom}px` : "0",
           // paddingLeft: updatedElement.pageSize ? `${updatedElement.margin.left}px` : "0",
         });
-        app.scene.mutateElement(updatedElement, { x: coordX, y: coordY });
+        app.scene.mutateElement(updatedElement, { x: coordX, y: coordY, width, height });
       } 
     else if (updatedElement && isTextElement(updatedElement)) {
       const updatedTextElement = updatedElement;

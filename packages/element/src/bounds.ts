@@ -42,6 +42,7 @@ import {
   isBoundToContainer,
   isFreeDrawElement,
   isLinearElement,
+  isScratchpadElement,
   isTextElement,
 } from "./typeChecks";
 
@@ -63,6 +64,7 @@ import type {
   ExcalidrawFreeDrawElement,
   ExcalidrawLinearElement,
   ExcalidrawRectanguloidElement,
+  ExcalidrawScratchpadElement,
   ExcalidrawTextElementWithContainer,
   NonDeleted,
 } from "./types";
@@ -257,6 +259,32 @@ export const getElementAbsoluteCoords = (
         y + element.height / 2,
       ];
     }
+  } else if (isScratchpadElement(element)) {                   // NEW
+    const sp = element as ExcalidrawScratchpadElement;         // type helper
+    let width  = sp.width;
+    let height = sp.height;
+
+    if (typeof document !== "undefined") {
+        const editable = document.getElementById("editable");
+        if (editable) {
+          // editor DOM is mounted -> take live dimensions
+          width  = editable.offsetWidth;
+          height = editable.offsetHeight;
+        } else if (sp.canvasCache instanceof HTMLCanvasElement) {
+          // canvas snapshot rendered -> take canvas size
+          width  = sp.canvasCache.width;
+          height = sp.canvasCache.height;
+        }
+    }
+
+    return [
+      sp.x,
+      sp.y,
+      sp.x + width,
+      sp.y + height,
+      sp.x + width / 2,
+      sp.y
+    ];
   }
   return [
     element.x,
