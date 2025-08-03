@@ -79,14 +79,25 @@ export const ScratchpadHeader = ({
   const viewportX = vpX - appState.offsetLeft;
   const viewportY = vpY - appState.offsetTop;
 
-  const headerOffset = scratchpadViewMode !== "ideation" ? SCRATCHPAD_HEADER_OFFSET : SCRATCHPAD_HEADER_OFFSET+15
+
+  const editorMaxHeight =
+    scratchpadViewMode === "ideation"
+      ? (appState.height - viewportY) / appState.zoom.value
+      : 0;
+
+  const translateY =
+    scratchpadViewMode === "ideation" &&
+    element.height > editorMaxHeight &&
+    appState.zoom.value !== 1
+      ? (editorMaxHeight * (appState.zoom.value - 1)) / 2
+      : 0;
 
   const commonStyle = {
     position: "absolute",
     top: "0",
     left: "0",
     transform: `translate(${viewportX}px, ${
-      viewportY - headerOffset
+      viewportY + translateY - SCRATCHPAD_HEADER_OFFSET
     }px)`,
     zIndex: "var(--zIndex-canvasButtons)", // value 3
   } as const;
