@@ -79,14 +79,16 @@ export const ScratchpadHeader = ({
   const viewportX = vpX - appState.offsetLeft;
   const viewportY = vpY - appState.offsetTop;
 
+  const headerOffset = scratchpadViewMode !== "ideation" ? SCRATCHPAD_HEADER_OFFSET : SCRATCHPAD_HEADER_OFFSET+15
+
   const commonStyle = {
     position: "absolute",
     top: "0",
     left: "0",
     transform: `translate(${viewportX}px, ${
-      viewportY - SCRATCHPAD_HEADER_OFFSET
+      viewportY - headerOffset
     }px)`,
-    zIndex: "var(--zIndex-layerUI)",
+    zIndex: "var(--zIndex-canvasButtons)", // value 3
   } as const;
 
   const ideationBtnIcon =
