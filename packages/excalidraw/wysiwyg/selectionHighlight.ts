@@ -89,12 +89,16 @@ export const SelectionHighlight = Extension.create({
         },
         props: {
             decorations(state) {
-                return selectionHighlightPluginKey.getState(state).decoration;
+                return (
+                    selectionHighlightPluginKey.getState(state)?.decoration ??
+                    DecorationSet.empty
+                );
             },
             handleDOMEvents: {
                 blur: (view) => {
                     const pluginState = selectionHighlightPluginKey.getState(view.state);
                     const lastSelection = pluginState?.lastSelection;
+                    console.log(lastSelection)
                     if (lastSelection) {
                         const style = getSelectionStyles(view.dom as HTMLElement);
                         view.dispatch(
@@ -106,12 +110,14 @@ export const SelectionHighlight = Extension.create({
                     return false;
                 },
                 focus: (view) => {
+                    console.log("Focus Back")
                     const pluginState = selectionHighlightPluginKey.getState(view.state);
                     const storedSelection = pluginState?.storedSelection;
                     const tr = view.state.tr.setMeta(selectionHighlightPluginKey, { clear: true });
                     if (storedSelection) {
                         const { from, to } = storedSelection;
                         tr.setSelection(TextSelection.create(view.state.doc, from, to));
+                        console.log("Showing selection - ", from, to)
                     }
                     view.dispatch(tr);
                     return false;
