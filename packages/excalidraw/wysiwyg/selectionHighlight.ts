@@ -37,71 +37,77 @@ export const SelectionHighlight = Extension.create({
       new Plugin<SelectionHighlightState>({
         key: selectionHighlightPluginKey,
         state: {
-          init: () => ({
-                decoration: DecorationSet.empty,
-                storedSelection: null,
-                lastSelection: null,
-            }),
-          apply(tr, value) {
-            let { decoration, storedSelection, lastSelection } = value;
+            init: () => ({
+                    decoration: DecorationSet.empty,
+                    storedSelection: null,
+                    lastSelection: null,
+                }),
+            apply(tr, value) {
+                let { decoration, storedSelection, lastSelection } = value;
 
-            decoration = decoration.map(tr.mapping, tr.doc);
-            if (storedSelection) {
-            storedSelection = {
-                from: tr.mapping.map(storedSelection.from),
-                to: tr.mapping.map(storedSelection.to),
-            };
-            }
-            if (lastSelection) {
-            lastSelection = {
-                from: tr.mapping.map(lastSelection.from),
-                to: tr.mapping.map(lastSelection.to),
-            };
-            }
+                decoration = decoration.map(tr.mapping, tr.doc);
+                if (storedSelection) {
+                storedSelection = {
+                    from: tr.mapping.map(storedSelection.from),
+                    to: tr.mapping.map(storedSelection.to),
+                };
+                }
+                if (lastSelection) {
+                lastSelection = {
+                    from: tr.mapping.map(lastSelection.from),
+                    to: tr.mapping.map(lastSelection.to),
+                };
+                }
 
-            if (tr.selectionSet) {
-            const { from, to } = tr.selection;
-            lastSelection = from !== to ? { from, to } : null;
-            }
+                if (tr.selectionSet) {
+                const { from, to } = tr.selection;
+                lastSelection = from !== to ? { from, to } : null;
+                }
 
-            const meta = tr.getMeta(selectionHighlightPluginKey);
-            if (meta?.set) {
-            const { from, to, style } = meta.set;
-            decoration = DecorationSet.create(tr.doc, [
-                Decoration.inline(from, to, {
-                class: "selection-highlight",
-                style: `
-                    background:${style.background};
-                    color:${style.color};
-                    margin:-${style.padding}px 0;
-                    padding:${style.padding}px 0;
-                `,
-                })
-            ]);
-            storedSelection = { from, to };
-            }
-            if (meta?.clear) {
-            decoration = DecorationSet.empty;
-            storedSelection = null;
-            }
-            return { decoration, storedSelection, lastSelection };
+                const meta = tr.getMeta(selectionHighlightPluginKey);
+                if (meta?.set) {
+                    const { from, to, style } = meta.set;
+                    decoration = DecorationSet.create(tr.doc, [
+                        Decoration.inline(from, to, {
+                        class: "selection-highlight",
+                        style: `
+                            background:${style.background};
+                            color:${style.color};
+                            margin:-${style.padding}px 0;
+                            padding:${style.padding}px 0;
+                        `,
+                        })
+                    ]);
+                    storedSelection = { from, to };
+                }
+                if (meta?.clear) {
+                    decoration = DecorationSet.empty;
+                    storedSelection = null;
+                }
+                return { decoration, storedSelection, lastSelection };
+            },
         },
         props: {
+            decorations(state) {
+                return selectionHighlightPluginKey.getState(state).decoration;
+            },
             handleDOMEvents: {
                 blur: (view) => {
-                    const { lastSelection } = selectionHighlightPluginKey.getState(view.state);
+                    const pluginState = selectionHighlightPluginKey.getState(view.state);
+                    const lastSelection = pluginState?.lastSelection;
                     if (lastSelection) {
                         const style = getSelectionStyles(view.dom as HTMLElement);
                         view.dispatch(
-                        view.state.tr.setMeta(selectionHighlightPluginKey, {
+                            view.state.tr.setMeta(selectionHighlightPluginKey, {
                             set: { ...lastSelection, style },
-                        }),
+                            })
                         );
                     }
                     return false;
                 },
                 focus: (view) => {
-                    const { storedSelection } = selectionHighlightPluginKey.getState(view.state);
+                    const pluginState = selectionHighlightPluginKey.getState(view.state);
+                    const storedSelection = pluginState?.storedSelection;
                     const tr = view.state.tr.setMeta(selectionHighlightPluginKey, { clear: true });
                     if (storedSelection) {
                         const { from, to } = storedSelection;
@@ -109,11 +115,9 @@ export const SelectionHighlight = Extension.create({
                     }
                     view.dispatch(tr);
                     return false;
-                    },
                 },
             },
-        }
+        },
     })
     ];
-  },
-});
+}});
