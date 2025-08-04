@@ -707,7 +707,7 @@ body.excalidraw-cursor-resize * {
   }
 
   .excalidraw-wysiwyg .selection-highlight {
-    background-color: var(--select-highlight-color);
+    box-decoration-break: clone;
   }
   
   .excalidraw-wysiwyg.scratchpad-wysiwyg .page {
