@@ -76,19 +76,51 @@ export const SelectionHighlight = Extension.create({
 
                 const meta = tr.getMeta(selectionHighlightPluginKey);
                 if (meta?.set) {
+
                     const { from, to, style } = meta.set;
-                    decoration = DecorationSet.create(tr.doc, [
-                        Decoration.inline(from, to, {
-                        class: "selection-highlight",
-                        style: `
+                    const decorations: Decoration[] = [];
+
+                    tr.doc.nodesBetween(from, to, (node, pos) => {
+                    const start = Math.max(from, node.isTextblock ? pos + 1 : pos);
+                    const end = Math.min(to, pos + node.nodeSize - (node.isTextblock ? 1 : 0));
+
+                    // Highlight text inside partially or fully selected text blocks
+                    if (node.isTextblock) {
+                        if (start < end) {
+                        decorations.push(
+                            Decoration.inline(start, end, {
+                            class: "selection-highlight",
+                            style: `
+                                background:${style.background};
+                                color:${style.color};
+                                box-shadow:0 0 0 ${style.padding}px ${style.background};
+                                display:inline-block;
+                            `,
+                            }),
+                        );
+                        }
+                        return false;            // avoid descending into text nodes
+                    }
+
+                    // Highlight entire non-text nodes (images, complete paragraphs, etc.)
+                    if (from <= pos && to >= pos + node.nodeSize) {
+                        decorations.push(
+                        Decoration.node(pos, pos + node.nodeSize, {
+                            style: `
                             background:${style.background};
-                            color:${style.color};
                             box-shadow:0 0 0 ${style.padding}px ${style.background};
-                            display:inline-block;
-                        `,
-                        })
-                    ]);
+                            `,
+                        }),
+                        );
+                        return false;
+                    }
+
+                    return true;
+                    });
+
+                    decoration = DecorationSet.create(tr.doc, decorations);
                     storedSelection = { from, to };
+
                 }
                 if (meta?.clear) {
                     decoration = DecorationSet.empty;
