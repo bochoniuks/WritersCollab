@@ -706,6 +706,11 @@ body.excalidraw-cursor-resize * {
     margin-block-end: 0;
   }
 
+  .excalidraw-wysiwyg ::selection {
+    background: var(--wysiwyg-selection-background, #b3d4fc);
+    color: var(--wysiwyg-selection-color, #000);
+  }
+
   .excalidraw-wysiwyg .selection-highlight {
     box-decoration-break: clone;
     display: inline-block;

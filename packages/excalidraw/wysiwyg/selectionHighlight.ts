@@ -11,14 +11,24 @@ type SelectionStyles = {
 };
 
 const getSelectionStyles = (element: HTMLElement): SelectionStyles => {
-  const selectionStyles = window.getComputedStyle(element, "::selection");
-  const baseStyles = window.getComputedStyle(element);
-  const background = selectionStyles.backgroundColor;
-  const color = selectionStyles.color;
-  const lineHeight = parseFloat(baseStyles.lineHeight);
-  const fontSize = parseFloat(baseStyles.fontSize);
-  const padding = Math.max((lineHeight - fontSize) / 2, 0);
-  return { background, color, padding };
+    const selectionStyles = window.getComputedStyle(element, "::selection");
+    const baseStyles = window.getComputedStyle(element);
+    let background = selectionStyles.backgroundColor;
+    let color = selectionStyles.color;
+
+    if (!background || background === "rgba(0, 0, 0, 0)") {
+        background =
+            baseStyles.getPropertyValue("--wysiwyg-selection-background") || "#b3d4fc";
+    }
+    if (!color || color === "rgba(0, 0, 0, 0)") {
+        color =
+            baseStyles.getPropertyValue("--wysiwyg-selection-color") || "#000";
+    }
+
+    const lineHeight = parseFloat(baseStyles.lineHeight);
+    const fontSize = parseFloat(baseStyles.fontSize);
+    const padding = Math.max((lineHeight - fontSize) / 2, 0);
+    return { background, color, padding };
 };
 
 interface SelectionHighlightState {
