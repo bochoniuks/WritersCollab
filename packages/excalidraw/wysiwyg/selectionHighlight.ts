@@ -158,8 +158,12 @@ export const SelectionHighlight = Extension.create({
                     const tr = view.state.tr.setMeta(selectionHighlightPluginKey, { clear: true });
                     if (storedSelection) {
                         const { from, to } = storedSelection;
-                        tr.setSelection(TextSelection.create(view.state.doc, from, to));
-                        console.log("Showing selection - ", from, to)
+                        const selection = TextSelection.between(
+                            view.state.doc.resolve(from),
+                            view.state.doc.resolve(to)
+                        );
+                        tr.setSelection(selection);
+                        console.log("Showing selection - ", from, to);
                     }
                     view.dispatch(tr);
                     return false;
