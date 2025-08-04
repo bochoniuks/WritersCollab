@@ -3,6 +3,7 @@ import { Plugin, PluginKey, TextSelection } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 
 type SelectionRange = { from: number; to: number } | null;
+let pendingSelection: SelectionRange = null;             // NEW
 
 type SelectionStyles = {
   background: string;
@@ -66,11 +67,9 @@ export const SelectionHighlight = Extension.create({
                selection = { from, to };
             }
 
-            if (meta?.clear || tr.docChanged) {
-              decoration = DecorationSet.empty;
-              if (meta?.clear) {
+            if (meta?.clear) {
+                decoration = DecorationSet.empty;
                 selection = null;
-              }
             }
 
             return { decoration, selection };
@@ -83,35 +82,57 @@ export const SelectionHighlight = Extension.create({
           },
           handleDOMEvents: {
             blur: (view) => {
-                const { from, to } = view.state.selection;
-                if (from !== to) {
-                  const style = getSelectionStyles(view.dom as HTMLElement);
-                  view.dispatch(
+                const range = pendingSelection;            // NEW
+                pendingSelection = null;                   // NEW
+                if (range && range.from !== range.to) {
+                    const style = getSelectionStyles(view.dom as HTMLElement);
+                    view.dispatch(
                     view.state.tr.setMeta(selectionHighlightPluginKey, {
-                      set: { from, to, style },
+                        set: { ...range, style },
                     }),
-                  );
+                    );
                 }
                 return false;
             },
-            focus: (view) => {
-              const pluginState = selectionHighlightPluginKey.getState(
-                view.state,
-              );
-              const tr = view.state.tr.setMeta(
-                selectionHighlightPluginKey,
-                { clear: true },
-              );
-              if (pluginState?.selection) {
-                const { from, to } = pluginState.selection;
-                tr.setSelection(
-                  TextSelection.create(view.state.doc, from, to),
-                );
-              }
-              view.dispatch(tr);
-              return false;
-            },
+            // focus: (view) => {
+            //   const pluginState = selectionHighlightPluginKey.getState(
+            //     view.state,
+            //   );
+            //   const tr = view.state.tr.setMeta(
+            //     selectionHighlightPluginKey,
+            //     { clear: true },
+            //   );
+            //   if (pluginState?.selection) {
+            //     const { from, to } = pluginState.selection;
+            //     tr.setSelection(
+            //       TextSelection.create(view.state.doc, from, to),
+            //     );
+            //   }
+            //   view.dispatch(tr);
+            //   return false;
+            // },
           },
+        },
+        view(editorView) {                               // NEW
+          const ownerDoc = editorView.dom.ownerDocument;
+          const handlePointerDown = () => {
+            const { from, to } = editorView.state.selection;
+            pendingSelection = from !== to ? { from, to } : null;
+          };
+          ownerDoc.addEventListener(
+            "pointerdown",
+            handlePointerDown,
+            true, // capture phase to run before selection collapses
+          );
+          return {
+            destroy() {
+              ownerDoc.removeEventListener(
+                "pointerdown",
+                handlePointerDown,
+                true,
+              );
+            },
+          };
         },
       }),
     ];
