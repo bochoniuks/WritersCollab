@@ -73,8 +73,8 @@ export const SelectionHighlight = Extension.create({
                         style: `
                             background:${style.background};
                             color:${style.color};
-                            margin:-${style.padding}px 0;
-                            padding:${style.padding}px 0;
+                            box-shadow:0 0 0 ${style.padding}px ${style.background};
+                            display:inline-block;
                         `,
                         })
                     ]);

@@ -708,6 +708,7 @@ body.excalidraw-cursor-resize * {
 
   .excalidraw-wysiwyg .selection-highlight {
     box-decoration-break: clone;
+    display: inline-block;
   }
   
   .excalidraw-wysiwyg.scratchpad-wysiwyg .page {
