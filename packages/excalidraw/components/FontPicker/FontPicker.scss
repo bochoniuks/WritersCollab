@@ -12,4 +12,11 @@
       ); // 4 gaps + 4 buttons
     }
   }
+  .FontPicker__container--trigger-only {
+    grid-template-columns: 1fr;
+
+    @include isMobile {
+      max-width: var(--default-button-size);
+    }
+  }
 }

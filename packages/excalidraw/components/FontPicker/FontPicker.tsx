@@ -58,6 +58,7 @@ interface FontPickerProps {
   onHover: (fontFamily: FontFamilyValues) => void;
   onLeave: () => void;
   onPopupChange: (open: boolean) => void;
+  showDefaultFonts?: boolean;
 }
 
 export const FontPicker = React.memo(
@@ -69,6 +70,7 @@ export const FontPicker = React.memo(
     onHover,
     onLeave,
     onPopupChange,
+    showDefaultFonts = true,
   }: FontPickerProps) => {
     const defaultFonts = useMemo(() => DEFAULT_FONTS, []);
     const onSelectCallback = useCallback(
@@ -81,7 +83,12 @@ export const FontPicker = React.memo(
     );
 
     return (
-      <div role="dialog" aria-modal="true" className="FontPicker__container">
+      <div role="dialog" aria-modal="true" 
+          className={`FontPicker__container${
+          showDefaultFonts ? "" : " FontPicker__container--trigger-only"
+        }`}>
+      {showDefaultFonts && (
+      <>
         <div className="buttonList">
           <RadioSelection<FontFamilyValues | false>
             type="button"
@@ -91,6 +98,8 @@ export const FontPicker = React.memo(
           />
         </div>
         <ButtonSeparator />
+       </>
+      )}
         <Popover.Root open={isOpened} onOpenChange={onPopupChange}>
           <FontPickerTrigger selectedFontFamily={selectedFontFamily} />
           {isOpened && (
@@ -111,5 +120,6 @@ export const FontPicker = React.memo(
   (prev, next) =>
     prev.isOpened === next.isOpened &&
     prev.selectedFontFamily === next.selectedFontFamily &&
-    prev.hoveredFontFamily === next.hoveredFontFamily,
+    prev.hoveredFontFamily === next.hoveredFontFamily &&
+    prev.showDefaultFonts === next.showDefaultFonts
 );

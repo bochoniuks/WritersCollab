@@ -49,6 +49,7 @@ export const ScratchpadToolbar = ({
         onHover={setHoveredFont}
         onLeave={() => setHoveredFont(null)}
         onPopupChange={setPickerOpen}
+        showDefaultFonts={false}
       />
       <ToolButton
         type="icon"
