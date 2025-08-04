@@ -2,9 +2,13 @@ import React from "react";
 import { Island } from "./Island";
 import { ToolButton } from "./ToolButton";
 import { FormatBoldIcon, FormatItalicIcon, FormatStrikeIcon, FormatUnderlineIcon } from "./icons";
+import { FontPicker } from "./FontPicker/FontPicker";
+import { FontFamilyValues } from "@excalidraw/element/types";
 
 type ScratchpadToolbarProps = {
   style: React.CSSProperties;
+  currentFontFamily: FontFamilyValues;
+  onFontChange(font: FontFamilyValues): void;
   onBold(): void;
   onItalic(): void;
   onUnderline(): void;
@@ -17,6 +21,8 @@ type ScratchpadToolbarProps = {
 
 export const ScratchpadToolbar = ({
   style,
+  currentFontFamily,
+  onFontChange,
   onBold,
   onItalic,
   onUnderline,
@@ -26,6 +32,8 @@ export const ScratchpadToolbar = ({
   underlineEnabled,
   strikeEnabled,
 }: ScratchpadToolbarProps) => {
+  const [pickerOpen, setPickerOpen] = React.useState(false);
+  const [hoveredFont, setHoveredFont] = React.useState<FontFamilyValues | null>(null);
   return (
     <Island
         padding={1}
@@ -33,6 +41,15 @@ export const ScratchpadToolbar = ({
         style={{ display: "flex",
         flexDirection: "column", width: "max-content", zIndex: "var(--zIndex-layerUI)", ...style }}
     >
+      <FontPicker
+        isOpened={pickerOpen}
+        selectedFontFamily={currentFontFamily}
+        hoveredFontFamily={hoveredFont}
+        onSelect={onFontChange}
+        onHover={setHoveredFont}
+        onLeave={() => setHoveredFont(null)}
+        onPopupChange={setPickerOpen}
+      />
       <ToolButton
         type="icon"
         aria-label="Bold"

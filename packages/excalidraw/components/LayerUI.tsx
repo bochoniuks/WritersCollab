@@ -4,19 +4,20 @@ import React from "react";
 import {
   CLASSES,
   DEFAULT_SIDEBAR,
+  FONT_FAMILY,
   TOOL_TYPE,
   arrayToMap,
   capitalizeString,
   isShallowEqual,
 } from "@excalidraw/common";
 
-import { mutateElement } from "@excalidraw/element";
+import { isScratchpadElement, mutateElement } from "@excalidraw/element";
 
 import { showSelectedShapeActions } from "@excalidraw/element";
 
 import { ShapeCache } from "@excalidraw/element";
 
-import type { NonDeletedExcalidrawElement } from "@excalidraw/element/types";
+import type { FontFamilyValues, NonDeletedExcalidrawElement } from "@excalidraw/element/types";
 
 import { actionToggleStats } from "../actions";
 import { trackEvent } from "../analytics";
@@ -239,9 +240,35 @@ const LayerUI = ({
 
   const ScratchpadToolbarWrapper = () => {
     const editor = useAtomValue(activeScratchpadEditorAtom);
+    const handleFontChange = (fontFamily: FontFamilyValues) => {
+      const fontName =
+        Object.entries(FONT_FAMILY).find(([, id]) => id === fontFamily)?.[0] ||
+        "Nunito";
+
+      // update selection or caret
+      editor?.chain().focus().setFontFamily(fontName).run();
+
+      // update editor container so new text uses the font
+      if (editor) {
+        editor.view.dom.style.fontFamily = fontName;
+      }
+
+      // persist on the scratchpad element
+      if (appState.ideationElementId) {
+        const el = app.scene.getElement(appState.ideationElementId);
+        if (el && isScratchpadElement(el)) {
+          app.scene.mutateElement(el, { fontFamily });
+        }
+      }
+
+      // update global default font for new scratchpad text
+      setAppState({ currentItemFontFamily: fontFamily });
+    };
     return (
       <ScratchpadToolbar
         style={{}}
+        currentFontFamily={app.state.currentItemFontFamily}
+        onFontChange={handleFontChange}
         onBold={() => editor?.chain().focus().toggleBold().run()}
         onItalic={() => editor?.chain().focus().toggleItalic().run()}
         onUnderline={() => editor?.chain().focus().toggleUnderline().run()}
