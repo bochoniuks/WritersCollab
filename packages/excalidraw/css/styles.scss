@@ -705,6 +705,10 @@ body.excalidraw-cursor-resize * {
     margin-block-start: 0;
     margin-block-end: 0;
   }
+
+  .excalidraw-wysiwyg .selection-highlight {
+    background-color: var(--select-highlight-color);
+  }
   
   .excalidraw-wysiwyg.scratchpad-wysiwyg .page {
     overflow-y: var(--page-overflow, auto);

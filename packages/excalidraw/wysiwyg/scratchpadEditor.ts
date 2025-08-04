@@ -18,6 +18,7 @@ import { DocumentWithPages } from "./documentWithPages";
 import { Page } from "./page";
 import { PageReflow } from "./pageReflow";
 import { PaginatedBulletList } from "./bulletList";
+import { SelectionHighlight } from "./selectionHighlight";
 
 /**
  * Returns the list of TipTap extensions used by a scratchpad editor.
@@ -39,6 +40,7 @@ export const getScratchpadExtensions = (
     FontFamily,
     FontSize,
     Underline,
+    SelectionHighlight,
     HeightTracking,
     Page,
     PageReflow.configure({
