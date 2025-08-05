@@ -94,7 +94,6 @@ export const SelectionHighlight = Extension.create({
                                 background:${style.background};
                                 color:${style.color};
                                 box-shadow:0 0 0 ${style.padding}px ${style.background};
-                                display:inline-block;
                             `,
                             }),
                         );
@@ -138,34 +137,34 @@ export const SelectionHighlight = Extension.create({
             },
             handleDOMEvents: {
                 blur: (view) => {
-                    const pluginState = selectionHighlightPluginKey.getState(view.state);
-                    const lastSelection = pluginState?.lastSelection;
-                    console.log(lastSelection)
-                    if (lastSelection) {
-                        const style = getSelectionStyles(view.dom as HTMLElement);
-                        view.dispatch(
-                            view.state.tr.setMeta(selectionHighlightPluginKey, {
-                            set: { ...lastSelection, style },
-                            })
-                        );
-                    }
+                    // const pluginState = selectionHighlightPluginKey.getState(view.state);
+                    // const lastSelection = pluginState?.lastSelection;
+                    // console.log(lastSelection)
+                    // if (lastSelection) {
+                    //     const style = getSelectionStyles(view.dom as HTMLElement);
+                    //     view.dispatch(
+                    //         view.state.tr.setMeta(selectionHighlightPluginKey, {
+                    //         set: { ...lastSelection, style },
+                    //         })
+                    //     );
+                    // }
                     return false;
                 },
                 focus: (view) => {
-                    console.log("Focus Back")
-                    const pluginState = selectionHighlightPluginKey.getState(view.state);
-                    const storedSelection = pluginState?.storedSelection;
-                    const tr = view.state.tr.setMeta(selectionHighlightPluginKey, { clear: true });
-                    if (storedSelection) {
-                        const { from, to } = storedSelection;
-                        const selection = TextSelection.between(
-                            view.state.doc.resolve(from),
-                            view.state.doc.resolve(to)
-                        );
-                        tr.setSelection(selection);
-                        console.log("Showing selection - ", from, to);
-                    }
-                    view.dispatch(tr);
+                    // console.log("Focus Back")
+                    // const pluginState = selectionHighlightPluginKey.getState(view.state);
+                    // const storedSelection = pluginState?.storedSelection;
+                    // const tr = view.state.tr.setMeta(selectionHighlightPluginKey, { clear: true });
+                    // if (storedSelection) {
+                    //     const { from, to } = storedSelection;
+                    //     const selection = TextSelection.between(
+                    //         view.state.doc.resolve(from),
+                    //         view.state.doc.resolve(to)
+                    //     );
+                    //     tr.setSelection(selection);
+                    //     console.log("Showing selection - ", from, to);
+                    // }
+                    // view.dispatch(tr);
                     return false;
                 },
             },
