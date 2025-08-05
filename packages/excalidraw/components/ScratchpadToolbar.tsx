@@ -41,7 +41,7 @@ export const ScratchpadToolbar = ({
         style={{ display: "flex",
         flexDirection: "column", width: "max-content", zIndex: "var(--zIndex-layerUI)", ...style }}
     >
-      <FontPicker
+      {/* <FontPicker
         isOpened={pickerOpen}
         selectedFontFamily={currentFontFamily}
         hoveredFontFamily={hoveredFont}
@@ -50,7 +50,7 @@ export const ScratchpadToolbar = ({
         onLeave={() => setHoveredFont(null)}
         onPopupChange={setPickerOpen}
         showDefaultFonts={false}
-      />
+      /> */}
       <ToolButton
         type="icon"
         aria-label="Bold"

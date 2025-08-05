@@ -552,7 +552,6 @@ import type { Action, ActionResult } from "../actions/types";
 import { measureTiptapDoc, measureTiptapDocWithWidth } from "@excalidraw/element/parseTiptapDoc";
 import { GROUP_FLAG_CONFIG } from "../groupFlagConfig";
 import { centerScrollOn, updateIdeationScrollClamp } from "../scene/scroll";
-import { ScratchpadToolbar } from "./ScratchpadToolbar";
 import { ScratchpadHeader } from "./ScratchpadHeader";
 import { generateScratchpadCanvas, loadCanvasFromSnapshot } from "../wysiwyg/scratchpadDomToSvg";
 

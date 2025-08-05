@@ -827,10 +827,6 @@ export const scratchpadWysiwyg = ({
     window.addEventListener("resize", updateWysiwygStyle);
   }
 
-  // if (app.state.scratchpadViewMode !== "ideation") {
-  //   console.log("inside")
-  //   window.addEventListener("wheel", stopEvent, { capture: true, passive: false });
-  // }
 
   editable.onpointerdown = (event) => event.stopPropagation();
   editable.onwheel = (event) => event.stopPropagation();
