@@ -101,7 +101,7 @@ export const FontPicker = React.memo(
        </>
       )}
         <Popover.Root open={isOpened} onOpenChange={onPopupChange}>
-          <FontPickerTrigger selectedFontFamily={selectedFontFamily} />
+          {/* <FontPickerTrigger selectedFontFamily={null} /> */}
           {isOpened && (
             <FontPickerList
               selectedFontFamily={selectedFontFamily}
