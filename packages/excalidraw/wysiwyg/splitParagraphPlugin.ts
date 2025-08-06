@@ -95,6 +95,10 @@ export const SplitParagraphPlugin = Extension.create<SplitParagraphOptions>({
               const text = node.textContent!;
               const firstText = text.slice(0, globalIndex);
               const secondText = text.slice(globalIndex);
+            
+              if (!firstText || !secondText) {
+                return false;
+                }
 
               const { schema } = view.state;
               const first = schema.nodes.paragraph.create({ page }, schema.text(firstText));
@@ -102,6 +106,13 @@ export const SplitParagraphPlugin = Extension.create<SplitParagraphOptions>({
                 { page: page + 1 },
                 schema.text(secondText),
               );
+
+              console.log("splitParagraph:", {
+                original: node.toJSON ? node.toJSON() : node,
+                first: first.toJSON ? first.toJSON() : first,
+                second: second.toJSON ? second.toJSON() : second,
+                });
+
 
               tr.replaceWith(pos, pos + node.nodeSize, [first, second]);
               changed = true;
