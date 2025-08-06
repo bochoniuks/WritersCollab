@@ -84,7 +84,13 @@ const StaticCanvas = (props: StaticCanvasProps) => {
     );
   });
 
-  return <div className="excalidraw__canvas-wrapper" ref={wrapperRef} />;
+  return (
+      <div
+        className="excalidraw__canvas-wrapper"
+        ref={wrapperRef}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      />
+    );
 };
 
 const getRelevantAppStateProps = (appState: AppState): StaticCanvasAppState => {
