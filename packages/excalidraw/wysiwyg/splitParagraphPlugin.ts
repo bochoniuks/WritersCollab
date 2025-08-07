@@ -72,8 +72,8 @@ export const SplitParagraphPlugin = Extension.create<SplitParagraphOptions>({
                 const x = lastRect.right - 1 - dx;
                 const y = lastRect.top + lastRect.height / 2;
                 caret =
-                  document.caretPositionFromPoint?.(x, y) ??
-                  document.caretRangeFromPoint?.(x, y);
+                    (document as any).caretPositionFromPoint?.(x, y) ??
+                    document.caretRangeFromPoint?.(x, y);
               }
               if (!caret) return false;
 
@@ -107,11 +107,11 @@ export const SplitParagraphPlugin = Extension.create<SplitParagraphOptions>({
                 schema.text(secondText),
               );
 
-              console.log("splitParagraph:", {
-                original: node.toJSON ? node.toJSON() : node,
-                first: first.toJSON ? first.toJSON() : first,
-                second: second.toJSON ? second.toJSON() : second,
-                });
+            //   console.log("splitParagraph:", {
+            //     original: node.toJSON ? node.toJSON() : node,
+            //     first: first.toJSON ? first.toJSON() : first,
+            //     second: second.toJSON ? second.toJSON() : second,
+            //     });
 
 
               tr.replaceWith(pos, pos + node.nodeSize, [first, second]);

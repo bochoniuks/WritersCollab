@@ -19,7 +19,6 @@ import { Page } from "./page";
 import { PageReflow } from "./pageReflow";
 import { PaginatedBulletList } from "./bulletList";
 import { SelectionHighlight } from "./selectionHighlight";
-import { SplitParagraphPlugin } from "./splitParagraphPlugin";
 
 /**
  * Returns the list of TipTap extensions used by a scratchpad editor.
@@ -43,9 +42,6 @@ export const getScratchpadExtensions = (
     Underline,
     SelectionHighlight,
     HeightTracking,
-    SplitParagraphPlugin.configure({
-      pageHeight: pageSize.height - element.margin.top - element.margin.bottom,
-    }),
     Page,
     PageReflow.configure({
       pageHeight: pageSize.height - element.margin.top - element.margin.bottom,
