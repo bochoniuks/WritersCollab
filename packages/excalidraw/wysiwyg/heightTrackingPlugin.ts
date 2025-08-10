@@ -27,6 +27,7 @@ let measureDiv: HTMLDivElement | null = null;
 
 const getMeasureDiv = (view: EditorView, cfg: NonNullable<EditorView['page']>) => {
   if (!measureDiv) {
+    console.log(cfg)
     const width = cfg.width - cfg.margin.left - cfg.margin.right;
     measureDiv = Object.assign(document.createElement("div"), {
       style: `
@@ -36,7 +37,24 @@ const getMeasureDiv = (view: EditorView, cfg: NonNullable<EditorView['page']>) =
       `,
     });
     measureDiv.className = view.dom.className;
-    document.body.appendChild(measureDiv);
+    // const container =
+    //   document.querySelector<HTMLDivElement>(".excalidraw-textEditorContainer") ??
+    //   document.body;
+
+    const container =
+      document.querySelector<HTMLDivElement>(".tiptap .ProseMirror")
+    console.log(container)
+
+    if (!container)
+        return null
+
+    container.appendChild(measureDiv);
+    const style = window.getComputedStyle(measureDiv);
+    console.log(style)
+
+    console.log(measureDiv)
+    console.log(measureDiv.getBoundingClientRect().height, measureDiv.getBoundingClientRect().width)
+    
   }
   return measureDiv;
 };
@@ -129,6 +147,8 @@ const collectHeights = (
   });
 
   const container = getMeasureDiv(view, cfg);
+  if (!container) return heights
+  
   container.innerHTML = "";
   for (const { node, dom } of nodes) {
     const clone = dom.cloneNode(true) as HTMLElement;
