@@ -1,4 +1,6 @@
 import { Node, mergeAttributes } from "@tiptap/core";
+import type { EditorView } from '@tiptap/pm/view'
+import { Plugin } from '@tiptap/pm/state'
 
 export interface PageOptions {
   HTMLAttributes: Record<string, any>;
@@ -22,3 +24,17 @@ export const Page = Node.create<PageOptions>({
     return ["div", mergeAttributes({ class: "page " }, HTMLAttributes), 0];
   },
 });
+
+export const pageConfigPlugin = (
+  cfg: NonNullable<EditorView['page']>,
+) =>
+  new Plugin({
+    view(view) {
+      view.page = cfg
+      return {
+        destroy() {
+          delete view.page
+        },
+      }
+    },
+  })

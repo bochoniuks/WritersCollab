@@ -15,10 +15,11 @@ import FontSize from "tiptap-extension-font-size";
 import Underline from "@tiptap/extension-underline";
 import { HeightTracking } from "./heightTrackingPlugin";
 import { DocumentWithPages } from "./documentWithPages";
-import { Page } from "./page";
+import { Page, pageConfigPlugin } from "./page";
 import { PageReflow } from "./pageReflow";
 import { PaginatedBulletList } from "./bulletList";
 import { SelectionHighlight } from "./selectionHighlight";
+
 
 /**
  * Returns the list of TipTap extensions used by a scratchpad editor.
@@ -30,6 +31,17 @@ export const getScratchpadExtensions = (
   const pageSize = element.pageSize
     ? SCRATCHPAD_PAGE_SIZES[element.pageSize]
     : { width: element.width, height: element.height };
+
+    const pageConfig = {
+        width: pageSize.width,
+        height: pageSize.height,         
+        margin: {
+            left: element.margin.left,
+            right: element.margin.right,
+            top: element.margin.top,
+            bottom: element.margin.bottom,
+        },
+    }
 
   return [
     DocumentWithPages,
@@ -47,6 +59,7 @@ export const getScratchpadExtensions = (
       pageHeight: pageSize.height - element.margin.top - element.margin.bottom,
       maxPages: options.maxPages,
     }),
+    pageConfigPlugin(pageConfig),
   ];
 };
 
@@ -76,9 +89,7 @@ export const createScratchpadContainer = (
 
   Object.assign(container.style, {
     position: "relative",
-    display: "inline-flex",
-    flexDirection: "column",
-    gap: "var(--page-gap)",
+    display: "inline-table",
     minHeight: "1em",
     overflowX: "hidden",
     overflowY: viewMode === "ideation" ? "visible" : "auto",

@@ -484,7 +484,7 @@ export const scratchpadWysiwyg = ({
 
           const patched = addMarkToSlice(slice, mark);
           view.dispatch(view.state.tr.replaceSelection(patched));
-          runHeightTracking(view);
+          runHeightTracking(view, );
           if (element.paginationEnabled) {            // re-run pagination
             runPageReflow(view);
           }
@@ -494,10 +494,6 @@ export const scratchpadWysiwyg = ({
       onCreate: ({ editor: ed }) => {
         // page wrapper exists only after the editor mounts
         refreshPageElement();
-        // runHeightTracking(ed.view);
-        // if (element.paginationEnabled) {
-        //   runPageReflow(ed.view);
-        // }
       },
       onUpdate: ({ editor: ed }) => {
         let doc = ed.getJSON();
