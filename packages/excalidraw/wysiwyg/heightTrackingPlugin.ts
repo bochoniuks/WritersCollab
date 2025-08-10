@@ -23,17 +23,11 @@ const areHeightsEqual = (prev: HeightData, next: HeightData): boolean => {
     return true;
 };
 
-interface PageConfig {
-  width: number;       // total width in pixels
-  marginLeft: number;  // left margin in pixels
-  marginRight: number; // right margin in pixels
-}
-
 let measureDiv: HTMLDivElement | null = null;
 
-const getMeasureDiv = (view: EditorView, cfg: PageConfig) => {
+const getMeasureDiv = (view: EditorView, cfg: NonNullable<EditorView['page']>) => {
   if (!measureDiv) {
-    const width = cfg.width - cfg.marginLeft - cfg.marginRight;
+    const width = cfg.width - cfg.margin.left - cfg.margin.right;
     measureDiv = Object.assign(document.createElement("div"), {
       style: `
         position:absolute;top:-10000px;left:0;
@@ -112,9 +106,11 @@ const collectHeights = (
   view: EditorView,
   start = 0,
   end = view.state.doc.content.size,
-  cfg: PageConfig,
 ): HeightData => {
+  const cfg = view.page;
   const heights: HeightData = new Map();
+  if (!cfg) return heights;
+
   const visited = new Set<ProseMirrorNode>();
   const nodes: Array<{ node: ProseMirrorNode; dom: HTMLElement }> = [];
 

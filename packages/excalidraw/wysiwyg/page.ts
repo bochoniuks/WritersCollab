@@ -1,6 +1,6 @@
-import { Node, mergeAttributes } from "@tiptap/core";
-import type { EditorView } from '@tiptap/pm/view'
-import { Plugin } from '@tiptap/pm/state'
+import { Node, mergeAttributes, Extension } from "@tiptap/core";
+import type { EditorView } from "@tiptap/pm/view";
+import { Plugin } from "@tiptap/pm/state";
 
 export interface PageOptions {
   HTMLAttributes: Record<string, any>;
@@ -25,16 +25,24 @@ export const Page = Node.create<PageOptions>({
   },
 });
 
+
 export const pageConfigPlugin = (
-  cfg: NonNullable<EditorView['page']>,
+  cfg: NonNullable<EditorView["page"]>,
 ) =>
-  new Plugin({
-    view(view) {
-      view.page = cfg
-      return {
-        destroy() {
-          delete view.page
-        },
-      }
+  Extension.create({
+    name: "pageConfig",
+    addProseMirrorPlugins() {
+      return [
+        new Plugin({
+          view(view) {
+            view.page = cfg;
+            return {
+              destroy() {
+                delete view.page;
+              },
+            };
+          },
+        }),
+      ];
     },
-  })
+  });

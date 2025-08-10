@@ -44,6 +44,7 @@ export const getScratchpadExtensions = (
     }
 
   return [
+    pageConfigPlugin(pageConfig),
     DocumentWithPages,
     StarterKit.configure({ document: false, bulletList: false }),
     PaginatedBulletList,
@@ -56,10 +57,8 @@ export const getScratchpadExtensions = (
     HeightTracking,
     Page,
     PageReflow.configure({
-      pageHeight: pageSize.height - element.margin.top - element.margin.bottom,
       maxPages: options.maxPages,
     }),
-    pageConfigPlugin(pageConfig),
   ];
 };
 

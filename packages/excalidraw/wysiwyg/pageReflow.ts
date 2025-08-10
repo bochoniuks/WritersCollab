@@ -8,7 +8,6 @@ import type { EditorView } from "prosemirror-view";
 import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 
 export interface PageReflowOptions {
-  pageHeight: number;
   maxPages?: number;
 }
 
@@ -73,10 +72,9 @@ const splitParagraphByHeight = (
 export const PageReflow = Extension.create<PageReflowOptions>({
   name: "pageReflow",
   addOptions() {
-    return { pageHeight: 0, maxPages: Infinity };
+    return { maxPages: Infinity };
   },
   addProseMirrorPlugins() {
-    const pageHeight = this.options.pageHeight;
     const maxPages = this.options.maxPages ?? Infinity;
     let editorView: EditorView | null = null;
     return [
@@ -93,6 +91,10 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             if (!shouldReflow) {
                 return null;
             }
+            const page = editorView?.page;
+            if (!page) return null;
+            const pageHeight = page.height - page.margin.top - page.margin.bottom;
+
 
             const heightData =
                 heightTrackingPluginKey.getState(curr) as HeightData;
