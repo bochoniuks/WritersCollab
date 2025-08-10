@@ -76,7 +76,9 @@ export const createScratchpadContainer = (
 
   Object.assign(container.style, {
     position: "relative",
-    display: "inline-table",
+    display: "inline-flex",
+    flexDirection: "column",
+    gap: "var(--page-gap)",
     minHeight: "1em",
     overflowX: "hidden",
     overflowY: viewMode === "ideation" ? "visible" : "auto",

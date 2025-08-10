@@ -50,9 +50,36 @@ const collectHeights = (
         }
     });
     
+    
     for (const { node, dom } of nodes) {
-        const clientRec = dom.getBoundingClientRect()
-        heights.set(node, clientRec.height);
+        const parent = dom.parentElement
+        console.log(parent)
+        const parentRect = parent?.getBoundingClientRect();
+        console.log("PARENT getBoundingClientRect: ",parentRect?.height,parentRect?.width)
+        console.log("PARENT scrollHeight: ",parent?.scrollHeight)
+        console.log("PARENT clientHeight: ",parent?.clientHeight)
+        console.log("PARENT scrollTop: ",parent?.scrollTop)
+        console.log(node.toJSON());
+        dom.parentElement?.offsetHeight;
+        console.log(dom);
+        const rect = dom.getBoundingClientRect();
+        // const style = window.getComputedStyle(dom);
+        // console.log(style)
+        console.log("getBoundingClientRect: ",rect.height,rect.width)
+        console.log("scrollHeight: ",dom.scrollHeight)
+        console.log("clientHeight: ",dom.clientHeight)
+        console.log("scrollTop: ",dom.scrollTop)
+
+        // console.log("offsetHeight: ",dom.offsetHeight,dom.offsetWidth)
+        // console.log("clientHeight: ",dom.clientHeight,dom.clientWidth)
+        // console.log("scrollHeight: ",dom.scrollHeight,dom.scrollWidth)
+        // console.log("computed: ",style.height,style.width)
+        // const lines = dom.getClientRects()
+        // console.log("Lines: ", lines.length)
+        // console.log(lines)
+        
+        const height =rect.height;
+        heights.set(node, height);
     }
     return heights;
 };

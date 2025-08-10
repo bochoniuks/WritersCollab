@@ -26,17 +26,23 @@ const splitParagraphByHeight = (
   remaining: number,
   schema: Schema,
 ) => {
+    return null;
+    console.log("remainig: ", remaining)
     const dom = view.nodeDOM(pos) as HTMLElement | null;
     if (!dom) return null;
     const range = document.createRange();
+    console.log(dom)
     range.selectNodeContents(dom);
     const rects = Array.from(range.getClientRects());
+    console.log(rects)
     let used = 0, idx = 0;
     while (idx < rects.length && used + rects[idx].height <= remaining) {
         used += rects[idx].height;
         idx++;
     }
+    
     const lastRect = rects[Math.max(0, idx - 1)];
+    console.log(lastRect)
     let caret: any = null;
     for (let dx = 0; dx < 5 && !caret; dx++) {
         const x = lastRect.right - 1 - dx;
@@ -126,7 +132,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             let pageCount = 1;
             for (const { node, pos, listId } of blocks) {
                 const h = heightData?.get(node) ?? 0;
-
+                console.log("DOM height:", h)
                 if (listId) {  // list item
                     lastListId = listId;  
                     if (accum + h > pageHeight && currentList.length) {
@@ -150,12 +156,17 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 }
                 
                 const remaining = pageHeight - accum;
+                console.log(pageHeight, accum, remaining)
+                console.log(content)
                 if (
                     node.type.name === "paragraph" &&
                     node.textContent &&
                     h > remaining &&
                     editorView) 
                 {
+                    console.log("--- Paragraph --- ", h, " > ", remaining)
+                    console.log(node.toJSON())
+
                     const split = splitParagraphByHeight(editorView, node, pos, remaining, schema);
                     if (split) {
                         content.push(split.first);
@@ -188,17 +199,30 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             const newDoc = schema.nodes.doc.create(null, pages);
             
             const posMap = new Map<ProseMirrorNode, number>();
-                newDoc.descendants((node, pos) => {
+            newDoc.descendants((node, pos) => {
                 posMap.set(node, pos);
             });
-            const anchorPos = anchorInfo ? posMap.get(anchorInfo.node)! + anchorOff : anchor;
-            const headPos = headInfo ? posMap.get(headInfo.node)! + headOff : head;
+
+            const resolvePos = (
+            info: { node: ProseMirrorNode } | undefined,
+            offset: number,
+            fallback: number,
+            ) => {
+                const base = info ? posMap.get(info.node) : undefined;
+                return base == null ? fallback : base + offset;
+            };
+
+            const anchorPos = resolvePos(anchorInfo, anchorOff, anchor);
+            const headPos   = resolvePos(headInfo, headOff, head);
 
             if (curr.doc.eq(newDoc)) {
                 return null;
             }
             const tr = curr.tr.replaceWith(0, curr.doc.content.size, newDoc.content);
-            tr.setSelection(TextSelection.create(tr.doc, anchorPos, headPos));
+            const safeAnchor = Math.min(Math.max(anchorPos, 0), tr.doc.content.size);
+            const safeHead   = Math.min(Math.max(headPos,   0), tr.doc.content.size);
+            tr.setSelection(TextSelection.create(tr.doc, safeAnchor, safeHead));
+            console.log(newDoc.toJSON())
             return tr;
         },
       }),
