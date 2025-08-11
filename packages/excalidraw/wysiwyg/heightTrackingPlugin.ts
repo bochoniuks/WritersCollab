@@ -57,6 +57,8 @@ const getPreRenderPage = (
   return preRenderPage;
 };
 
+
+
 // const collectHeights = (
 //   view: EditorView,
 //   start = 0,
@@ -118,6 +120,13 @@ const getPreRenderPage = (
 //     return heights;
 // };
 
+function afterFontsAndFrames(cb:any) {
+  const ready = ('fonts' in document) ? document.fonts.ready : Promise.resolve();
+  ready.then(() => new Promise(r =>
+    requestAnimationFrame(() => requestAnimationFrame(r))
+  )).then(cb);
+}
+
 const collectHeights = (
   view: EditorView,
   start = 0,
@@ -148,34 +157,37 @@ const collectHeights = (
     if (!container) return heights;
     
     container.textContent = "";
-    // console.log(container)
-    for(const i in [1,2]){
-        for (const { node, dom } of nodes) {
-            console.log(node.type)
-            if (node.type.name === "page" || node.type.name === "doc") {
-                continue;
-            }
-            const clone = dom.cloneNode(true) as HTMLElement;
-            container.appendChild(clone);
-            console.log(clone)
-            console.log(dom)
-            const style = window.getComputedStyle(clone);
-            console.log(style.fontFamily)
-            console.log(style.fontSize)
-            console.log(style.lineHeight)
-            console.log(style.margin)
-            console.log(style.padding)
-            console.log(style.display)
-            console.log(style.width)
-            console.log(style.height)
 
-            console.log(clone.getBoundingClientRect().width, clone.getBoundingClientRect().height)
-            console.log(clone.offsetHeight,clone.offsetWidth)
-            heights.set(node, clone.getBoundingClientRect().height);
+    
+    const clones = new Map();
+    for (const { node, dom } of nodes) {
+        // console.log(document.fonts.ready.then((status => console.log(status))));
+        if (node.type.name === "page" || node.type.name === "doc") {
+            continue;
         }
-        console.log(container.cloneNode(true))
-        // container.textContent = "";
+        const clone = dom.cloneNode(true) as HTMLElement;
+        container.appendChild(clone);
+        clones.set(node, clone);
     }
+
+    for (const [node, dom] of clones) {
+        console.log(dom)
+        const style = window.getComputedStyle(dom);
+        console.log(style.fontFamily)
+        console.log(style.fontSize)
+        console.log(style.lineHeight)
+        console.log(style.margin)
+        console.log(style.padding)
+        console.log(style.display)
+        console.log(style.width)
+        console.log(style.height)
+
+        console.log(dom.getBoundingClientRect().width, dom.getBoundingClientRect().height)
+        console.log(dom.offsetHeight,dom.offsetWidth)
+        heights.set(node, dom.getBoundingClientRect().height);
+    }
+    // console.log(container.cloneNode(true))
+    // container.textContent = "";
     
 
     return heights;
