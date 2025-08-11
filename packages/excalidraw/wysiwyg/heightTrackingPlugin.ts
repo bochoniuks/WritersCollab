@@ -4,24 +4,24 @@ import type { EditorView } from "prosemirror-view";
 import type { Node as ProseMirrorNode } from "prosemirror-model";
 import { runPageReflow } from "./pageReflow";
 
-export type HeightData = Map<ProseMirrorNode, number>;
+// export type HeightData = Map<ProseMirrorNode, number>;
 
-export const heightTrackingPluginKey =
-  new PluginKey<HeightData>("heightTracking");
+// export const heightTrackingPluginKey =
+//   new PluginKey<HeightData>("heightTracking");
 
-const areHeightsEqual = (prev: HeightData, next: HeightData): boolean => {
+// const areHeightsEqual = (prev: HeightData, next: HeightData): boolean => {
     
-    if (prev.size !== next.size) {
-        return false;
-    }
-    for (const [node, height] of prev) {
-        if (next.get(node) !== height) {
-            return false;
-        }
-    }
+//     if (prev.size !== next.size) {
+//         return false;
+//     }
+//     for (const [node, height] of prev) {
+//         if (next.get(node) !== height) {
+//             return false;
+//         }
+//     }
     
-    return true;
-};
+//     return true;
+// };
 
 let preRenderPage: HTMLDivElement | null = null;
 
@@ -120,30 +120,26 @@ const getPreRenderPage = (
 //     return heights;
 // };
 
-function afterFontsAndFrames(cb:any) {
-  const ready = ('fonts' in document) ? document.fonts.ready : Promise.resolve();
-  ready.then(() => new Promise(r =>
-    requestAnimationFrame(() => requestAnimationFrame(r))
-  )).then(cb);
-}
+type Measured = { node: ProseMirrorNode; pos: number; height: number };
 
 const collectHeights = (
   view: EditorView,
   start = 0,
   end = view.state.doc.content.size,
-): HeightData => {
+): Measured[] => {
+    const measured: Measured[] = [];
     const cfg = view.page;
-    const heights: HeightData = new Map();
-    if (!cfg) return heights;
+    // const heights: HeightData = new Map();
+    // if (!cfg) return heights;
 
     const visited = new Set<ProseMirrorNode>();
-    const nodes: Array<{ node: ProseMirrorNode; dom: HTMLElement }> = [];
+    const nodes: Array<{ node: ProseMirrorNode; dom: HTMLElement; pos: number }> = [];
 
     const collect = (node: ProseMirrorNode, pos: number): void => {
         if (visited.has(node)) return;
         visited.add(node);
         const dom = view.nodeDOM(pos) as HTMLElement | null;
-        if (dom) nodes.push({ node, dom });
+        if (dom) nodes.push({ node, dom, pos });
         const resolved = view.state.doc.resolve(pos);
         if (resolved.depth > 0) {
         collect(resolved.node(resolved.depth - 1), resolved.before(resolved.depth));
@@ -153,104 +149,92 @@ const collectHeights = (
         if (node.isBlock) collect(node, pos);
     });
 
-    const container = getPreRenderPage(view, cfg);
-    if (!container) return heights;
+    // const container = getPreRenderPage(view, cfg);
+    // if (!container) return heights;
     
-    container.textContent = "";
-
-    
-    const clones = new Map();
-    for (const { node, dom } of nodes) {
-        // console.log(document.fonts.ready.then((status => console.log(status))));
-        if (node.type.name === "page" || node.type.name === "doc") {
-            continue;
-        }
-        const clone = dom.cloneNode(true) as HTMLElement;
-        container.appendChild(clone);
-        clones.set(node, clone);
-    }
-
-    for (const [node, dom] of clones) {
-        console.log(dom)
-        const style = window.getComputedStyle(dom);
-        console.log(style.fontFamily)
-        console.log(style.fontSize)
-        console.log(style.lineHeight)
-        console.log(style.margin)
-        console.log(style.padding)
-        console.log(style.display)
-        console.log(style.width)
-        console.log(style.height)
-
-        console.log(dom.getBoundingClientRect().width, dom.getBoundingClientRect().height)
-        console.log(dom.offsetHeight,dom.offsetWidth)
-        heights.set(node, dom.getBoundingClientRect().height);
-    }
-    // console.log(container.cloneNode(true))
     // container.textContent = "";
-    
 
-    return heights;
+    
+    for (const { node, dom, pos } of nodes) {
+      measured.push({ node, pos, height: dom.getBoundingClientRect().height });
+    }
+    return measured;
 };
 
 export const runHeightTracking = (view: EditorView) => {
-  const heights = collectHeights(view);
-  view.dispatch(view.state.tr.setMeta(heightTrackingPluginKey, heights));
+  const measured = collectHeights(view);
+  let tr = view.state.tr;
+  let changed = false;
+
+  for (const { node, pos, height } of measured) {
+    if (node.attrs.renderedHeight !== height) {
+      tr = tr.setNodeMarkup(pos, undefined, {
+        ...node.attrs,
+        renderedHeight: height,
+      });
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    view.dispatch(tr);
+    runPageReflow(view);
+  }
 };
 
 
 export const HeightTracking = Extension.create({
   name: "heightTracking",
-  addProseMirrorPlugins() {
+  addGlobalAttributes() {
     return [
-        new Plugin<HeightData>({
-            key: heightTrackingPluginKey,
-            state: {
-                init(): HeightData {
-                    return new Map();
-                },
-                apply(tr, value) {
-                    const meta = tr.getMeta(heightTrackingPluginKey);
-                    return meta ? (meta as HeightData) : value;
-                },
-            },
-            view(editorView: EditorView) {
-                return {
-                    update(view, prevState) {
-                        if (prevState.doc.eq(view.state.doc)) {
-                            return;
-                        }
-                        const prevHeights = heightTrackingPluginKey.getState(prevState) as HeightData;
-
-                        const diffStart = view.state.doc.content.findDiffStart(prevState.doc.content);
-                        if (diffStart == null) {
-                            return;
-                        }
-                        const diffEnd =
-                            view.state.doc.content.findDiffEnd(prevState.doc.content) ?? {
-                            a: view.state.doc.content.size,
-                            b: prevState.doc.content.size,
-                        };
-                        const newEnd = diffEnd.a;
-
-                        const changedHeights = collectHeights(view, diffStart, newEnd);
-                        const heights = new Map(prevHeights);
-                        changedHeights.forEach((h, n) => heights.set(n, h));
-
-                        if (!areHeightsEqual(prevHeights, heights)) {
-                            view.dispatch(
-                                view.state.tr.setMeta(heightTrackingPluginKey, heights),
-                            );
-                            runPageReflow(view);
-                        }
-                    },
-                };
-            },
-            // destroy() {
-            //     preRenderPage?.remove();
-            //     preRenderPage = null;
-            // },
-        }),
+      {
+        types: ["*"],
+        attributes: {
+          renderedHeight: {
+            default: null,
+            parseHTML: () => null,
+            renderHTML: () => ({}),
+          },
+        },
+      },
     ];
   },
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        view(editorView) {
+          return {
+            update(view, prevState) {
+              if (prevState.doc.eq(view.state.doc)) return;
+
+              const diffStart = view.state.doc.content.findDiffStart(prevState.doc.content);
+              if (diffStart == null) return;
+              const diffEnd = view.state.doc.content.findDiffEnd(prevState.doc.content) ?? {
+                a: view.state.doc.content.size,
+              };
+
+              const measured = collectHeights(view, diffStart, diffEnd.a);
+              let tr = view.state.tr;
+              let changed = false;
+
+              for (const { node, pos, height } of measured) {
+                if (node.attrs.renderedHeight !== height) {
+                  tr = tr.setNodeMarkup(pos, undefined, {
+                    ...node.attrs,
+                    renderedHeight: height,
+                  });
+                  changed = true;
+                }
+              }
+
+              if (changed) {
+                view.dispatch(tr);
+                runPageReflow(view);
+              }
+            },
+          };
+        },
+      }),
+    ];
+  }
 });

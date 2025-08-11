@@ -3,7 +3,7 @@ import { Plugin, PluginKey, TextSelection,
     type EditorState,
     type Transaction,
  } from "prosemirror-state";
-import { HeightData, heightTrackingPluginKey } from "./heightTrackingPlugin";
+import { runPageReflow, heightTrackingPluginKey } from "./heightTrackingPlugin";
 import type { EditorView } from "prosemirror-view";
 import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 
