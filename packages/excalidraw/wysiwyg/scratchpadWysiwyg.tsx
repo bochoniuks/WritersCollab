@@ -526,10 +526,16 @@ export const scratchpadWysiwyg = ({
             .setFontSize(`${app.state.currentItemFontSize}px`);
         // }
         chain.setColor(element.strokeColor).run();
-        runHeightTracking(ed.view);
-        if (element.paginationEnabled) {
-          runPageReflow(ed.view);
-        }
+        document.fonts.ready.then(() => {
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              runHeightTracking(ed.view);
+              if (element.paginationEnabled) {
+                runPageReflow(ed.view);
+              }
+            }),
+          );
+        });
       }
       return () => {
         app.updateEditorAtom(activeScratchpadEditorAtom, null);

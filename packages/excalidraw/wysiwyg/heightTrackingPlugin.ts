@@ -42,17 +42,15 @@ const collectHeights = (
     return measured;
 };
 
-export const runHeightTracking = (view: EditorView) => {
-  const measured = collectHeights(view);
+export const runHeightTracking = (view: EditorView, start = 0,
+  end = view.state.doc.content.size) => {
+  const measured = collectHeights(view, start, end);
   let tr = view.state.tr;
   let changed = false;
 
   for (const { node, pos, height } of measured) {
     if (node.attrs.renderedHeight !== height) {
-      tr = tr.setNodeMarkup(pos, undefined, {
-        ...node.attrs,
-        renderedHeight: height,
-      });
+      tr = tr.setNodeAttribute(pos, "renderedHeight", height);
       changed = true;
     }
   }
@@ -94,24 +92,25 @@ export const HeightTracking = Extension.create({
                 a: view.state.doc.content.size,
               };
 
-              const measured = collectHeights(view, diffStart, diffEnd.a);
-              let tr = view.state.tr;
-              let changed = false;
+              runHeightTracking(view, diffStart, diffEnd.a)
+              // const measured = collectHeights(view, diffStart, diffEnd.a);
+              // let tr = view.state.tr;
+              // let changed = false;
 
-              for (const { node, pos, height } of measured) {
-                if (node.attrs.renderedHeight !== height) {
-                  tr = tr.setNodeMarkup(pos, undefined, {
-                    ...node.attrs,
-                    renderedHeight: height,
-                  });
-                  changed = true;
-                }
-              }
+              // for (const { node, pos, height } of measured) {
+              //   if (node.attrs.renderedHeight !== height) {
+              //     tr = tr.setNodeMarkup(pos, undefined, {
+              //       ...node.attrs,
+              //       renderedHeight: height,
+              //     });
+              //     changed = true;
+              //   }
+              // }
 
-              if (changed) {
-                view.dispatch(tr);
-                runPageReflow(view);
-              }
+              // if (changed) {
+              //   view.dispatch(tr);
+              //   runPageReflow(view);
+              // }
             },
           };
         },
