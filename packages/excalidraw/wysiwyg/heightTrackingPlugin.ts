@@ -23,40 +23,38 @@ const areHeightsEqual = (prev: HeightData, next: HeightData): boolean => {
     return true;
 };
 
-let measureDiv: HTMLDivElement | null = null;
+let preRenderPage: HTMLDivElement | null = null;
 
-const getMeasureDiv = (view: EditorView, cfg: NonNullable<EditorView['page']>) => {
-  if (!measureDiv) {
-    console.log(cfg)
-    const width = cfg.width - cfg.margin.left - cfg.margin.right;
-    measureDiv = Object.assign(document.createElement("div"), {
+const getPreRenderPage = (
+  view: EditorView,
+  cfg: NonNullable<EditorView["page"]>,
+) => {
+  const width = cfg.width - cfg.margin.left - cfg.margin.right;
+  if (!preRenderPage) {
+    // const firstPage = view.dom.querySelector<HTMLDivElement>(".page");
+    preRenderPage = Object.assign(document.createElement("div"), {
+      className: "tiptap ProseMirror",
+      id: "pre-render",
       style: `
-        position:absolute;top:-10000px;left:0;
-        width:${width}px;margin:0;padding:0;
+        position:absolute;
+        top:0;
+        left:0;
+        width:${width}px;
+        margin:0;
+        height:auto;
+        overflow-y: hidden;
+        overflow-x: hidden;
         visibility:hidden;
+        pointer-events:none;
+        box-sizing: border-box;
+        border: 1px solid;
       `,
     });
-    measureDiv.className = view.dom.className;
-    // const container =
-    //   document.querySelector<HTMLDivElement>(".excalidraw-textEditorContainer") ??
-    //   document.body;
-
-    const container =
-      document.querySelector<HTMLDivElement>(".tiptap .ProseMirror")
-    console.log(container)
-
-    if (!container)
-        return null
-
-    container.appendChild(measureDiv);
-    const style = window.getComputedStyle(measureDiv);
-    console.log(style)
-
-    console.log(measureDiv)
-    console.log(measureDiv.getBoundingClientRect().height, measureDiv.getBoundingClientRect().width)
-    
+    view.dom.parentNode?.appendChild(preRenderPage);
+  } else {
+    preRenderPage.style.width = `${width}px`;
   }
-  return measureDiv;
+  return preRenderPage;
 };
 
 // const collectHeights = (
@@ -125,43 +123,62 @@ const collectHeights = (
   start = 0,
   end = view.state.doc.content.size,
 ): HeightData => {
-  const cfg = view.page;
-  const heights: HeightData = new Map();
-  if (!cfg) return heights;
+    const cfg = view.page;
+    const heights: HeightData = new Map();
+    if (!cfg) return heights;
 
-  const visited = new Set<ProseMirrorNode>();
-  const nodes: Array<{ node: ProseMirrorNode; dom: HTMLElement }> = [];
+    const visited = new Set<ProseMirrorNode>();
+    const nodes: Array<{ node: ProseMirrorNode; dom: HTMLElement }> = [];
 
-  const collect = (node: ProseMirrorNode, pos: number): void => {
-    if (visited.has(node)) return;
-    visited.add(node);
-    const dom = view.nodeDOM(pos) as HTMLElement | null;
-    if (dom) nodes.push({ node, dom });
-    const resolved = view.state.doc.resolve(pos);
-    if (resolved.depth > 0) {
-      collect(resolved.node(resolved.depth - 1), resolved.before(resolved.depth));
+    const collect = (node: ProseMirrorNode, pos: number): void => {
+        if (visited.has(node)) return;
+        visited.add(node);
+        const dom = view.nodeDOM(pos) as HTMLElement | null;
+        if (dom) nodes.push({ node, dom });
+        const resolved = view.state.doc.resolve(pos);
+        if (resolved.depth > 0) {
+        collect(resolved.node(resolved.depth - 1), resolved.before(resolved.depth));
+        }
+    };
+    view.state.doc.nodesBetween(start, end, (node, pos) => {
+        if (node.isBlock) collect(node, pos);
+    });
+
+    const container = getPreRenderPage(view, cfg);
+    if (!container) return heights;
+    
+    container.textContent = "";
+    // console.log(container)
+    for(const i in [1,2]){
+        for (const { node, dom } of nodes) {
+            console.log(node.type)
+            if (node.type.name === "page" || node.type.name === "doc") {
+                continue;
+            }
+            const clone = dom.cloneNode(true) as HTMLElement;
+            container.appendChild(clone);
+            console.log(clone)
+            console.log(dom)
+            const style = window.getComputedStyle(clone);
+            console.log(style.fontFamily)
+            console.log(style.fontSize)
+            console.log(style.lineHeight)
+            console.log(style.margin)
+            console.log(style.padding)
+            console.log(style.display)
+            console.log(style.width)
+            console.log(style.height)
+
+            console.log(clone.getBoundingClientRect().width, clone.getBoundingClientRect().height)
+            console.log(clone.offsetHeight,clone.offsetWidth)
+            heights.set(node, clone.getBoundingClientRect().height);
+        }
+        console.log(container.cloneNode(true))
+        // container.textContent = "";
     }
-  };
-  view.state.doc.nodesBetween(start, end, (node, pos) => {
-    if (node.isBlock) collect(node, pos);
-  });
+    
 
-  const container = getMeasureDiv(view, cfg);
-  if (!container) return heights
-  
-  container.innerHTML = "";
-  for (const { node, dom } of nodes) {
-    const clone = dom.cloneNode(true) as HTMLElement;
-    container.appendChild(clone);
-    console.log(dom);
-    console.log(clone.parentElement?.getBoundingClientRect().width);
-
-    console.log(clone.getBoundingClientRect().height, clone.getBoundingClientRect().width);
-
-    heights.set(node, clone.getBoundingClientRect().height);
-  }
-  container.innerHTML = "";
-  return heights;
+    return heights;
 };
 
 export const runHeightTracking = (view: EditorView) => {
@@ -217,6 +234,10 @@ export const HeightTracking = Extension.create({
                     },
                 };
             },
+            // destroy() {
+            //     preRenderPage?.remove();
+            //     preRenderPage = null;
+            // },
         }),
     ];
   },
