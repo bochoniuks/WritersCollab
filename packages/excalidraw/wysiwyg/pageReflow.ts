@@ -3,7 +3,7 @@ import { Plugin, PluginKey, TextSelection,
     type EditorState,
     type Transaction,
  } from "prosemirror-state";
-import { runPageReflow, heightTrackingPluginKey } from "./heightTrackingPlugin";
+// import { runPageReflow, heightTrackingPluginKey } from "./heightTrackingPlugin";
 import type { EditorView } from "prosemirror-view";
 import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 
@@ -12,7 +12,6 @@ export interface PageReflowOptions {
 }
 
 export const runPageReflow = (view: EditorView) => {
-  // Triggers the PageReflow plugin manually
   view.dispatch(view.state.tr.setMeta(pageReflowKey, {}));
 };
 
@@ -96,8 +95,6 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             const pageHeight = page.height - page.margin.top - page.margin.bottom;
 
 
-            const heightData =
-                heightTrackingPluginKey.getState(curr) as HeightData;
             const { schema } = curr;
             const blocks: Array<{ node: any; pos: number; listId?: string }> = [];
 
@@ -133,7 +130,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             let lastListId: string | undefined;        // <— add
             let pageCount = 1;
             for (const { node, pos, listId } of blocks) {
-                const h = heightData?.get(node) ?? 0;
+                const h = node.attrs.renderedHeight ?? 0;
                 console.log("DOM height:", h)
                 if (listId) {  // list item
                     lastListId = listId;  
