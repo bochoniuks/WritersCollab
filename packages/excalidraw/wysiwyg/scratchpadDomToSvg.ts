@@ -1,12 +1,23 @@
-import satori from "satori";
-import { html as htmlToReact } from "satori-html";
-import { SCRATCHPAD_PAGE_SIZES } from "@excalidraw/common";
+import html2canvas from "html2canvas";
+import { SCRATCHPAD_PAGE_BORDER_COLOR, SCRATCHPAD_PAGE_GAP, SCRATCHPAD_PAGE_SIZES, getFontString } from "@excalidraw/common";
 import type { ExcalidrawScratchpadElement } from "@excalidraw/element/types";
 import { Editor } from "@tiptap/core";
+import StarterKit from "@tiptap/starter-kit";
+import TextStyle from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
+import FontFamily from "@tiptap/extension-font-family";
+import FontSize from "tiptap-extension-font-size";
+import { StyledHardBreak } from "./styledHardBreak";
+import Underline from "@tiptap/extension-underline";
+import { HeightTracking } from "./heightTrackingPlugin";
 import { loadHTMLImageElement } from "@excalidraw/element";
 import { DataURL } from "../types";
+import { DocumentWithPages } from "./documentWithPages";
+import { Page } from "./page";
+import { PaginatedBulletList } from "./bulletList";
+import { PageReflow } from "./pageReflow";
 import { createScratchpadContainer, getScratchpadExtensions } from "./scratchpadEditor";
-import { ReactNode } from "react";
+import { zIndex } from "html2canvas/dist/types/css/property-descriptors/z-index";
 
 export const loadCanvasFromSnapshot = async (
   element: ExcalidrawScratchpadElement,
@@ -76,35 +87,19 @@ export const generateScratchpadCanvas = async (
     canvas.width = size.width;
     canvas.height = size.height;
 
-    // Convert wrapper DOM to a React‑like tree and render SVG with satori
-    const reactTree = htmlToReact(wrapper.innerHTML) as ReactNode;
-    const svgMarkup = await satori(reactTree, {
-      width: size.width,
-      height: size.height,
-      fonts: [
-        {
-          name: "Virgil",
-          data: await fetch("/fonts/Virgil.woff2").then(r => r.arrayBuffer()),
-          weight: 400,
-          style: "normal",
-        },
-        // add additional fonts if the scratchpad uses them
-      ],
+    const result = await html2canvas(wrapper, {
+        backgroundColor: null,
+        useCORS: true,
+        scale: window.devicePixelRatio || 1,
+        // foreignObjectRendering: true,
+        canvas,
     });
-
-    // Draw the SVG on a canvas
-    const svgUrl = "data:image/svg+xml;base64," + btoa(svgMarkup);
-    const img = new Image();
-    img.src = svgUrl;
-    await img.decode();
-    canvas.getContext("2d")!.drawImage(img, 0, 0);
-
     editor.destroy();
     wrapper.remove();
-    element.canvasCache = canvas;
-    element.canvasSnapshot = canvas.toDataURL();
+    element.canvasCache = result;
+    element.canvasSnapshot = result.toDataURL();
 
-    return canvas;
+    return result;
 };
 
 export const getCachedScratchpadCanvas = (
