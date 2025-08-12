@@ -45,6 +45,10 @@ export const generateScratchpadCanvas = async (
     : { width: element.width, height: element.height };
 
   const wrapper = createScratchpadContainer(element);
+  const editorDiv = document.createElement("div");
+  editorDiv.classList.add("tiptap");          // TipTap root to receive ProseMirror class
+  editorDiv.classList.add("ProseMirror");          // TipTap root to receive ProseMirror class
+  wrapper.appendChild(editorDiv);
   Object.assign(wrapper.style, {
     position: "absolute",
     left: "-9999px",
@@ -64,8 +68,8 @@ export const generateScratchpadCanvas = async (
     content: firstPageDoc,
   });
 
-    wrapper.innerHTML = editor.getHTML();
-    editor.destroy();
+    editorDiv.innerHTML = editor.getHTML();
+    
     const container =
       document.querySelector<HTMLDivElement>(".excalidraw-textEditorContainer") ??
       document.body;
@@ -86,8 +90,11 @@ export const generateScratchpadCanvas = async (
     const result = await html2canvas(wrapper, {
         backgroundColor: null,
         useCORS: true,
+        scale: window.devicePixelRatio || 1,
+        // foreignObjectRendering: true,
         canvas,
     });
+    editor.destroy();
     wrapper.remove();
     element.canvasCache = result;
     element.canvasSnapshot = result.toDataURL();

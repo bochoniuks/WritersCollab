@@ -57,9 +57,11 @@ const splitParagraphByHeight = (
     const firstText = text.slice(0, globalIndex);
     const secondText = text.slice(globalIndex);
     if (!firstText || !secondText) return null;
+
+    const totalHeight = node.attrs.renderedHeight ?? 0;
     return {
-        first: schema.nodes.paragraph.create(null, schema.text(firstText)),
-        second: schema.nodes.paragraph.create(null, schema.text(secondText)),
+        first: schema.nodes.paragraph.create({ renderedHeight: used }, schema.text(firstText)),
+        second: schema.nodes.paragraph.create({ renderedHeight: totalHeight - used }, schema.text(secondText)),
         used,
     };
 };
