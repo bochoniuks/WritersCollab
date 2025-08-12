@@ -21,7 +21,6 @@ const splitParagraphByHeight = (
   remaining: number,
   schema: Schema,
 ) => {
-    return null;
     console.log("remainig: ", remaining)
     const dom = view.nodeDOM(pos) as HTMLElement | null;
     if (!dom) return null;
