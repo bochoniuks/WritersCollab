@@ -66,7 +66,7 @@ export const HeightTracking = Extension.create({
   addGlobalAttributes() {
     return [
       {
-        types: ["*"],
+        types: ["page", "paragraph", "bulletList", "listItem"],
         attributes: {
           renderedHeight: {
             default: null,
