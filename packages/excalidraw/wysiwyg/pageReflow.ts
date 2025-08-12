@@ -129,6 +129,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             for (const { node, pos, listId } of blocks) {
                 const h = node.attrs.renderedHeight ?? 0;
                 console.log("DOM height:", h)
+                console.log(node)
                 if (listId) {  // list item
                     lastListId = listId;  
                     if (accum + h > pageHeight && currentList.length) {
@@ -152,16 +153,16 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 }
                 
                 const remaining = pageHeight - accum;
-                console.log(pageHeight, accum, remaining)
-                console.log(content)
+                // console.log(pageHeight, accum, remaining)
+                // console.log(content)
                 if (
                     node.type.name === "paragraph" &&
                     node.textContent &&
                     h > remaining &&
                     editorView) 
                 {
-                    console.log("--- Paragraph --- ", h, " > ", remaining)
-                    console.log(node.toJSON())
+                    // console.log("--- Paragraph --- ", h, " > ", remaining)
+                    // console.log(node.toJSON())
 
                     const split = splitParagraphByHeight(editorView, node, pos, remaining, schema);
                     if (split) {
@@ -218,7 +219,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             const safeAnchor = Math.min(Math.max(anchorPos, 0), tr.doc.content.size);
             const safeHead   = Math.min(Math.max(headPos,   0), tr.doc.content.size);
             tr.setSelection(TextSelection.create(tr.doc, safeAnchor, safeHead));
-            console.log(newDoc.toJSON())
+            // console.log(newDoc.toJSON())
             return tr;
         },
       }),
