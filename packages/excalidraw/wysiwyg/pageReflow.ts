@@ -3,7 +3,7 @@ import { Plugin, PluginKey, TextSelection,
     type EditorState,
     type Transaction,
  } from "prosemirror-state";
-// import { runPageReflow, heightTrackingPluginKey } from "./heightTrackingPlugin";
+
 import type { EditorView } from "prosemirror-view";
 import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 
@@ -11,9 +11,6 @@ export interface PageReflowOptions {
   maxPages?: number;
 }
 
-export const runPageReflow = (view: EditorView) => {
-  view.dispatch(view.state.tr.setMeta(pageReflowKey, {}));
-};
 
 export const pageReflowKey = new PluginKey("pageReflow");
 

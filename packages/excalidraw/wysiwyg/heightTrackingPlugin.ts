@@ -2,7 +2,7 @@ import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import type { Node as ProseMirrorNode } from "prosemirror-model";
-import { runPageReflow } from "./pageReflow";
+import { pageReflowKey } from "./pageReflow";
 
 
 type Measured = { node: ProseMirrorNode; pos: number; height: number };
@@ -47,14 +47,16 @@ export const runHeightTracking = (view: EditorView, start = 0,
 
   for (const { node, pos, height } of measured) {
     if (node.attrs.renderedHeight !== height) {
-      tr = tr.setNodeAttribute(pos, "renderedHeight", height);
+      tr = tr.setNodeMarkup(pos, undefined, {
+        ...node.attrs,
+        renderedHeight: height,
+      });
       changed = true;
     }
   }
 
   if (changed) {
-    view.dispatch(tr);
-    runPageReflow(view);
+    view.dispatch(tr.setMeta(pageReflowKey, true));
   }
 };
 
@@ -68,11 +70,17 @@ export const HeightTracking = Extension.create({
         attributes: {
           renderedHeight: {
             default: null,
-            parseHTML: () => null,
-            renderHTML: () => ({}),
+            parseHTML: element => {
+              const v = element.getAttribute("data-rendered-height");
+              return v ? Number(v) : null;
+            },
+            renderHTML: attrs =>
+              attrs.renderedHeight == null
+                ? {}
+                : { "data-rendered-height": attrs.renderedHeight },
+            },
           },
         },
-      },
     ];
   },
   addProseMirrorPlugins() {

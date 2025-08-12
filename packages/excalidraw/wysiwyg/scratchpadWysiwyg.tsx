@@ -118,7 +118,7 @@ import Underline from "@tiptap/extension-underline";
 import { arrowsMaximize, arrowsMinimize } from "../components/icons";
 import { HeightTracking, runHeightTracking } from "./heightTrackingPlugin";
 import { Page } from "./page";
-import { PageReflow, runPageReflow } from "./pageReflow";
+import { PageReflow } from "./pageReflow";
 import { DocumentWithPages } from "./documentWithPages";
 import { PaginatedBulletList } from "./bulletList";
 import { createScratchpadContainer, getScratchpadExtensions } from "./scratchpadEditor";
@@ -485,9 +485,6 @@ export const scratchpadWysiwyg = ({
           const patched = addMarkToSlice(slice, mark);
           view.dispatch(view.state.tr.replaceSelection(patched));
           runHeightTracking(view, );
-          if (element.paginationEnabled) {            // re-run pagination
-            runPageReflow(view);
-          }
           return true;
         },
       },
@@ -530,9 +527,6 @@ export const scratchpadWysiwyg = ({
           requestAnimationFrame(() =>
             requestAnimationFrame(() => {
               runHeightTracking(ed.view);
-              if (element.paginationEnabled) {
-                runPageReflow(ed.view);
-              }
             }),
           );
         });
