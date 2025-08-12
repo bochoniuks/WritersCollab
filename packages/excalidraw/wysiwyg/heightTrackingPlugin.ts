@@ -13,21 +13,18 @@ const collectHeights = (
   end = view.state.doc.content.size,
 ): Measured[] => {
     const measured: Measured[] = [];
-    const cfg = view.page;
-    // const heights: HeightData = new Map();
-    // if (!cfg) return heights;
 
     const visited = new Set<ProseMirrorNode>();
     const nodes: Array<{ node: ProseMirrorNode; dom: HTMLElement; pos: number }> = [];
 
     const collect = (node: ProseMirrorNode, pos: number): void => {
         if (visited.has(node)) return;
-        visited.add(node);
+          visited.add(node);
         const dom = view.nodeDOM(pos) as HTMLElement | null;
         if (dom) nodes.push({ node, dom, pos });
-        const resolved = view.state.doc.resolve(pos);
+          const resolved = view.state.doc.resolve(pos);
         if (resolved.depth > 0) {
-        collect(resolved.node(resolved.depth - 1), resolved.before(resolved.depth));
+          collect(resolved.node(resolved.depth - 1), resolved.before(resolved.depth));
         }
     };
     view.state.doc.nodesBetween(start, end, (node, pos) => {
@@ -50,7 +47,10 @@ export const runHeightTracking = (view: EditorView, start = 0,
 
   for (const { node, pos, height } of measured) {
     if (node.attrs.renderedHeight !== height) {
-      tr = tr.setNodeAttribute(pos, "renderedHeight", height);
+      tr = tr.setNodeMarkup(pos, undefined, {
+        ...node.attrs,
+        renderedHeight: height,
+      });
       changed = true;
     }
   }
