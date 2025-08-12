@@ -47,10 +47,7 @@ export const runHeightTracking = (view: EditorView, start = 0,
 
   for (const { node, pos, height } of measured) {
     if (node.attrs.renderedHeight !== height) {
-      tr = tr.setNodeMarkup(pos, undefined, {
-        ...node.attrs,
-        renderedHeight: height,
-      });
+      tr = tr.setNodeAttribute(pos, "renderedHeight", height);
       changed = true;
     }
   }
@@ -93,24 +90,6 @@ export const HeightTracking = Extension.create({
               };
 
               runHeightTracking(view, diffStart, diffEnd.a)
-              // const measured = collectHeights(view, diffStart, diffEnd.a);
-              // let tr = view.state.tr;
-              // let changed = false;
-
-              // for (const { node, pos, height } of measured) {
-              //   if (node.attrs.renderedHeight !== height) {
-              //     tr = tr.setNodeMarkup(pos, undefined, {
-              //       ...node.attrs,
-              //       renderedHeight: height,
-              //     });
-              //     changed = true;
-              //   }
-              // }
-
-              // if (changed) {
-              //   view.dispatch(tr);
-              //   runPageReflow(view);
-              // }
             },
           };
         },

@@ -64,7 +64,11 @@ export const generateScratchpadCanvas = async (
     content: firstPageDoc,
   });
 
-    await new Promise((r) => requestAnimationFrame(r));
+    // Wait for fonts to finish loading and two animation frames
+    await (document.fonts?.ready ?? Promise.resolve());
+    await new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve)),
+    );
 
     wrapper.innerHTML = editor.getHTML();
     editor.destroy();
