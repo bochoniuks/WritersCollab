@@ -10,7 +10,7 @@ export const Page = Node.create<PageOptions>({
   name: "page",
   group: "block",
   content: "block+",
-  isolating: true,
+  isolating: false,
 
   addAttributes() {
     return { ...this.options.HTMLAttributes };

@@ -14,6 +14,19 @@ export interface PageReflowOptions {
 
 export const pageReflowKey = new PluginKey("pageReflow");
 
+function markPoint(x: number, y: number) {
+  const marker = document.createElement("div");
+  marker.style.position = "fixed";
+  marker.style.left = `${x}px`;
+  marker.style.top = `${y}px`;
+  marker.style.width = "4px";
+  marker.style.height = "4px";
+  marker.style.background = "red";
+  marker.style.zIndex = "999999";
+  marker.style.pointerEvents = "none"; // don't block clicks
+  document.body.appendChild(marker);
+}
+
 const splitParagraphByHeight = (
   view: EditorView,
   node: ProseMirrorNode,
@@ -27,11 +40,20 @@ const splitParagraphByHeight = (
     const range = document.createRange();
     console.log(dom)
     range.selectNodeContents(dom);
+    const rootRect = view.dom.getBoundingClientRect();
+    const rootScaleY = rootRect.height / view.dom.offsetHeight;
     const rects = Array.from(range.getClientRects());
+
+    const linesSpace = rects.map(r=>r.height).reduce((acc, current) => acc + current, 0);
+    const interLinesSpace = range.getBoundingClientRect().height - linesSpace;
+    const spacePerLine = interLinesSpace / rects.length;
+
     console.log(rects)
+    console.log("Space per line: ", spacePerLine)
     let used = 0, idx = 0;
-    while (idx < rects.length && used + rects[idx].height <= remaining) {
-        used += rects[idx].height;
+    while (idx < rects.length && used + (rects[idx].height+spacePerLine)/rootScaleY <= remaining) {
+        used += (rects[idx].height+spacePerLine)/rootScaleY;
+        console.log("used: ",used)
         idx++;
     }
     
@@ -39,12 +61,20 @@ const splitParagraphByHeight = (
     console.log(lastRect)
     let caret: any = null;
     for (let dx = 0; dx < 5 && !caret; dx++) {
-        const x = lastRect.right - 1 - dx;
-        const y = lastRect.top + lastRect.height / 2;
+        const x = lastRect.right/rootScaleY - 1 - dx;
+        const y = lastRect.top/rootScaleY + lastRect.height/rootScaleY / 2;
+        console.log("Coords:", x, y);
+        console.log("Element:", document.elementFromPoint(x, y));
+
+        markPoint(x, y); // show marker on screen
+        
         caret = (document as any).caretPositionFromPoint?.(x, y) ??
                     document.caretRangeFromPoint?.(x, y);
     }
+    console.log(caret)
+    
     if (!caret) return null;
+    
     const offsetNode = caret.offsetNode ?? caret.startContainer;
     const offset = caret.offset ?? caret.startOffset;
     let globalIndex = 0;
@@ -155,18 +185,19 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 
                 const remaining = pageHeight - accum;
                 // console.log(pageHeight, accum, remaining)
-                // console.log(content)
+                console.log("h: ", h, "remaining: ", remaining)
                 if (
                     node.type.name === "paragraph" &&
                     node.textContent &&
                     h > remaining &&
                     editorView) 
                 {
-                    // console.log("--- Paragraph --- ", h, " > ", remaining)
-                    // console.log(node.toJSON())
+                    console.log("--- Paragraph --- ", h, " > ", remaining)
+                    console.log(node.toJSON())
 
                     const split = splitParagraphByHeight(editorView, node, pos, remaining, schema);
                     if (split) {
+                        console.log(split)
                         content.push(split.first);
                         pages.push(schema.nodes.page.create(null, content));
                         if (pages.length >= maxPages) break;

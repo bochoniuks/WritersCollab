@@ -31,10 +31,13 @@ const collectHeights = (
         if (node.isBlock) collect(node, pos);
     });
 
+    const rootRect = view.dom.getBoundingClientRect();
+    const rootScaleY = rootRect.height / view.dom.offsetHeight;
     for (const { node, dom, pos } of nodes) {
+      const height = dom.getBoundingClientRect().height / rootScaleY;
       console.log(dom)
-      console.log(dom.getBoundingClientRect().width,dom.getBoundingClientRect().height)
-      measured.push({ node, pos, height: dom.getBoundingClientRect().height });
+      console.log(height)
+      measured.push({ node, pos, height: height });
     }
     return measured;
 };
@@ -70,17 +73,11 @@ export const HeightTracking = Extension.create({
         attributes: {
           renderedHeight: {
             default: null,
-            parseHTML: element => {
-              const v = element.getAttribute("data-rendered-height");
-              return v ? Number(v) : null;
-            },
-            renderHTML: attrs =>
-              attrs.renderedHeight == null
-                ? {}
-                : { "data-rendered-height": attrs.renderedHeight },
-            },
-          },
+            renderHTML: () => ({}), // don't output a DOM attribute
+            parseHTML: () => null,  // ignore any DOM attribute
+          }
         },
+      },
     ];
   },
   addProseMirrorPlugins() {

@@ -95,7 +95,7 @@ export const createScratchpadContainer = (
     font,
     background: "transparent",
     boxSizing: "content-box",
-    zIndex: 10
+    zIndex: "var(--zIndex-wysiwyg)"
   });
 
   const page = element.pageSize
