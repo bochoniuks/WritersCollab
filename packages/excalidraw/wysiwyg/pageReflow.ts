@@ -146,45 +146,53 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             let currentList: ProseMirrorNode[] = [];   // <— add
             let lastListId: string | undefined;        // <— add
             let pageCount = 1;
+            let prevBottom = blocks[0]?.node.attrs.renderedTop ?? 0;
+
             for (const { node, pos, listId } of blocks) {
                 const h = node.attrs.renderedHeight ?? 0;
+                const top = node.attrs.renderedTop ?? prevBottom;
+                const bottom = top + h;
+                const delta = bottom - prevBottom;        // accounts for margin overlap
+                const remaining = pageHeight - accum;
+                const overlap = Math.max(0, prevBottom - top);
+
                 console.log("DOM height:", h)
                 console.log(node)
-                if (listId) {  // list item
-                    lastListId = listId;  
-                    if (accum + h > pageHeight && currentList.length) {
-                        content.push(schema.nodes.bulletList.create({ listId }, currentList));
-                        pages.push(schema.nodes.page.create(null, content));
-                        if (pages.length >= maxPages) {
-                            break;
-                        }
-                        content = [];
-                        currentList = [];
-                        accum = 0;
-                    }
-                    currentList.push(node);
-                    accum += h;
-                    continue;
-                }
+                // if (listId) {  // list item
+                //     lastListId = listId;  
+                //     if (accum + h > pageHeight && currentList.length) {
+                //         content.push(schema.nodes.bulletList.create({ listId }, currentList));
+                //         pages.push(schema.nodes.page.create(null, content));
+                //         if (pages.length >= maxPages) {
+                //             break;
+                //         }
+                //         content = [];
+                //         currentList = [];
+                //         accum = 0;
+                //     }
+                //     currentList.push(node);
+                //     accum += h;
+                //     continue;
+                // }
 
-                if (currentList.length) {
-                    content.push(schema.nodes.bulletList.create({ listId: lastListId }, currentList));
-                    currentList = [];
-                }
+                // if (currentList.length) {
+                //     content.push(schema.nodes.bulletList.create({ listId: lastListId }, currentList));
+                //     currentList = [];
+                // }
                 
-                const remaining = pageHeight - accum;
+                // const remaining = pageHeight - accum;
                 // console.log(pageHeight, accum, remaining)
                 console.log("h: ", h, "remaining: ", remaining)
                 if (
                     node.type.name === "paragraph" &&
                     node.textContent &&
-                    h > remaining &&
+                    delta > remaining &&
                     editorView) 
                 {
                     console.log("--- Paragraph --- ", h, " > ", remaining)
                     console.log(node.toJSON())
 
-                    const split = splitParagraphByHeight(editorView, node, pos, remaining, schema);
+                    const split = splitParagraphByHeight(editorView, node, pos, remaining + overlap, schema);
                     console.log(split)
                     if (split?.didSplit) {
                         content.push(split.first);

@@ -5,7 +5,12 @@ import type { Node as ProseMirrorNode } from "prosemirror-model";
 import { pageReflowKey } from "./pageReflow";
 
 
-type Measured = { node: ProseMirrorNode; pos: number; height: number };
+type Measured = {
+  node: ProseMirrorNode;
+  pos: number;
+  top: number;
+  height: number;
+};
 
 const collectHeights = (
   view: EditorView,
@@ -34,12 +39,10 @@ const collectHeights = (
     const rootRect = view.dom.getBoundingClientRect();
     const rootScaleY = rootRect.height / view.dom.offsetHeight;
     for (const { node, dom, pos } of nodes) {
-      const style = getComputedStyle(dom);
-      const height = (dom.getBoundingClientRect().height  + 
-          parseFloat(style.marginTop) + parseFloat(style.marginBottom)) / rootScaleY;
-      console.log(dom)
-      console.log(height)
-      measured.push({ node, pos, height: height });
+      const rect = dom.getBoundingClientRect();
+      const top = (rect.top - rootRect.top) / rootScaleY;
+      const height = rect.height / rootScaleY;
+      measured.push({ node, pos, top, height });
     }
     return measured;
 };
@@ -51,9 +54,13 @@ export const runHeightTracking = (view: EditorView, start = 0,
   let changed = false;
 
   for (const { node, pos, height } of measured) {
-    if (node.attrs.renderedHeight !== height) {
+    if (
+      node.attrs.renderedTop !== top ||
+      node.attrs.renderedHeight !== height
+    ) {
       tr = tr.setNodeMarkup(pos, undefined, {
         ...node.attrs,
+        renderedTop: top,
         renderedHeight: height,
       });
       changed = true;
@@ -80,20 +87,32 @@ export const HeightTracking = Extension.create({
         // types: ["page", "paragraph", "bulletList", "listItem"],
         types: blockTypes,
         attributes: {
+          renderedTop: {
+            default: null,
+            renderHTML: () => ({}),
+            parseHTML: () => null,
+          },
           renderedHeight: {
             default: null,
-            // renderHTML: () => ({}), // don't output a DOM attribute
-            // parseHTML: () => null,  // ignore any DOM attribute
-            parseHTML: element => {
-              const v = element.getAttribute("data-rendered-height");
-              return v ? Number(v) : null;
-            },
-            renderHTML: attrs =>
-              attrs.renderedHeight == null
-                ? {}
-                : { "data-rendered-height": attrs.renderedHeight },
+            renderHTML: () => ({}),
+            parseHTML: () => null,
           }
-        },
+        }
+        // attributes: {
+        //   renderedHeight: {
+        //     default: null,
+        //     // renderHTML: () => ({}), // don't output a DOM attribute
+        //     // parseHTML: () => null,  // ignore any DOM attribute
+        //     parseHTML: element => {
+        //       const v = element.getAttribute("data-rendered-height");
+        //       return v ? Number(v) : null;
+        //     },
+        //     renderHTML: attrs =>
+        //       attrs.renderedHeight == null
+        //         ? {}
+        //         : { "data-rendered-height": attrs.renderedHeight },
+        //   }
+        // },
       },
     ];
   },
