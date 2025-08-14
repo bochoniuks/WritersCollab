@@ -1,11 +1,12 @@
-import { Extension } from "@tiptap/core";
+import { Extension, Node } from "@tiptap/core";
 import { Plugin, PluginKey, TextSelection, 
     type EditorState,
     type Transaction,
  } from "prosemirror-state";
 
 import type { EditorView } from "prosemirror-view";
-import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
+import type { Node as ProseMirrorNode, ResolvedPos, Schema } from "prosemirror-model";
+import { NullableGridSize } from "../types";
 
 export interface PageReflowOptions {
   maxPages?: number;
@@ -13,32 +14,6 @@ export interface PageReflowOptions {
 
 
 export const pageReflowKey = new PluginKey("pageReflow");
-
-function markPoint(dom: HTMLElement, x: number, y: number) {
-  const marker = document.createElement("div");
-  marker.style.position = "fixed";
-  marker.style.left = `${x}px`;
-  marker.style.top = `${y}px`;
-  marker.style.width = "4px";
-  marker.style.height = "4px";
-  marker.style.background = "red";
-  marker.style.zIndex = "999999";
-  marker.style.pointerEvents = "none"; // don't block clicks
-  dom.parentElement?.appendChild(marker);
-}
-
-function rectangle(dom: HTMLElement, x: number, y: number, height:number, width:number) {
-  const marker = document.createElement("div");
-  marker.style.position = "fixed";
-  marker.style.left = `${x}px`;
-  marker.style.top = `${y}px`;
-  marker.style.width = `${width}px`;
-  marker.style.height = `${height}px`;
-  marker.style.background = "green";
-  marker.style.zIndex = "999999";
-  marker.style.pointerEvents = "none"; // don't block clicks
-  dom.parentElement?.appendChild(marker);
-}
 
 const splitParagraphByHeight = (
   view: EditorView,
@@ -55,70 +30,40 @@ const splitParagraphByHeight = (
     range.selectNodeContents(dom);
 
     // ### We need this to adap for any scaling
-    // const rootRect = view.dom.getBoundingClientRect();
-    // const rootScale = rootRect.height / view.dom.offsetHeight;
-    const parent = view.dom?.closest(".scratchpad-wysiwyg#editable");
-    console.log(parent)
-    const style = window.getComputedStyle(parent || view.dom);
-    const transform = style.transform;
-    console.log(transform)
-    const values = transform.match(/-?[\d.]+/g)!.map(Number);
-    const [rootScale, b, c, d, e, f] = values;
-    const xTranslate = e / rootScale;
-
+    const rootRect = view.dom.getBoundingClientRect();
+    const rootScale = rootRect.height / view.dom.offsetHeight;
     // ###
 
     const rects = Array.from(range.getClientRects());
 
     const linesSpace = rects.map(r=>r.height).reduce((acc, current) => acc + current, 0);
     const interLinesSpace = range.getBoundingClientRect().height - linesSpace;
-    console.log(range.getBoundingClientRect())
     const spacePerLine = interLinesSpace / rects.length;
 
-    console.log(rects)
-    console.log("Space per line: ", spacePerLine)
     let used = 0, idx = 0;
     while (idx < rects.length && used + (rects[idx].height+spacePerLine)/rootScale <= remaining) {
         used += (rects[idx].height+spacePerLine)/rootScale;
-        console.log("used: ",used)
         idx++;
     }
-    
+    console.log(used)
     const lastRect = rects[Math.max(0, idx - 1)];
     console.log(lastRect)
-    console.log(rootScale)
-    rectangle(view.dom, lastRect.x/rootScale-xTranslate, lastRect.y/rootScale, lastRect.height/rootScale, lastRect.width/rootScale);
-    let caret: any = null;
-    for (let dx = 0; dx < 5 && !caret; dx++) {
-        // We need to use xTranslate to compensate for the 
-        // translation/transformation of the editor container
-        const x = (lastRect.right/rootScale) - xTranslate - 1 - dx;
-
-        const y = lastRect.top/rootScale + lastRect.height/rootScale / 2;
-        console.log("Coords:", x, y);
-        console.log("Element:", document.elementFromPoint(x, y));
-
-        markPoint(view.dom, x, y); // show marker on screen
-
-        caret = (document as any).caretPositionFromPoint?.(x, y) ??
-                    document.caretRangeFromPoint?.(x, y);
-        console.log(caret)        
+    let splitNode: ProseMirrorNode | null = null;
+    let globalOffset: number | undefined = undefined;
+    for (let dx = 0; dx < 5 && !globalOffset; dx++) {
+        const x = lastRect.right - 1 - dx;
+        const y = lastRect.top + lastRect.height / 2;
+        const posInfo = view.posAtCoords({left: x, top: y});
+        if (!posInfo) continue;
+        const $pos = view.state.doc.resolve(posInfo.pos);
+        splitNode = $pos.parent;           // parent node at that position
+        if(splitNode!=node) continue
+        globalOffset = $pos.parentOffset;   // character offset inside the node
     }
-    // console.log(caret)
     
-    if (!caret) return null;
-    
-    const offsetNode = caret.offsetNode ?? caret.startContainer;
-    const offset = caret.offset ?? caret.startOffset;
-    let globalIndex = 0;
-    const walker = document.createTreeWalker(dom, NodeFilter.SHOW_TEXT, null);
-    for (let cur = walker.nextNode(); cur; cur = walker.nextNode()) {
-        if (cur === offsetNode) { globalIndex += offset; break; }
-        globalIndex += (cur as Text).data.length;
-    }
     const text = node.textContent!;
-    const firstText = text.slice(0, globalIndex);
-    const secondText = text.slice(globalIndex);
+    const firstText = text.slice(0, globalOffset);
+    const secondText = text.slice(globalOffset);
     if (!firstText || !secondText) return null;
 
     const totalHeight = node.attrs.renderedHeight ?? 0;
@@ -127,7 +72,7 @@ const splitParagraphByHeight = (
         second: schema.nodes.paragraph.create({ renderedHeight: totalHeight - used }, schema.text(secondText)),
         used,
     };
-};
+}
 
 export const PageReflow = Extension.create<PageReflowOptions>({
   name: "pageReflow",
