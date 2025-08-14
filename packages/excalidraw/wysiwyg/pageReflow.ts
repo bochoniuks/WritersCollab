@@ -14,7 +14,7 @@ export interface PageReflowOptions {
 
 export const pageReflowKey = new PluginKey("pageReflow");
 
-function markPoint(x: number, y: number) {
+function markPoint(dom: HTMLElement, x: number, y: number) {
   const marker = document.createElement("div");
   marker.style.position = "fixed";
   marker.style.left = `${x}px`;
@@ -24,7 +24,20 @@ function markPoint(x: number, y: number) {
   marker.style.background = "red";
   marker.style.zIndex = "999999";
   marker.style.pointerEvents = "none"; // don't block clicks
-  document.body.appendChild(marker);
+  dom.parentElement?.appendChild(marker);
+}
+
+function rectangle(dom: HTMLElement, x: number, y: number, height:number, width:number) {
+  const marker = document.createElement("div");
+  marker.style.position = "fixed";
+  marker.style.left = `${x}px`;
+  marker.style.top = `${y}px`;
+  marker.style.width = `${width}px`;
+  marker.style.height = `${height}px`;
+  marker.style.background = "green";
+  marker.style.zIndex = "999999";
+  marker.style.pointerEvents = "none"; // don't block clicks
+  dom.parentElement?.appendChild(marker);
 }
 
 const splitParagraphByHeight = (
@@ -40,38 +53,58 @@ const splitParagraphByHeight = (
     const range = document.createRange();
     console.log(dom)
     range.selectNodeContents(dom);
-    const rootRect = view.dom.getBoundingClientRect();
-    const rootScaleY = rootRect.height / view.dom.offsetHeight;
+
+    // ### We need this to adap for any scaling
+    // const rootRect = view.dom.getBoundingClientRect();
+    // const rootScale = rootRect.height / view.dom.offsetHeight;
+    const parent = view.dom?.closest(".scratchpad-wysiwyg#editable");
+    console.log(parent)
+    const style = window.getComputedStyle(parent || view.dom);
+    const transform = style.transform;
+    console.log(transform)
+    const values = transform.match(/-?[\d.]+/g)!.map(Number);
+    const [rootScale, b, c, d, e, f] = values;
+    const xTranslate = e / rootScale;
+
+    // ###
+
     const rects = Array.from(range.getClientRects());
 
     const linesSpace = rects.map(r=>r.height).reduce((acc, current) => acc + current, 0);
     const interLinesSpace = range.getBoundingClientRect().height - linesSpace;
+    console.log(range.getBoundingClientRect())
     const spacePerLine = interLinesSpace / rects.length;
 
     console.log(rects)
     console.log("Space per line: ", spacePerLine)
     let used = 0, idx = 0;
-    while (idx < rects.length && used + (rects[idx].height+spacePerLine)/rootScaleY <= remaining) {
-        used += (rects[idx].height+spacePerLine)/rootScaleY;
+    while (idx < rects.length && used + (rects[idx].height+spacePerLine)/rootScale <= remaining) {
+        used += (rects[idx].height+spacePerLine)/rootScale;
         console.log("used: ",used)
         idx++;
     }
     
     const lastRect = rects[Math.max(0, idx - 1)];
     console.log(lastRect)
+    console.log(rootScale)
+    rectangle(view.dom, lastRect.x/rootScale-xTranslate, lastRect.y/rootScale, lastRect.height/rootScale, lastRect.width/rootScale);
     let caret: any = null;
     for (let dx = 0; dx < 5 && !caret; dx++) {
-        const x = lastRect.right/rootScaleY - 1 - dx;
-        const y = lastRect.top/rootScaleY + lastRect.height/rootScaleY / 2;
+        // We need to use xTranslate to compensate for the 
+        // translation/transformation of the editor container
+        const x = (lastRect.right/rootScale) - xTranslate - 1 - dx;
+
+        const y = lastRect.top/rootScale + lastRect.height/rootScale / 2;
         console.log("Coords:", x, y);
         console.log("Element:", document.elementFromPoint(x, y));
 
-        markPoint(x, y); // show marker on screen
-        
+        markPoint(view.dom, x, y); // show marker on screen
+
         caret = (document as any).caretPositionFromPoint?.(x, y) ??
                     document.caretRangeFromPoint?.(x, y);
+        console.log(caret)        
     }
-    console.log(caret)
+    // console.log(caret)
     
     if (!caret) return null;
     
