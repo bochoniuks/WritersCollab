@@ -12,6 +12,12 @@ export interface PageReflowOptions {
   maxPages?: number;
 }
 
+interface SplitResult {
+  first?: ProseMirrorNode;
+  second?: ProseMirrorNode;
+  used: number;
+  didSplit: boolean;
+}
 
 export const pageReflowKey = new PluginKey("pageReflow");
 
@@ -24,7 +30,8 @@ const splitParagraphByHeight = (
 ) => {
     console.log("remainig: ", remaining)
     const dom = view.nodeDOM(pos) as HTMLElement | null;
-    if (!dom) return null;
+    if (!dom) return { used: 0, didSplit: false };
+
     const range = document.createRange();
     console.log(dom)
     range.selectNodeContents(dom);
@@ -46,6 +53,9 @@ const splitParagraphByHeight = (
         idx++;
     }
     console.log(used)
+    if (used===0) return { used: 0, didSplit: false };
+
+    
     const lastRect = rects[Math.max(0, idx - 1)];
     console.log(lastRect)
     let splitNode: ProseMirrorNode | null = null;
@@ -64,13 +74,14 @@ const splitParagraphByHeight = (
     const text = node.textContent!;
     const firstText = text.slice(0, globalOffset);
     const secondText = text.slice(globalOffset);
-    if (!firstText || !secondText) return null;
+    if (!firstText || !secondText) return { used: 0, didSplit: false };
 
     const totalHeight = node.attrs.renderedHeight ?? 0;
     return {
         first: schema.nodes.paragraph.create({ renderedHeight: used }, schema.text(firstText)),
         second: schema.nodes.paragraph.create({ renderedHeight: totalHeight - used }, schema.text(secondText)),
         used,
+        didSplit: true,
     };
 }
 
@@ -174,8 +185,8 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                     console.log(node.toJSON())
 
                     const split = splitParagraphByHeight(editorView, node, pos, remaining, schema);
-                    if (split) {
-                        console.log(split)
+                    console.log(split)
+                    if (split?.didSplit) {
                         content.push(split.first);
                         pages.push(schema.nodes.page.create(null, content));
                         if (pages.length >= maxPages) break;
@@ -183,6 +194,13 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                         content = [split.second];
                         accum = h - split.used;
                         continue;
+                    }
+                    else {
+                        pages.push(schema.nodes.page.create(null, content));
+                        pageCount += 1;
+                        content = [node];
+                        accum = h;
+                        continue
                     }
                 }
 

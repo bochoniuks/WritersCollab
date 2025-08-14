@@ -34,7 +34,9 @@ const collectHeights = (
     const rootRect = view.dom.getBoundingClientRect();
     const rootScaleY = rootRect.height / view.dom.offsetHeight;
     for (const { node, dom, pos } of nodes) {
-      const height = dom.getBoundingClientRect().height / rootScaleY;
+      const style = getComputedStyle(dom);
+      const height = (dom.getBoundingClientRect().height  + 
+          parseFloat(style.marginTop) + parseFloat(style.marginBottom)) / rootScaleY;
       console.log(dom)
       console.log(height)
       measured.push({ node, pos, height: height });
@@ -67,14 +69,29 @@ export const runHeightTracking = (view: EditorView, start = 0,
 export const HeightTracking = Extension.create({
   name: "heightTracking",
   addGlobalAttributes() {
+    const blockTypes = this.extensions
+      .filter(ext => {
+        return (ext.type === "node" && ext.config.group == "block");
+      })
+      .map(ext => ext.name);
+
     return [
       {
-        types: ["page", "paragraph", "bulletList", "listItem"],
+        // types: ["page", "paragraph", "bulletList", "listItem"],
+        types: blockTypes,
         attributes: {
           renderedHeight: {
             default: null,
-            renderHTML: () => ({}), // don't output a DOM attribute
-            parseHTML: () => null,  // ignore any DOM attribute
+            // renderHTML: () => ({}), // don't output a DOM attribute
+            // parseHTML: () => null,  // ignore any DOM attribute
+            parseHTML: element => {
+              const v = element.getAttribute("data-rendered-height");
+              return v ? Number(v) : null;
+            },
+            renderHTML: attrs =>
+              attrs.renderedHeight == null
+                ? {}
+                : { "data-rendered-height": attrs.renderedHeight },
           }
         },
       },
