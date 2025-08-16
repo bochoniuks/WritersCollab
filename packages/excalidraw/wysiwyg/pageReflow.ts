@@ -64,16 +64,21 @@ const splitParagraphByHeight = (
         const x = lastRect.right - 1 - dx;
         const y = lastRect.top + lastRect.height / 2;
         const posInfo = view.posAtCoords({left: x, top: y});
+        console.log(posInfo)
         if (!posInfo) continue;
         const $pos = view.state.doc.resolve(posInfo.pos);
         splitNode = $pos.parent;           // parent node at that position
-        if(splitNode!=node) continue
+        console.log(splitNode)
+        // if(splitNode!=node) continue
         globalOffset = $pos.parentOffset;   // character offset inside the node
     }
     
     const text = node.textContent!;
+    console.log(globalOffset);
     const firstText = text.slice(0, globalOffset);
     const secondText = text.slice(globalOffset);
+    console.log(firstText)
+    console.log(secondText)
     if (!firstText || !secondText) return { used: 0, didSplit: false };
 
     const totalHeight = node.attrs.renderedHeight ?? 0;
@@ -156,11 +161,13 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             let pageCount = 1;
             let prevMarginBottom = 0;
 
+            console.log("************ STARTING NEW REFLOW **************")
+
             for (const { node, pos, listId } of blocks) {
                 const h  = node.attrs.renderedHeight ?? 0;
                 const mt = node.attrs.renderedMarginTop ?? 0;
                 const mb = node.attrs.renderedMarginBottom ?? 0;
-                const topGap = Math.max(mt - prevMarginBottom, 0);
+                const topGap = Math.max(prevMarginBottom, mt);
                 const blockHeight = topGap + h;
                 const remaining = pageHeight - accum;
                 
@@ -192,7 +199,8 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 
                 // const remaining = pageHeight - accum;
                 // console.log(pageHeight, accum, remaining)
-                console.log("h: ", h, "remaining: ", remaining)
+                console.log("prevMarginBottom: ", prevMarginBottom)
+                console.log("blockHeight: ", blockHeight, "remaining: ", remaining)
                 if (
                     node.type.name === "paragraph" &&
                     node.textContent &&

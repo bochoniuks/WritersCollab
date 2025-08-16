@@ -34,7 +34,9 @@ const collectHeights = (
         }
     };
     view.state.doc.nodesBetween(start, end, (node, pos) => {
-        if (node.isBlock) collect(node, pos);
+        if (node.isBlock && node.type.name !== "page" && node.type.name !== "doc" ) {
+          collect(node, pos);
+        }
     });
 
     const rootRect = view.dom.getBoundingClientRect();
