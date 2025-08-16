@@ -11,6 +11,7 @@ type Measured = {
   height: number;
   marginTop: number;
   marginBottom: number;
+  pageIndex: number; 
 };
 
 const collectHeights = (
@@ -41,13 +42,18 @@ const collectHeights = (
 
     const rootRect = view.dom.getBoundingClientRect();
     const rootScaleY = rootRect.height / view.dom.offsetHeight;
+    const pageHeight = view.page?.height
     for (const { node, dom, pos } of nodes) {
       const rect = dom.getBoundingClientRect();
       const style = getComputedStyle(dom);
       const height = rect.height / rootScaleY;
       const marginTop = parseFloat(style.marginTop) / rootScaleY;
       const marginBottom = parseFloat(style.marginBottom) / rootScaleY;
-      measured.push({ node, pos, height, marginTop, marginBottom });
+      const top = (rect.top - rootRect.top) / rootScaleY;
+      const pageIndex = pageHeight ? Math.floor(top / pageHeight) : 0;
+      console.log(dom)
+      console.log("pageIndex: ", pageIndex)
+      measured.push({ node, pos, height, marginTop, marginBottom, pageIndex });
     }
     return measured;
 };
@@ -58,17 +64,19 @@ export const runHeightTracking = (view: EditorView, start = 0,
   let tr = view.state.tr;
   let changed = false;
 
-  for (const { node, pos, height, marginTop, marginBottom } of measured) {
+  for (const { node, pos, height, marginTop, marginBottom, pageIndex } of measured) {
     if (
       node.attrs.renderedHeight !== height ||
       node.attrs.renderedMarginTop !== marginTop ||
-      node.attrs.renderedMarginBottom !== marginBottom
+      node.attrs.renderedMarginBottom !== marginBottom ||
+      node.attrs.renderedPageIndex !== pageIndex
     ) {
       tr = tr.setNodeMarkup(pos, undefined, {
         ...node.attrs,
         renderedHeight: height,
         renderedMarginTop: marginTop,
         renderedMarginBottom: marginBottom,
+        renderedPageIndex: pageIndex,
       });
       changed = true;
     }
@@ -109,6 +117,11 @@ export const HeightTracking = Extension.create({
             renderHTML: () => ({}),
             parseHTML: () => null,
           },
+          renderedPageIndex: {
+            default: null,
+            renderHTML: () => ({}),
+            parseHTML: () => null,
+          },
         }
         // attributes: {
         //   renderedHeight: {
@@ -138,11 +151,15 @@ export const HeightTracking = Extension.create({
 
               const diffStart = view.state.doc.content.findDiffStart(prevState.doc.content);
               if (diffStart == null) return;
-              const diffEnd = view.state.doc.content.findDiffEnd(prevState.doc.content) ?? {
-                a: view.state.doc.content.size,
-              };
-
-              runHeightTracking(view, diffStart, diffEnd.a)
+              // const diffEnd = view.state.doc.content.findDiffEnd(prevState.doc.content) ?? {
+              //   a: view.state.doc.content.size,
+              // };
+              const diff = view.state.doc.content.findDiffEnd(prevState.doc.content);
+              const diffEnd = diff ? diff.a : view.state.doc.content.size;
+              const from = Math.max(0, diffStart - 1);
+              const to = Math.min(view.state.doc.content.size, diffEnd + 1);
+              console.log(from, to)
+              runHeightTracking(view, from, to)
             },
           };
         },
