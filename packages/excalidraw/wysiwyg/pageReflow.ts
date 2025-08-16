@@ -17,6 +17,7 @@ interface SplitResult {
   second?: ProseMirrorNode;
   used: number;
   didSplit: boolean;
+  splitOffse?: number;
 }
 
 export const pageReflowKey = new PluginKey("pageReflow");
@@ -93,6 +94,7 @@ const splitParagraphByHeight = (
             renderedMarginBottom: node.attrs.renderedMarginBottom ?? 0, }, schema.text(secondText)),
         used,
         didSplit: true,
+        splitOffset: globalOffset!
     };
 }
 
@@ -148,10 +150,13 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 }
             });
 
-            const anchorInfo = blocks.find(b => anchor >= b.pos && anchor < b.pos + b.node.nodeSize);
-            const headInfo = blocks.find(b => head >= b.pos && head < b.pos + b.node.nodeSize);
-            const anchorOff = anchorInfo ? anchor - anchorInfo.pos : anchor;
-            const headOff = headInfo ? head - headInfo.pos : head;
+            let anchorInfo = blocks.find(b => anchor >= b.pos && anchor < b.pos + b.node.nodeSize);
+            let headInfo = blocks.find(b => head >= b.pos && head < b.pos + b.node.nodeSize);
+            let anchorOff = anchorInfo ? anchor - anchorInfo.pos : anchor;
+            let headOff = headInfo ? head - headInfo.pos : head;
+
+            console.log(anchorInfo)
+            console.log(headInfo)
 
             const pages: any[] = [];
             let accum = 0;
@@ -218,7 +223,23 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                         schema
                     );
                     console.log(split)
-                    if (split?.didSplit) {
+                    if (split?.didSplit && split?.splitOffset) {
+                       if (anchorInfo?.node === node) {
+                            if (anchorOff > split.splitOffset) {
+                                anchorInfo = { node: split.second, pos: anchorInfo?.pos ?? 0 + split.splitOffset};
+                                anchorOff -= split.splitOffset;
+                            } else {
+                                anchorInfo = { node: split.first, pos: anchorInfo?.pos ?? 0 + split.splitOffset };
+                            }
+                        }
+                        if (headInfo?.node === node) {
+                            if (headOff > split.splitOffset) {
+                                headInfo = { node: split.second, pos: headInfo?.pos ?? 0 + split.splitOffset };
+                                headOff -= split.splitOffset;
+                            } else {
+                                headInfo = { node: split.first, pos: headInfo?.pos ?? 0 + split.splitOffset };
+                            }
+                        }
                         content.push(split.first);
                         pages.push(schema.nodes.page.create(null, content));
                         if (pages.length >= maxPages) break;
