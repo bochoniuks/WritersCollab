@@ -109,10 +109,12 @@ export const PageReflow = Extension.create<PageReflowOptions>({
         appendTransaction(trs: readonly Transaction[],
                             prev: EditorState ,
                             curr: EditorState,) {
-            const shouldReflow = trs.some(tr => tr.getMeta(pageReflowKey));
+            const latest = trs[trs.length - 1];
+            const shouldReflow = !!latest && latest.getMeta(pageReflowKey);
             if (!shouldReflow) {
                 return null;
             }
+
             const page = editorView?.page;
             if (!page) return null;
             const pageHeight = page.height - page.margin.top - page.margin.bottom;
@@ -215,6 +217,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                         pageCount += 1;
                         content = [split.second];
                         accum = h - split.used;
+                        prevMarginBottom = mb;
                         continue;
                     }
                     // else {
@@ -235,7 +238,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                     accum = blockHeight;
                 } else {
                     content.push(node);
-                    accum += h;
+                    accum += blockHeight;
                 }
                 prevMarginBottom = mb;
             }
