@@ -78,8 +78,14 @@ const splitParagraphByHeight = (
 
     const totalHeight = node.attrs.renderedHeight ?? 0;
     return {
-        first: schema.nodes.paragraph.create({ renderedHeight: used }, schema.text(firstText)),
-        second: schema.nodes.paragraph.create({ renderedHeight: totalHeight - used }, schema.text(secondText)),
+        first: schema.nodes.paragraph.create({ 
+            renderedHeight: used, 
+            renderedMarginTop: node.attrs.renderedMarginTop ?? 0,
+            renderedMarginBottom: 0, }, schema.text(firstText)),
+        second: schema.nodes.paragraph.create({ 
+            renderedHeight: totalHeight - used,
+            renderedMarginTop: 0,
+            renderedMarginBottom: node.attrs.renderedMarginBottom ?? 0, }, schema.text(secondText)),
         used,
         didSplit: true,
     };
@@ -146,17 +152,19 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             let currentList: ProseMirrorNode[] = [];   // <— add
             let lastListId: string | undefined;        // <— add
             let pageCount = 1;
-            let prevBottom = blocks[0]?.node.attrs.renderedTop ?? 0;
+            let prevMarginBottom = 0;
 
             for (const { node, pos, listId } of blocks) {
-                const h = node.attrs.renderedHeight ?? 0;
-                const top = node.attrs.renderedTop ?? prevBottom;
-                const bottom = top + h;
-                const delta = bottom - prevBottom;        // accounts for margin overlap
+                const h  = node.attrs.renderedHeight ?? 0;
+                const mt = node.attrs.renderedMarginTop ?? 0;
+                const mb = node.attrs.renderedMarginBottom ?? 0;
+                const topGap = Math.max(mt - prevMarginBottom, 0);
+                const blockHeight = topGap + h;
                 const remaining = pageHeight - accum;
-                const overlap = Math.max(0, prevBottom - top);
+                
+                console.log(editorView?.nodeDOM(pos))
 
-                console.log("DOM height:", h)
+                console.log("DOM heights:", mt, h, mb)
                 console.log(node)
                 // if (listId) {  // list item
                 //     lastListId = listId;  
@@ -186,13 +194,19 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 if (
                     node.type.name === "paragraph" &&
                     node.textContent &&
-                    delta > remaining &&
-                    editorView) 
-                {
+                    blockHeight > remaining &&
+                    editorView
+                ){
                     console.log("--- Paragraph --- ", h, " > ", remaining)
                     console.log(node.toJSON())
 
-                    const split = splitParagraphByHeight(editorView, node, pos, remaining + overlap, schema);
+                    const split = splitParagraphByHeight(
+                        editorView,
+                        node,
+                        pos,
+                        remaining - topGap,
+                        schema
+                    );
                     console.log(split)
                     if (split?.didSplit) {
                         content.push(split.first);
@@ -203,27 +217,27 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                         accum = h - split.used;
                         continue;
                     }
-                    else {
-                        pages.push(schema.nodes.page.create(null, content));
-                        pageCount += 1;
-                        content = [node];
-                        accum = h;
-                        continue
-                    }
+                    // else {
+                    //     pages.push(schema.nodes.page.create(null, content));
+                    //     pageCount += 1;
+                    //     content = [node];
+                    //     accum = h;
+                    //     continue
+                    // }
                 }
 
-                if (accum + h > pageHeight && content.length) {
+                if (accum + blockHeight > pageHeight && content.length) {
                     pages.push(schema.nodes.page.create(null, content));
-                    if (pages.length >= maxPages) {
-                        break;
-                    }
+                    if (pages.length >= maxPages) break;
+
                     pageCount += 1;
                     content = [node];
-                    accum = h;
+                    accum = blockHeight;
                 } else {
                     content.push(node);
                     accum += h;
                 }
+                prevMarginBottom = mb;
             }
 
             if (pages.length < maxPages && content.length) {

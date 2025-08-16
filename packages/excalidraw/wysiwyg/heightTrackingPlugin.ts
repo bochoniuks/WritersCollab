@@ -8,8 +8,9 @@ import { pageReflowKey } from "./pageReflow";
 type Measured = {
   node: ProseMirrorNode;
   pos: number;
-  top: number;
   height: number;
+  marginTop: number;
+  marginBottom: number;
 };
 
 const collectHeights = (
@@ -40,9 +41,11 @@ const collectHeights = (
     const rootScaleY = rootRect.height / view.dom.offsetHeight;
     for (const { node, dom, pos } of nodes) {
       const rect = dom.getBoundingClientRect();
-      const top = (rect.top - rootRect.top) / rootScaleY;
+      const style = getComputedStyle(dom);
       const height = rect.height / rootScaleY;
-      measured.push({ node, pos, top, height });
+      const marginTop = parseFloat(style.marginTop) / rootScaleY;
+      const marginBottom = parseFloat(style.marginBottom) / rootScaleY;
+      measured.push({ node, pos, height, marginTop, marginBottom });
     }
     return measured;
 };
@@ -53,15 +56,17 @@ export const runHeightTracking = (view: EditorView, start = 0,
   let tr = view.state.tr;
   let changed = false;
 
-  for (const { node, pos, height } of measured) {
+  for (const { node, pos, height, marginTop, marginBottom } of measured) {
     if (
-      node.attrs.renderedTop !== top ||
-      node.attrs.renderedHeight !== height
+      node.attrs.renderedHeight !== height ||
+      node.attrs.renderedMarginTop !== marginTop ||
+      node.attrs.renderedMarginBottom !== marginBottom
     ) {
       tr = tr.setNodeMarkup(pos, undefined, {
         ...node.attrs,
-        renderedTop: top,
         renderedHeight: height,
+        renderedMarginTop: marginTop,
+        renderedMarginBottom: marginBottom,
       });
       changed = true;
     }
@@ -87,16 +92,21 @@ export const HeightTracking = Extension.create({
         // types: ["page", "paragraph", "bulletList", "listItem"],
         types: blockTypes,
         attributes: {
-          renderedTop: {
-            default: null,
-            renderHTML: () => ({}),
-            parseHTML: () => null,
-          },
           renderedHeight: {
             default: null,
             renderHTML: () => ({}),
             parseHTML: () => null,
-          }
+          },
+          renderedMarginTop: {
+            default: null,
+            renderHTML: () => ({}),
+            parseHTML: () => null,
+          },
+          renderedMarginBottom: {
+            default: null,
+            renderHTML: () => ({}),
+            parseHTML: () => null,
+          },
         }
         // attributes: {
         //   renderedHeight: {
