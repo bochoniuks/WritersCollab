@@ -139,17 +139,6 @@ export const HeightTracking = Extension.create({
         //   }
         // },
       },
-      {
-      types: ["paragraph"],
-      attributes: {
-        splitId: {
-          default: null,
-          parseHTML: el => el.getAttribute("data-split-id"),
-          renderHTML: attrs =>
-            attrs.splitId ? { "data-split-id": attrs.splitId } : {},
-        },
-      },
-    },
     ];
   },
   addProseMirrorPlugins() {
