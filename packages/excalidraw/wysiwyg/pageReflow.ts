@@ -30,7 +30,8 @@ function mergeParagraphsBySplitId(
 ) {
   let tr: Transaction | null = null;
 
-  for (let i = 0; i < blocks.length - 1; i++) {
+  let i = 0;
+  while (i < blocks.length - 1) {
     const a = blocks[i];
     const b = blocks[i + 1];
 
@@ -59,7 +60,11 @@ function mergeParagraphsBySplitId(
 
       tr = (tr ?? state.tr).replaceWith(from, to, mergedNode);
       blocks.splice(i, 2, { node: mergedNode, pos: from }); // keep scanning
-      i--;
+      console.log("*************** MERGED ***************")
+    //   if (i > 0) i--;                         // re-check previous neighbor
+    } else {
+        console.log("---------------- SKIPPED ----------------")
+        i++;                                    // advance only when no merge
     }
   }
 
@@ -166,7 +171,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                             prev: EditorState ,
                             curr: EditorState,) {
             const latest = trs[trs.length - 1];
-            const shouldReflow = !!latest && latest.getMeta(pageReflowKey);
+            const shouldReflow = latest?.getMeta(pageReflowKey);
             if (!shouldReflow) {
                 return null;
             }
@@ -198,6 +203,15 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                     return false;                     // no need to visit inline children
                 }
             });
+
+            if (!shouldReflow.merged) {                          // only merge on external edits
+                const mergeTr = mergeParagraphsBySplitId(blocks, curr, schema);
+                console.log(mergeTr)
+                if (mergeTr && mergeTr.docChanged) {
+                    mergeTr.setMeta(pageReflowKey, { merged: true });
+                    return mergeTr;                          // ProseMirror will call again
+                }
+            }
             
             // const mergeTr = mergeParagraphsBySplitId(blocks, curr, schema);
             // console.log(mergeTr)
