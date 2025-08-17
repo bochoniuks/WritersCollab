@@ -120,10 +120,21 @@ const mergeSplitParagraph = (view: EditorView, splitId: string) => {
     Fragment.empty
   );
   const merged = state.schema.nodes.paragraph.create(attrs, mergedContent);
+  const anchorInside = anchor >= from && anchor <= to;
+  const headInside = head >= from && head <= to;
+  const anchorOffset = anchorInside ? anchor - from : 0;
+  const headOffset = headInside ? head - from : 0;
+
   let tr = state.tr.replaceWith(from, to, merged);
-  const mappedAnchor = tr.mapping.map(anchor);
-  const mappedHead = tr.mapping.map(head);
-  tr = tr.setSelection(TextSelection.create(tr.doc, mappedAnchor, mappedHead));
+
+  const newAnchor = anchorInside
+    ? from + Math.min(anchorOffset, merged.nodeSize - 1)
+    : tr.mapping.map(anchor, -1);
+  const newHead = headInside
+    ? from + Math.min(headOffset, merged.nodeSize - 1)
+    : tr.mapping.map(head, -1);
+
+  tr = tr.setSelection(TextSelection.create(tr.doc, newAnchor, newHead));
   view.dispatch(tr);
   return { from, to: from + merged.nodeSize };
 };
