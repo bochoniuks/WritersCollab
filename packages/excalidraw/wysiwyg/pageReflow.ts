@@ -7,6 +7,7 @@ import { Plugin, PluginKey, TextSelection,
 import type { EditorView } from "prosemirror-view";
 import type { Node as ProseMirrorNode, ResolvedPos, Schema } from "prosemirror-model";
 import { NullableGridSize } from "../types";
+import { randomId } from "@excalidraw/common";
 
 export interface PageReflowOptions {
   maxPages?: number;
@@ -133,12 +134,15 @@ const splitParagraphByHeight = (
     if (!firstText || !secondText) return { used: 0, didSplit: false };
 
     const totalHeight = node.attrs.renderedHeight ?? 0;
+    const splitId = node.attrs.splitId ?? randomId();
     return {
         first: schema.nodes.paragraph.create({ 
+            splitId,
             renderedHeight: used, 
             renderedMarginTop: node.attrs.renderedMarginTop ?? 0,
             renderedMarginBottom: 0, }, schema.text(firstText)),
         second: schema.nodes.paragraph.create({ 
+            splitId,
             renderedHeight: totalHeight - used,
             renderedMarginTop: 0,
             renderedMarginBottom: node.attrs.renderedMarginBottom ?? 0, }, schema.text(secondText)),
