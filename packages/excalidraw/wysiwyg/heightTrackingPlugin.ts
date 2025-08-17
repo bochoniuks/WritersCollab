@@ -1,7 +1,7 @@
 import { Extension } from "@tiptap/core";
-import { Plugin, PluginKey } from "prosemirror-state";
+import { Plugin, PluginKey, TextSelection } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
-import type { Node as ProseMirrorNode } from "prosemirror-model";
+import { Fragment, type Node as ProseMirrorNode } from "prosemirror-model";
 import { pageReflowKey } from "./pageReflow";
 
 
@@ -87,6 +87,46 @@ export const runHeightTracking = (view: EditorView, start = 0,
   }
 };
 
+const mergeSplitParagraph = (view: EditorView, splitId: string) => {
+  const { state } = view;
+  const { anchor, head } = state.selection;
+  let from: number | null = null;
+  let to: number | null = null;
+  const contents: any[] = [];
+  let attrs: Record<string, any> | null = null;
+
+  state.doc.descendants((node, pos) => {
+    if (node.type.name === "paragraph" && node.attrs.splitId === splitId) {
+      if (from === null) {
+        from = pos;
+        attrs = { ...node.attrs };
+        delete attrs.splitId;
+        delete attrs.renderedHeight;
+        delete attrs.renderedMarginTop;
+        delete attrs.renderedMarginBottom;
+        delete attrs.renderedPageIndex;
+      }
+      to = pos + node.nodeSize;
+      contents.push(node.content);
+    }
+  });
+
+  if (from == null || to == null || !attrs) {
+    return null;
+  }
+
+  const mergedContent = contents.reduce(
+    (frag, c) => frag.append(c),
+    Fragment.empty
+  );
+  const merged = state.schema.nodes.paragraph.create(attrs, mergedContent);
+  let tr = state.tr.replaceWith(from, to, merged);
+  const mappedAnchor = tr.mapping.map(anchor);
+  const mappedHead = tr.mapping.map(head);
+  tr = tr.setSelection(TextSelection.create(tr.doc, mappedAnchor, mappedHead));
+  view.dispatch(tr);
+  return { from, to: from + merged.nodeSize };
+};
 
 export const HeightTracking = Extension.create({
   name: "heightTracking",
@@ -162,15 +202,21 @@ export const HeightTracking = Extension.create({
 
               const diffStart = view.state.doc.content.findDiffStart(prevState.doc.content);
               if (diffStart == null) return;
-              // const diffEnd = view.state.doc.content.findDiffEnd(prevState.doc.content) ?? {
-              //   a: view.state.doc.content.size,
-              // };
               const diff = view.state.doc.content.findDiffEnd(prevState.doc.content);
               const diffEnd = diff ? diff.a : view.state.doc.content.size;
               const from = Math.max(0, diffStart - 1);
               const to = Math.min(view.state.doc.content.size, diffEnd + 1);
-              console.log(from, to)
-              runHeightTracking(view, from, to)
+
+              const changed = view.state.doc.nodeAt(diffStart);
+              if (changed?.type.name === "paragraph" && changed.attrs.splitId) {
+                const merged = mergeSplitParagraph(view, changed.attrs.splitId);
+                if (merged) {
+                  runHeightTracking(view, merged.from, merged.to);
+                  return;
+                }
+              }
+
+              runHeightTracking(view, from, to);
             },
           };
         },
