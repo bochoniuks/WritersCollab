@@ -23,6 +23,30 @@ export const Page = Node.create<PageOptions>({
   renderHTML({ HTMLAttributes }) {
     return ["div", mergeAttributes({ class: "page " }, HTMLAttributes), 0];
   },
+
+  addKeyboardShortcuts() {
+    return {
+      Backspace: ({ editor }) => {
+        const { state } = editor.view;
+        const { $from } = state.selection;
+
+        if (
+          $from.parentOffset === 0 &&
+          $from.depth >= 2 &&
+          $from.node(-1).type.name === "page" &&
+          $from.index(-1) === 0 &&
+          state.doc.resolve($from.before(-1)).nodeBefore
+        ) {
+          return editor
+            .chain()
+            .deleteSelection() // remove page boundary
+            .joinBackward()    // merge paragraphs & remove last char
+            .run();
+        }
+        return false;
+      },
+    };
+  },
 });
 
 
