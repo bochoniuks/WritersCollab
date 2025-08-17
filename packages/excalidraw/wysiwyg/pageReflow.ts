@@ -23,6 +23,49 @@ interface SplitResult {
 
 export const pageReflowKey = new PluginKey("pageReflow");
 
+function mergeParagraphsBySplitId(
+  blocks: Array<{ node: ProseMirrorNode; pos: number }>,
+  state: EditorState,
+  schema: Schema,
+) {
+  let tr: Transaction | null = null;
+
+  for (let i = 0; i < blocks.length - 1; i++) {
+    const a = blocks[i];
+    const b = blocks[i + 1];
+
+    if (
+      a.node.type.name === "paragraph" &&
+      b.node.type.name === "paragraph" &&
+      a.node.attrs.splitId &&
+      a.node.attrs.splitId === b.node.attrs.splitId
+    ) {
+      const from = a.pos;
+      const to   = b.pos + b.node.nodeSize;
+
+      const mergedText = a.node.textContent + b.node.textContent;
+      const attrs = {
+        ...a.node.attrs,
+        renderedMarginBottom:
+          b.node.attrs.renderedMarginBottom ??
+          a.node.attrs.renderedMarginBottom ?? 0,
+      };
+    //   delete attrs.renderedHeight;               // re‑measure later
+
+      const mergedNode = schema.nodes.paragraph.create(
+        attrs,
+        schema.text(mergedText),
+      );
+
+      tr = (tr ?? state.tr).replaceWith(from, to, mergedNode);
+      blocks.splice(i, 2, { node: mergedNode, pos: from }); // keep scanning
+      i--;
+    }
+  }
+
+  return tr;
+}
+
 const splitParagraphByHeight = (
   view: EditorView,
   node: ProseMirrorNode,
@@ -37,18 +80,20 @@ const splitParagraphByHeight = (
     const range = document.createRange();
     console.log(dom)
     range.selectNodeContents(dom);
+    console.log(range)
 
     // ### We need this to adap for any scaling
     const rootRect = view.dom.getBoundingClientRect();
     const rootScale = rootRect.height / view.dom.offsetHeight;
     // ###
 
+    console.log(node.content)
     const rects = Array.from(range.getClientRects());
 
     const linesSpace = rects.map(r=>r.height).reduce((acc, current) => acc + current, 0);
     const interLinesSpace = range.getBoundingClientRect().height - linesSpace;
     const spacePerLine = interLinesSpace / rects.length;
-
+    console.log(rects)
     let used = 0, idx = 0;
     while (idx < rects.length && used + (rects[idx].height+spacePerLine)/rootScale <= remaining) {
         used += (rects[idx].height+spacePerLine)/rootScale;
@@ -132,7 +177,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
 
 
             const { schema } = curr;
-            const blocks: Array<{ node: any; pos: number; listId?: string }> = [];
+            let blocks: Array<{ node: any; pos: number; listId?: string }> = [];
 
             const { anchor, head } = curr.selection;
             
@@ -153,6 +198,14 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                     return false;                     // no need to visit inline children
                 }
             });
+            
+            // const mergeTr = mergeParagraphsBySplitId(blocks, curr, schema);
+            // console.log(mergeTr)
+            // if (mergeTr && mergeTr.docChanged) {
+            //     return mergeTr;              // ProseMirror applies this first
+            // }
+
+            console.log(blocks)
 
             let anchorInfo = blocks.find(b => anchor >= b.pos && anchor < b.pos + b.node.nodeSize);
             let headInfo = blocks.find(b => head >= b.pos && head < b.pos + b.node.nodeSize);
