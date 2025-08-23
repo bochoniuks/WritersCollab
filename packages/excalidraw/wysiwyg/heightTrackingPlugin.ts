@@ -98,9 +98,29 @@ const countSplitParagraphs = (doc: ProseMirrorNode, splitId: string) => {
   return count;
 };
 
-const mergeSplitParagraph = (view: EditorView, splitId: string) => {
+const mergeSplitParagraph = (
+  view: EditorView, 
+  splitId: string,
+  scope: "all" | "before" | "after" = "all"
+) => {
   const { state } = view;
   const { anchor, head } = state.selection;
+  const selectionPos = state.selection.from;
+
+  let currentStart: number | null = null
+  state.doc.descendants((node, pos) => {
+    if (node.type.name === 'paragraph') {
+      if (pos < selectionPos && selectionPos < pos + node.nodeSize) {
+        currentStart = pos
+        return false // stop the traversal early once found
+      }
+    }
+    return true
+  })
+  if (currentStart == null && scope !== 'all') {
+    return null
+  }
+
   let from: number | null = null;
   let to: number | null = null;
   const contents: any[] = [];
@@ -108,6 +128,16 @@ const mergeSplitParagraph = (view: EditorView, splitId: string) => {
 
   state.doc.descendants((node, pos) => {
     if (node.type.name === "paragraph" && node.attrs.splitId === splitId) {
+      const isBeforeCurrent = currentStart != null && (pos + node.nodeSize) <= currentStart
+      const isAfterOrCurrent = currentStart != null && pos >= currentStart
+
+      const take =
+      scope === 'all' ||
+      (scope === 'before' && isBeforeCurrent) ||
+      (scope === 'after' && isAfterOrCurrent)
+
+      if (!take) return true
+      
       if (from === null) {
         from = pos;
         attrs = { ...node.attrs };
@@ -236,11 +266,13 @@ export const HeightTracking = Extension.create({
                 const prevCount = countSplitParagraphs(prevState.doc, splitId);
                 const currCount = countSplitParagraphs(view.state.doc, splitId);
 
+                let merged;
                 if (currCount > prevCount) {
-
+                  merged = mergeSplitParagraph(view, splitId, "after");
+                } else {
+                  merged = mergeSplitParagraph(view, splitId);
                 }
-                
-                const merged = mergeSplitParagraph(view, splitId);
+
                 if (merged) {
                   runHeightTracking(view, merged.from, merged.to);
                   return;
