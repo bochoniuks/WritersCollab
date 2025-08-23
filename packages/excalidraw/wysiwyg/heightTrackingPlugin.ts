@@ -87,6 +87,17 @@ export const runHeightTracking = (view: EditorView, start = 0,
   }
 };
 
+// heightTrackingPlugin.ts
+const countSplitParagraphs = (doc: ProseMirrorNode, splitId: string) => {
+  let count = 0;
+  doc.descendants(node => {
+    if (node.type.name === "paragraph" && node.attrs.splitId === splitId) {
+      count++;
+    }
+  });
+  return count;
+};
+
 const mergeSplitParagraph = (view: EditorView, splitId: string) => {
   const { state } = view;
   const { anchor, head } = state.selection;
@@ -221,7 +232,15 @@ export const HeightTracking = Extension.create({
               const $pos = view.state.doc.resolve(diffStart);
               const changed = $pos.parent;
               if (changed?.type.name === "paragraph" && changed.attrs.splitId) {
-                const merged = mergeSplitParagraph(view, changed.attrs.splitId);
+                const splitId = changed.attrs.splitId;
+                const prevCount = countSplitParagraphs(prevState.doc, splitId);
+                const currCount = countSplitParagraphs(view.state.doc, splitId);
+
+                if (currCount > prevCount) {
+
+                }
+                
+                const merged = mergeSplitParagraph(view, splitId);
                 if (merged) {
                   runHeightTracking(view, merged.from, merged.to);
                   return;
