@@ -218,7 +218,8 @@ export const HeightTracking = Extension.create({
               const from = Math.max(0, diffStart - 1);
               const to = Math.min(view.state.doc.content.size, diffEnd + 1);
 
-              const changed = view.state.doc.nodeAt(diffStart);
+              const $pos = view.state.doc.resolve(diffStart);
+              const changed = $pos.parent;
               if (changed?.type.name === "paragraph" && changed.attrs.splitId) {
                 const merged = mergeSplitParagraph(view, changed.attrs.splitId);
                 if (merged) {
