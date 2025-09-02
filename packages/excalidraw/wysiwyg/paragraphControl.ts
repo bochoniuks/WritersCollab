@@ -119,12 +119,30 @@ export function classifyEdit(
 
   console.log(prevStart, prevEnd)
   console.log(currStart, currEnd)
-  const prevSame = sameBlock(prevStart, prevEnd);
-  const currSame = sameBlock(currStart, currEnd);
 
-  if (prevSame && currSame) return EditFlag.REGULAR_EDIT;
-  if (prevSame && !currSame) return EditFlag.PARAGRAPH_BREAK;
-  if (!prevSame && currSame) return EditFlag.PARAGRAPH_MERGE;
+  
+  const prevSameIndex = prevStart.indexInDoc === prevEnd.indexInDoc;
+  const currSameIndex = currStart.indexInDoc === currEnd.indexInDoc;
+
+
+  if (prevSameIndex && currSameIndex) {
+    if (currStart.indexInDoc > prevStart.indexInDoc) {
+      return EditFlag.PARAGRAPH_BREAK;
+    }
+    if (currStart.indexInDoc === prevStart.indexInDoc) {
+      return EditFlag.REGULAR_EDIT;
+    }
+  }
+
+  if (!prevSameIndex && currSameIndex &&
+      currStart.indexInDoc === prevStart.indexInDoc) {
+    return EditFlag.PARAGRAPH_MERGE;
+  }
+
+  if (prevSameIndex && !currSameIndex) {
+    return EditFlag.PARAGRAPH_BREAK;
+  }
+
   return EditFlag.REGULAR_EDIT;
 }
 
