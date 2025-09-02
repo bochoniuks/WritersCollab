@@ -121,15 +121,28 @@ export function classifyEdit(
 
 /**
  * Split-ID aware decision logic with updated 2.1.3:
- *
+ * 1) REGULAR_EDIT  -> DO_NOTHING 
  * 2) PARAGRAPH_BREAK:
  *    2.1 If initial start has splitId:
- *        2.1.3 If previous *and* next share it -> BREAK_SPLIT_ID(splitId)   ⬅️ NEW precedence
+ *        2.1.3 If previous *and* next share it -> BREAK_SPLIT_ID(splitId)  
  *        2.1.1 Else if previous share it      -> KEEP_START_SPLIT_ID(splitId)
  *        2.1.2 Else if next share it          -> KEEP_END_SPLIT_ID(splitId)
  *        Else -> PARAGRAPH_BREAK
  *    2.2 If no splitId on start -> PARAGRAPH_BREAK
+ 3) PARAGRAPH_MERGE:
+ *    3.1 If start has splitId and end has a *different* splitId ->
+ *        REPLACE_SPLIT_ID(keepSplitId = start.splitId, replaceSplitId = end.splitId)
+ *    3.2 If start has no splitId and end has splitId ->
+ *        MERGE_NODES_END(endSplitId = end.splitId, startSplitId = '')
+ *    3.3 If start has splitId and end has no splitId ->
+ *        KEEP_START_SPLIT_ID(start.splitId)
+ *
+ * Notes:
+ * - When both previous *and* next siblings share the splitId on a paragraph break,
+ *   this function prefers KEEP_START_SPLIT_ID (stable, backward-leaning choice). Adjust if needed.
+ * - If none of the merge sub-cases apply, we default to DO_NOTHING (pragmatic no-op).
  */
+
 export function decideSplitAction(
   prev: EditorState,
   curr: EditorState,
@@ -174,8 +187,8 @@ export function decideSplitAction(
     case EditFlag.PARAGRAPH_MERGE: {
       const startHas = !!startId;
       const endHas   = !!endId;
-
       if (startHas && endHas && startId !== endId) {
+        // 3.1 Different split ids: keep start, replace end.
         return {
           type: ActionType.REPLACE_SPLIT_ID,
           keepSplitId: startId!,
@@ -183,11 +196,18 @@ export function decideSplitAction(
         };
       }
       if (!startHas && endHas) {
-        return { type: ActionType.MERGE_NODES_END, endSplitId: endId!, startSplitId: '' };
+        // 3.2 Start has none, end has one: merge into end's splitId.
+        return {
+          type: ActionType.MERGE_NODES_END,
+          endSplitId: endId!,
+          startSplitId: '',
+        };
       }
       if (startHas && !endHas) {
+        // 3.3 Keep the start split id.
         return { type: ActionType.KEEP_START_SPLIT_ID, splitId: startId! };
       }
+      // Both lack splitId or both identical => nothing to do.
       return { type: ActionType.DO_NOTHING };
     }
   }

@@ -1,7 +1,13 @@
 import { Extension } from "@tiptap/core";
-import { Plugin, PluginKey, TextSelection } from "prosemirror-state";
+import { Plugin  } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
-import { Fragment, type Node as ProseMirrorNode } from "prosemirror-model";
+import { type Node as ProseMirrorNode } from "prosemirror-model";
+import {
+  decideSplitAction,
+  ActionType,
+  type Action,
+} from "./paragraphControl";
+import { randomId } from "@excalidraw/common";
 import { pageReflowKey } from "./pageReflow";
 
 
@@ -87,97 +93,78 @@ export const runHeightTracking = (view: EditorView, start = 0,
   }
 };
 
-// heightTrackingPlugin.ts
-const countSplitParagraphs = (doc: ProseMirrorNode, splitId: string) => {
-  let count = 0;
-  doc.descendants(node => {
-    if (node.type.name === "paragraph" && node.attrs.splitId === splitId) {
-      count++;
-    }
-  });
-  return count;
-};
-
-const mergeSplitParagraph = (
-  view: EditorView, 
-  splitId: string,
-  scope: "all" | "before" | "after" = "all"
-) => {
+const applySplitAction = (view: EditorView, action: Action) => {
   const { state } = view;
-  const { anchor, head } = state.selection;
-  const selectionPos = state.selection.from;
+  let tr = state.tr;
 
-  let currentStart: number | null = null
-  state.doc.descendants((node, pos) => {
-    if (node.type.name === 'paragraph') {
-      if (pos < selectionPos && selectionPos < pos + node.nodeSize) {
-        currentStart = pos
-        return false // stop the traversal early once found
-      }
-    }
-    return true
-  })
-  if (currentStart == null && scope !== 'all') {
-    return null
-  }
-
-  let from: number | null = null;
-  let to: number | null = null;
-  const contents: any[] = [];
-  let attrs: Record<string, any> | null = null;
-
-  state.doc.descendants((node, pos) => {
-    if (node.type.name === "paragraph" && node.attrs.splitId === splitId) {
-      const isBeforeCurrent = currentStart != null && (pos + node.nodeSize) <= currentStart
-      const isAfterOrCurrent = currentStart != null && pos >= currentStart
-
-      const take =
-      scope === 'all' ||
-      (scope === 'before' && isBeforeCurrent) ||
-      (scope === 'after' && isAfterOrCurrent)
-
-      if (!take) return true
-      
-      if (from === null) {
-        from = pos;
-        attrs = { ...node.attrs };
+  switch (action.type) {
+    case ActionType.KEEP_START_SPLIT_ID: {
+      // TODO: This case should include the splitId in the start node 
+      // and remove the splitId in the end node.
+      const { splitId } = action;
+      const $from = state.selection.$from;
+      const pos = $from.before();
+      const nextPos = pos + $from.parent.nodeSize;
+      const next = state.doc.nodeAt(nextPos);
+      if (next?.type.name === "paragraph") {
+        const attrs = { ...next.attrs };
         delete attrs.splitId;
-        delete attrs.renderedHeight;
-        delete attrs.renderedMarginTop;
-        delete attrs.renderedMarginBottom;
-        delete attrs.renderedPageIndex;
+        tr = tr.setNodeMarkup(nextPos, undefined, attrs);
       }
-      to = pos + node.nodeSize;
-      contents.push(node.content);
+      view.dispatch(tr);
+      break;
     }
-  });
-
-  if (from == null || to == null || !attrs) {
-    return null;
+    case ActionType.KEEP_END_SPLIT_ID: {
+      // TODO: This case should include the splitId in the end node and 
+      // remove the splitId in the start node.
+      const { splitId } = action;
+      const $from = state.selection.$from;
+      const pos = $from.before();
+      const attrs = { ...$from.parent.attrs };
+      delete attrs.splitId;
+      tr = tr.setNodeMarkup(pos, undefined, attrs);
+      view.dispatch(tr);
+      break;
+    }
+    case ActionType.BREAK_SPLIT_ID: {
+      // TODO: This case should include the splitId in the start node and 
+      // define a new one that will be replaces for every paragraph after 
+      // the start node that use the start node splitId
+      const $from = state.selection.$from;
+      const nextPos = $from.before() + $from.parent.nodeSize;
+      const next = state.doc.nodeAt(nextPos);
+      if (next?.type.name === "paragraph") {
+        tr = tr.setNodeMarkup(nextPos, undefined, {
+          ...next.attrs,
+          splitId: randomId(),
+        });
+        view.dispatch(tr);
+      }
+      break;
+    }
+    case ActionType.REPLACE_SPLIT_ID: {
+      const { keepSplitId, replaceSplitId } = action;
+      state.doc.descendants((node, pos) => {
+        if (node.type.name === "paragraph" && node.attrs.splitId === replaceSplitId) {
+          tr = tr.setNodeMarkup(pos, undefined, {
+            ...node.attrs,
+            splitId: keepSplitId,
+          });
+        }
+      });
+      view.dispatch(tr);
+      break;
+    }
+    case ActionType.MERGE_NODES_END:
+      // TODO: This case should use the splitId from the end node for the 
+      // new node and replace all the nodes with splitId from start node 
+      // for the splitId from end Node.
+    case ActionType.PARAGRAPH_BREAK:
+    case ActionType.DO_NOTHING:
+    default:
+      // handled elsewhere or no structural changes
+      break;
   }
-
-  const mergedContent = contents.reduce(
-    (frag, c) => frag.append(c),
-    Fragment.empty
-  );
-  const merged = state.schema.nodes.paragraph.create(attrs, mergedContent);
-  const anchorInside = anchor >= from && anchor <= to;
-  const headInside = head >= from && head <= to;
-  const anchorOffset = anchorInside ? anchor - from : 0;
-  const headOffset = headInside ? head - from : 0;
-
-  let tr = state.tr.replaceWith(from, to, merged);
-
-  const newAnchor = anchorInside
-    ? from + Math.min(anchorOffset, merged.nodeSize - 1)
-    : tr.mapping.map(anchor, -1);
-  const newHead = headInside
-    ? from + Math.min(headOffset, merged.nodeSize - 1)
-    : tr.mapping.map(head, -1);
-
-  tr = tr.setSelection(TextSelection.create(tr.doc, newAnchor, newHead));
-  view.dispatch(tr);
-  return { from, to: from + merged.nodeSize };
 };
 
 export const HeightTracking = Extension.create({
@@ -259,24 +246,9 @@ export const HeightTracking = Extension.create({
               const from = Math.max(0, diffStart - 1);
               const to = Math.min(view.state.doc.content.size, diffEnd + 1);
 
-              const $pos = view.state.doc.resolve(diffStart);
-              const changed = $pos.parent;
-              if (changed?.type.name === "paragraph" && changed.attrs.splitId) {
-                const splitId = changed.attrs.splitId;
-                const prevCount = countSplitParagraphs(prevState.doc, splitId);
-                const currCount = countSplitParagraphs(view.state.doc, splitId);
-
-                let merged;
-                if (currCount > prevCount) {
-                  merged = mergeSplitParagraph(view, splitId, "after");
-                } else {
-                  merged = mergeSplitParagraph(view, splitId);
-                }
-
-                if (merged) {
-                  runHeightTracking(view, merged.from, merged.to);
-                  return;
-                }
+              const action = decideSplitAction(prevState, view.state);
+              if (action.type !== ActionType.DO_NOTHING) {
+                applySplitAction(view, action);
               }
 
               runHeightTracking(view, from, to);
