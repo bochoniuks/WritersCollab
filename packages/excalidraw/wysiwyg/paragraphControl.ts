@@ -49,12 +49,20 @@ function readSplitId(node: PMNode, splitAttr: string): string | undefined {
 
 function getBlockContext(doc: PMNode, pos: number, splitAttr: string): BlockContext {
   const $pos = doc.resolve(pos);
+
+  // Sube hasta el ancestro más cercano que sea un bloque
   let depth = $pos.depth;
   while (depth > 0 && !$pos.node(depth).type.isBlock) depth--;
+
   const node = $pos.node(depth);
   const parent = depth > 0 ? $pos.node(depth - 1) : doc;
-  const indexInParent = $pos.index(depth);
-  const startPos = $pos.start(depth);
+
+  // 🔧 El índice del bloque entre sus hermanos se calcula en el nivel del padre
+  const indexInParent = depth > 0 ? $pos.index(depth - 1) : 0;
+
+  // Para trabajar con posiciones de bloque, 'before(depth)' comunica mejor la intención
+  const startPos = depth > 0 ? $pos.before(depth) : 0;
+
   const splitId = readSplitId(node, splitAttr);
   return { node, depth, parent, indexInParent, startPos, splitId };
 }
@@ -110,6 +118,8 @@ export function classifyEdit(
   const currStart = getBlockContext(curr.doc, currFrom, splitAttr);
   const currEnd   = getBlockContext(curr.doc, currTo,   splitAttr);
 
+  console.log(prevStart, prevEnd)
+  console.log(currStart, currEnd)
   const prevSame = sameBlock(prevStart, prevEnd);
   const currSame = sameBlock(currStart, currEnd);
 
@@ -158,6 +168,7 @@ export function decideSplitAction(
   const startId  = startCtx.splitId;
   const endId    = endCtx.splitId;
 
+  console.log(flag)
   switch (flag) {
     case EditFlag.REGULAR_EDIT:
       return { type: ActionType.DO_NOTHING };

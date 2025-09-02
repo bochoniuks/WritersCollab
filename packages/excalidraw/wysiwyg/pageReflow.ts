@@ -30,12 +30,10 @@ const splitParagraphByHeight = (
   remaining: number,
   schema: Schema,
 ) => {
-    console.log("remainig: ", remaining)
     const dom = view.nodeDOM(pos) as HTMLElement | null;
     if (!dom) return { used: 0, didSplit: false };
 
     const range = document.createRange();
-    console.log(dom)
     range.selectNodeContents(dom);
 
     // ### We need this to adap for any scaling
@@ -54,33 +52,26 @@ const splitParagraphByHeight = (
         used += (rects[idx].height+spacePerLine)/rootScale;
         idx++;
     }
-    console.log(used)
     if (used===0) return { used: 0, didSplit: false };
 
     
     const lastRect = rects[Math.max(0, idx - 1)];
-    console.log(lastRect)
     let splitNode: ProseMirrorNode | null = null;
     let globalOffset: number | undefined = undefined;
     for (let dx = 0; dx < 5 && !globalOffset; dx++) {
         const x = lastRect.right - 1 - dx;
         const y = lastRect.top + lastRect.height / 2;
         const posInfo = view.posAtCoords({left: x, top: y});
-        console.log(posInfo)
         if (!posInfo) continue;
         const $pos = view.state.doc.resolve(posInfo.pos);
         splitNode = $pos.parent;           // parent node at that position
-        console.log(splitNode)
         // if(splitNode!=node) continue
         globalOffset = $pos.parentOffset;   // character offset inside the node
     }
     
     const text = node.textContent!;
-    console.log(globalOffset);
     const firstText = text.slice(0, globalOffset);
     const secondText = text.slice(globalOffset);
-    console.log(firstText)
-    console.log(secondText)
     if (!firstText || !secondText) return { used: 0, didSplit: false };
 
     const totalHeight = node.attrs.renderedHeight ?? 0;
@@ -159,9 +150,6 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             let anchorOff = anchorInfo ? anchor - anchorInfo.pos : anchor;
             let headOff = headInfo ? head - headInfo.pos : head;
 
-            console.log(anchorInfo)
-            console.log(headInfo)
-
             const pages: any[] = [];
             let accum = 0;
             let content: any[] = [];
@@ -170,7 +158,6 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             let pageCount = 1;
             let prevMarginBottom = 0;
 
-            console.log("************ STARTING NEW REFLOW **************")
 
             for (const { node, pos, listId } of blocks) {
                 const h  = node.attrs.renderedHeight ?? 0;
@@ -180,10 +167,6 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 const blockHeight = topGap + h;
                 const remaining = pageHeight - accum;
                 
-                console.log(editorView?.nodeDOM(pos))
-
-                console.log("DOM heights:", mt, h, mb)
-                console.log(node)
                 // if (listId) {  // list item
                 //     lastListId = listId;  
                 //     if (accum + h > pageHeight && currentList.length) {
@@ -207,18 +190,12 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                 // }
                 
                 // const remaining = pageHeight - accum;
-                // console.log(pageHeight, accum, remaining)
-                console.log("prevMarginBottom: ", prevMarginBottom)
-                console.log("blockHeight: ", blockHeight, "remaining: ", remaining)
                 if (
                     node.type.name === "paragraph" &&
                     node.textContent &&
                     blockHeight > remaining &&
                     editorView
                 ){
-                    console.log("--- Paragraph --- ", h, " > ", remaining)
-                    console.log(node.toJSON())
-
                     const split = splitParagraphByHeight(
                         editorView,
                         node,
@@ -226,7 +203,6 @@ export const PageReflow = Extension.create<PageReflowOptions>({
                         remaining - topGap,
                         schema
                     );
-                    console.log(split)
                     if (split?.didSplit && split?.splitOffset) {
                        if (anchorInfo?.node === node) {
                             if (anchorOff > split.splitOffset) {
@@ -305,7 +281,6 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             const safeAnchor = Math.min(Math.max(anchorPos, 0), tr.doc.content.size);
             const safeHead   = Math.min(Math.max(headPos,   0), tr.doc.content.size);
             tr.setSelection(TextSelection.create(tr.doc, safeAnchor, safeHead));
-            // console.log(newDoc.toJSON())
             return tr;
         },
       }),
