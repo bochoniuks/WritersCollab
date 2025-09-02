@@ -33,14 +33,23 @@ export interface PositionOverrides {
   currFrom?: number; currTo?: number;
 }
 
+function getDocumentBlocks(doc: PMNode): PMNode[] {
+  const blocks: PMNode[] = [];
+  doc.descendants(node => {
+    if (node.isBlock && node.type.name !== "page") blocks.push(node);
+  });
+  return blocks;
+}
+
 interface BlockContext {
   node: PMNode;
   depth: number;
-  parent: PMNode;
-  indexInParent: number;
+  doc: PMNode;
+  indexInDoc: number;
   startPos: number;
   splitId?: string;
 }
+
 
 function readSplitId(node: PMNode, splitAttr: string): string | undefined {
   const v = node?.attrs?.[splitAttr];
@@ -50,21 +59,17 @@ function readSplitId(node: PMNode, splitAttr: string): string | undefined {
 function getBlockContext(doc: PMNode, pos: number, splitAttr: string): BlockContext {
   const $pos = doc.resolve(pos);
 
-  // Sube hasta el ancestro más cercano que sea un bloque
   let depth = $pos.depth;
   while (depth > 0 && !$pos.node(depth).type.isBlock) depth--;
 
   const node = $pos.node(depth);
-  const parent = depth > 0 ? $pos.node(depth - 1) : doc;
-
-  // 🔧 El índice del bloque entre sus hermanos se calcula en el nivel del padre
-  const indexInParent = depth > 0 ? $pos.index(depth - 1) : 0;
-
-  // Para trabajar con posiciones de bloque, 'before(depth)' comunica mejor la intención
   const startPos = depth > 0 ? $pos.before(depth) : 0;
 
+  const blocks = getDocumentBlocks(doc);
+  const indexInDoc = blocks.findIndex(n => n === node);
+
   const splitId = readSplitId(node, splitAttr);
-  return { node, depth, parent, indexInParent, startPos, splitId };
+  return { node, depth, doc, indexInDoc, startPos, splitId };
 }
 
 function sameBlock(a: BlockContext, b: BlockContext): boolean {
@@ -78,12 +83,9 @@ function sameBlock(a: BlockContext, b: BlockContext): boolean {
 function anyPrevSharesSplitId(ctx: BlockContext, splitAttr: string): boolean {
   const id = readSplitId(ctx.node, splitAttr);
   if (!id) return false;
-  for (let i = ctx.indexInParent - 1; i >= 0; i--) {
-    const sib = ctx.parent.child(i);
-    const sid = readSplitId(sib, splitAttr);
-    if (sid === id) return true;
-    // For contiguous-only behavior, uncomment the next line:
-    // else break;
+  const blocks = getDocumentBlocks(ctx.doc);
+  for (let i = ctx.indexInDoc - 1; i >= 0; i--) {
+    if (readSplitId(blocks[i], splitAttr) === id) return true;
   }
   return false;
 }
@@ -92,12 +94,9 @@ function anyPrevSharesSplitId(ctx: BlockContext, splitAttr: string): boolean {
 function anyNextSharesSplitId(ctx: BlockContext, splitAttr: string): boolean {
   const id = readSplitId(ctx.node, splitAttr);
   if (!id) return false;
-  for (let i = ctx.indexInParent + 1; i < ctx.parent.childCount; i++) {
-    const sib = ctx.parent.child(i);
-    const sid = readSplitId(sib, splitAttr);
-    if (sid === id) return true;
-    // For contiguous-only behavior, uncomment the next line:
-    // else break;
+  const blocks = getDocumentBlocks(ctx.doc);
+  for (let i = ctx.indexInDoc + 1; i < blocks.length; i++) {
+    if (readSplitId(blocks[i], splitAttr) === id) return true;
   }
   return false;
 }

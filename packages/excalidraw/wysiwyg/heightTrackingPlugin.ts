@@ -111,8 +111,12 @@ const applySplitAction = (view: EditorView, action: Action) => {
         });
 
         // remove splitId from the end node
-        const endPos = startPos + $from.parent.nodeSize;
-        const end = state.doc.nodeAt(endPos);
+        let endPos = startPos + $from.parent.nodeSize;
+        let end = state.doc.nodeAt(endPos);
+        if (end?.type.name === "page") {
+          endPos += 1;                     // move to first child of the page
+          end = state.doc.nodeAt(endPos);
+        }
         if (end?.type.name === "paragraph") {
           const attrs = { ...end.attrs };
           delete attrs.splitId;
@@ -232,7 +236,7 @@ export const HeightTracking = Extension.create({
   addGlobalAttributes() {
     const blockTypes = this.extensions
       .filter(ext => {
-        return (ext.type === "node" && ext.config.group == "block");
+        return (ext.type === "node" && ext.config.group === "block");
       })
       .map(ext => ext.name);
 
