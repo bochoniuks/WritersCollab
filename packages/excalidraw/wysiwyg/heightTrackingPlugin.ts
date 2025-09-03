@@ -10,7 +10,7 @@ import {
 import { randomId } from "@excalidraw/common";
 import { pageReflowKey } from "./pageReflow";
 
-const heightTrackingInternalKey = new PluginKey<boolean>("heightTrackingInternal");
+import { heightTrackingInternalKey } from "./transactionFlags";
 
 type Measured = {
   node: ProseMirrorNode;

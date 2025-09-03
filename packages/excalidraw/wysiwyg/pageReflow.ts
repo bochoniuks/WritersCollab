@@ -5,8 +5,8 @@ import { Plugin, PluginKey, TextSelection,
  } from "prosemirror-state";
 
 import type { EditorView } from "prosemirror-view";
-import type { Node as ProseMirrorNode, ResolvedPos, Schema } from "prosemirror-model";
-import { NullableGridSize } from "../types";
+import type { Node as ProseMirrorNode, Schema } from "prosemirror-model";
+import { heightTrackingInternalKey } from "./transactionFlags";
 import { randomId } from "@excalidraw/common";
 
 export interface PageReflowOptions {
@@ -281,7 +281,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
             const safeAnchor = Math.min(Math.max(anchorPos, 0), tr.doc.content.size);
             const safeHead   = Math.min(Math.max(headPos,   0), tr.doc.content.size);
             tr.setSelection(TextSelection.create(tr.doc, safeAnchor, safeHead));
-            return tr;
+            return tr.setMeta(heightTrackingInternalKey, true);
         },
       }),
     ];
