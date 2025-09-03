@@ -138,21 +138,22 @@ const applySplitAction = (view: EditorView, action: Action) => {
       // remove the splitId in the start node.
       const { splitId } = action;
       const $from = state.selection.$from;
-      const startPos = $from.before();
+      const endPos = $from.before();                       // start of new paragraph
 
-      // remove splitId from the start node
-      const startAttrs = { ...$from.parent.attrs };
-      delete startAttrs.splitId;
-      tr = tr.setNodeMarkup(startPos, undefined, startAttrs);
+      // ensure the new (end) paragraph keeps the splitId
+      tr = tr.setNodeMarkup(endPos, undefined, {
+        ...$from.parent.attrs,
+        splitId,
+      });
 
-      // ensure the end node carries the splitId
-      const endPos = startPos + $from.parent.nodeSize;
-      const end = state.doc.nodeAt(endPos);
-      if (end?.type.name === "paragraph") {
-        tr = tr.setNodeMarkup(endPos, undefined, {
-          ...end.attrs,
-          splitId,
-        });
+      // remove the splitId from the paragraph before the split
+      const $prev = state.doc.resolve(endPos);
+      const prevNode = $prev.nodeBefore;
+      if (prevNode && prevNode.type.name === "paragraph") {
+        const startPos = endPos - prevNode.nodeSize;
+        const attrs = { ...prevNode.attrs };
+        delete attrs.splitId;
+        tr = tr.setNodeMarkup(startPos, undefined, attrs);
       }
 
       view.dispatch(tr.setMeta(heightTrackingInternalKey, true));
