@@ -129,8 +129,9 @@ export function classifyEdit(
     if (currStart.indexInDoc > prevStart.indexInDoc) {
       return EditFlag.PARAGRAPH_BREAK;
     }
-    if (currStart.indexInDoc === prevStart.indexInDoc) {
-      return EditFlag.REGULAR_EDIT;
+    if (currStart.indexInDoc < prevStart.indexInDoc) {
+      // caret moved to a preceding block → backspace merge
+      return EditFlag.PARAGRAPH_MERGE;
     }
   }
 
@@ -180,8 +181,13 @@ export function decideSplitAction(
 
   const prevFrom = positions?.prevFrom ?? prev.selection.from;
   const prevTo   = positions?.prevTo   ?? prev.selection.to;
-  const startCtx = getBlockContext(prev.doc, prevFrom, splitAttr);
-  const endCtx   = getBlockContext(prev.doc, prevTo,   splitAttr);
+
+  let startCtx = getBlockContext(prev.doc, prevFrom, splitAttr);
+  const endCtx = getBlockContext(prev.doc, prevTo, splitAttr);
+  if (flag === EditFlag.PARAGRAPH_MERGE && prevFrom === prevTo) {
+    // cursor was at start of the end paragraph; use previous block as start
+    startCtx = getBlockContext(prev.doc, Math.max(prevFrom - 1, 0), splitAttr);
+  }
   const startId  = startCtx.splitId;
   const endId    = endCtx.splitId;
 
