@@ -1,5 +1,5 @@
 import { Extension } from "@tiptap/core";
-import { Plugin  } from "prosemirror-state";
+import { Plugin, PluginKey  } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import { type Node as ProseMirrorNode } from "prosemirror-model";
 import {
@@ -10,6 +10,7 @@ import {
 import { randomId } from "@excalidraw/common";
 import { pageReflowKey } from "./pageReflow";
 
+const heightTrackingInternalKey = new PluginKey<boolean>("heightTrackingInternal");
 
 type Measured = {
   node: ProseMirrorNode;
@@ -62,6 +63,7 @@ const collectHeights = (
     return measured;
 };
 
+
 export const runHeightTracking = (view: EditorView, start = 0,
   end = view.state.doc.content.size) => {
   const measured = collectHeights(view, start, end);
@@ -87,7 +89,11 @@ export const runHeightTracking = (view: EditorView, start = 0,
   }
 
   if (changed) {
-    view.dispatch(tr.setMeta(pageReflowKey, true));
+    view.dispatch(
+      tr
+        .setMeta(pageReflowKey, true)
+        .setMeta(heightTrackingInternalKey, true)
+    );
   }
 };
 
@@ -123,7 +129,7 @@ const applySplitAction = (view: EditorView, action: Action) => {
           tr = tr.setNodeMarkup(endPos, undefined, attrs);
         }
 
-        view.dispatch(tr);
+        view.dispatch(tr.setMeta(heightTrackingInternalKey, true));
         break;
     }
     case ActionType.KEEP_END_SPLIT_ID: {
@@ -149,7 +155,7 @@ const applySplitAction = (view: EditorView, action: Action) => {
         });
       }
 
-      view.dispatch(tr);
+      view.dispatch(tr.setMeta(heightTrackingInternalKey, true));
       break;
     }
     case ActionType.BREAK_SPLIT_ID: {
@@ -177,7 +183,7 @@ const applySplitAction = (view: EditorView, action: Action) => {
         node = state.doc.nodeAt(pos);
       }
 
-      view.dispatch(tr);
+      view.dispatch(tr.setMeta(heightTrackingInternalKey, true));
       break;
     }
     case ActionType.REPLACE_SPLIT_ID: {
@@ -191,7 +197,7 @@ const applySplitAction = (view: EditorView, action: Action) => {
           });
         }
       });
-      view.dispatch(tr);
+      view.dispatch(tr.setMeta(heightTrackingInternalKey, true));
       break;
     }
     case ActionType.MERGE_NODES_END:
@@ -221,7 +227,7 @@ const applySplitAction = (view: EditorView, action: Action) => {
         });
       }
 
-      view.dispatch(tr);
+      view.dispatch(tr.setMeta(heightTrackingInternalKey, true));
       break;
     case ActionType.PARAGRAPH_BREAK:
     case ActionType.DO_NOTHING:
@@ -298,10 +304,22 @@ export const HeightTracking = Extension.create({
   addProseMirrorPlugins() {
     return [
       new Plugin({
+        key: heightTrackingInternalKey,
+        state: {
+          init: () => false,
+          apply(tr) {
+            return tr.getMeta(heightTrackingInternalKey) || false;
+          },
+        },
         view(editorView) {
           return {
             update(view, prevState) {
-              if (prevState.doc.eq(view.state.doc)) return;
+              if (
+                heightTrackingInternalKey.getState(view.state) ||
+                prevState.doc.eq(view.state.doc)
+              ) {
+                return;
+              }
 
               const diffStart = view.state.doc.content.findDiffStart(prevState.doc.content);
               if (diffStart == null) return;
