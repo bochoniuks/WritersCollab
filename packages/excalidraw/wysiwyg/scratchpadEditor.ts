@@ -46,7 +46,7 @@ export const getScratchpadExtensions = (
   return [
     pageConfigPlugin(pageConfig),
     DocumentWithPages,
-    StarterKit.configure({ document: false, bulletList: false }),
+    StarterKit.configure({ document: false, bulletList: false, heading: false }),
     PaginatedBulletList,
     TextStyle,
     Color,

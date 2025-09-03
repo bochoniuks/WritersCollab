@@ -136,6 +136,20 @@ const parseFontFamily = (value: string): FontFamilyValues => {
   return DEFAULT_FONT_FAMILY;
 };
 
+const normalizeHeadings = (doc: JSONContent): JSONContent => {
+  const walk = (node: JSONContent): JSONContent => {
+    const clone = { ...node };
+    if (clone.type === "heading") {
+      clone.type = "paragraph";
+      delete clone.attrs;
+    }
+    if (Array.isArray(clone.content)) {
+      clone.content = clone.content.map(walk);
+    }
+    return clone;
+  };
+  return walk(doc);                // returns a fully normalised copy
+};
 
 /**
  * Traverses a Tiptap JSON document and flattens it into
@@ -145,19 +159,20 @@ export const parseTiptapDoc = (
     doc: JSONContent,
     opts: { fontFamily?: FontFamilyValues; fontSize?: number; color?: string } = {},
     ): TiptapLine[] => {
-    const defaultFontFamily = opts.fontFamily ?? DEFAULT_FONT_FAMILY;
-    const defaultFontSize = opts.fontSize ?? DEFAULT_FONT_SIZE;
-    const defaultColor = opts.color ?? COLOR_PALETTE.black;
-  
-    const lines: TiptapLine[] = [];
-    let current: TiptapLine = [];
+      doc = normalizeHeadings(doc);            // new: convert h1–h6 → paragraph
+      const defaultFontFamily = opts.fontFamily ?? DEFAULT_FONT_FAMILY;
+      const defaultFontSize = opts.fontSize ?? DEFAULT_FONT_SIZE;
+      const defaultColor = opts.color ?? COLOR_PALETTE.black;
+    
+      const lines: TiptapLine[] = [];
+      let current: TiptapLine = [];
 
-  const pushLine = () => {
-    // if (current.length) {
-      lines.push(current);
-      current = [];
-    // }
-  };
+      const pushLine = () => {
+        // if (current.length) {
+          lines.push(current);
+          current = [];
+        // }
+      };
 
   const visit = (
     node: JSONContent,
@@ -211,7 +226,8 @@ export const parseTiptapDoc = (
       });
     }
     
-   
+    const isParagraphLike = node.type === "paragraph" || node.type === "heading";
+
     if (node.type === "text") {
         current.push({
           type: "text",
@@ -231,7 +247,7 @@ export const parseTiptapDoc = (
           fontSize: style.fontSize || defaultFontSize,
         });
         pushLine();
-    } else if(node.type === "paragraph" && (node.content?.length ?? 0) === 0){
+    } else if(isParagraphLike && (node.content?.length ?? 0) === 0){
         current.push({ type: "hardBreak",
           fontFamily: style.fontFamily || defaultFontFamily,
           fontSize: style.fontSize || defaultFontSize, });
@@ -239,7 +255,7 @@ export const parseTiptapDoc = (
     }
 
     if (Array.isArray(node.content)) {
-      if (node.type === "paragraph" && node.content.length === 0) {
+      if (isParagraphLike && node.content.length === 0) {
         // ensure blank paragraphs become blank lines
         current.push({ type: "hardBreak",
           fontFamily: style.fontFamily || defaultFontFamily,
@@ -248,7 +264,7 @@ export const parseTiptapDoc = (
       } else {
         node.content.forEach((child, idx) => {
           visit({ ...child }, { ...style });
-          if (node.type === "paragraph" && idx === node.content!.length - 1) {
+          if (isParagraphLike && idx === node.content!.length - 1) {
             pushLine();
           }
         });
