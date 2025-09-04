@@ -19,6 +19,7 @@ import { Page, pageConfigPlugin } from "./page";
 import { PageReflow } from "./pageReflow";
 import { PaginatedBulletList } from "./bulletList";
 import { SelectionHighlight } from "./selectionHighlight";
+import { ParagraphBlock } from "./paragraph";
 
 
 /**
@@ -46,8 +47,9 @@ export const getScratchpadExtensions = (
   return [
     pageConfigPlugin(pageConfig),
     DocumentWithPages,
-    StarterKit.configure({ document: false, bulletList: false, heading: false }),
+    StarterKit.configure({ document: false, bulletList: false, heading: false, paragraph: false }),
     PaginatedBulletList,
+    ParagraphBlock,
     TextStyle,
     Color,
     FontFamily,

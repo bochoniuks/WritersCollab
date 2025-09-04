@@ -104,6 +104,9 @@ export const HeightTracking = Extension.create({
         return (ext.type === "node" && ext.config.group === "block");
       })
       .map(ext => ext.name);
+    const splittableBlocks = this.extensions
+      .filter(ext => ext.type === "node" && ext.config.splittable)
+      .map(ext => ext.name);
 
     return [
       {
@@ -148,15 +151,15 @@ export const HeightTracking = Extension.create({
         // },
       },
       {
-      types: ["paragraph"],
-      attributes: {
-        splitId: {
-          default: null,
-          parseHTML: el => el.getAttribute("data-split-id"),
-          renderHTML: attrs =>
-            attrs.splitId ? { "data-split-id": attrs.splitId } : {},
+        types: splittableBlocks,
+        attributes: {
+          splitId: {
+            default: null,
+            parseHTML: el => el.getAttribute("data-split-id"),
+            renderHTML: attrs =>
+              attrs.splitId ? { "data-split-id": attrs.splitId } : {},
+          },
         },
-      },
     },
     ];
   },
@@ -187,10 +190,11 @@ export const HeightTracking = Extension.create({
               const from = Math.max(0, diffStart - 1);
               const to = Math.min(view.state.doc.content.size, diffEnd + 1);
 
-              const action = decideSplitAction(prevState, view.state);
-              console.log(action)
-              if (action.type !== ActionType.DO_NOTHING) {
-                applySplitAction(view, action);
+              const blockType = prevState.selection.$from.parent.type.name;
+              const strategy = getBlockStrategy(blockType);
+              if (strategy) {
+                const action = strategy.decide(prevState, view.state);
+                strategy.apply(view, action);
               }
 
               runHeightTracking(view, from, to);
