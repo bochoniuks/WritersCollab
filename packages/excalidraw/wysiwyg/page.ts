@@ -11,6 +11,7 @@ export const Page = Node.create<PageOptions>({
   group: "block",
   content: "block+",
   isolating: false,
+  splittable: false,
 
   addAttributes() {
     return { ...this.options.HTMLAttributes };
