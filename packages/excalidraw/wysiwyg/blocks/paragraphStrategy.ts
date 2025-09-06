@@ -39,7 +39,6 @@ export const paragraphStrategy: BlockStrategy<Action> = {
                 tr = tr.setNodeMarkup(endPos, undefined, attrs);
                 }
 
-                view.dispatch(tr.setMeta(heightTrackingInternalKey, true));
                 break;
             }
             case ActionType.KEEP_END_SPLIT_ID: {
@@ -66,7 +65,6 @@ export const paragraphStrategy: BlockStrategy<Action> = {
                 tr = tr.setNodeMarkup(startPos, undefined, attrs);
             }
 
-            view.dispatch(tr.setMeta(heightTrackingInternalKey, true));
             break;
             }
             case ActionType.BREAK_SPLIT_ID: {
@@ -94,7 +92,6 @@ export const paragraphStrategy: BlockStrategy<Action> = {
                 node = state.doc.nodeAt(pos);
             }
 
-            view.dispatch(tr.setMeta(heightTrackingInternalKey, true));
             break;
             }
             case ActionType.REPLACE_SPLIT_ID: {
@@ -108,7 +105,6 @@ export const paragraphStrategy: BlockStrategy<Action> = {
                 });
                 }
             });
-            view.dispatch(tr.setMeta(heightTrackingInternalKey, true));
             break;
             }
             case ActionType.MERGE_NODES_END:
@@ -138,7 +134,6 @@ export const paragraphStrategy: BlockStrategy<Action> = {
                 });
             }
 
-            view.dispatch(tr.setMeta(heightTrackingInternalKey, true));
             break;
             case ActionType.PARAGRAPH_BREAK:
             case ActionType.DO_NOTHING:
