@@ -160,6 +160,7 @@ export const PageReflow = Extension.create<PageReflowOptions>({
 
 
             for (const { node, pos, listId } of blocks) {
+                
                 const h  = node.attrs.renderedHeight ?? 0;
                 const mt = node.attrs.renderedMarginTop ?? 0;
                 const mb = node.attrs.renderedMarginBottom ?? 0;

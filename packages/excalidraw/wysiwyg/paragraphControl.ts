@@ -117,8 +117,6 @@ export function classifyEdit(
   const currStart = getBlockContext(curr.doc, currFrom, splitAttr);
   const currEnd   = getBlockContext(curr.doc, currTo,   splitAttr);
 
-  console.log(prevStart, prevEnd)
-  console.log(currStart, currEnd)
 
   
   const prevSameIndex = prevStart.indexInDoc === prevEnd.indexInDoc;

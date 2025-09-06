@@ -63,35 +63,35 @@ const collectHeights = (
 
 export const runHeightTracking = (view: EditorView, start = 0,
   end = view.state.doc.content.size) => {
-  const measured = collectHeights(view, start, end);
-  let tr = view.state.tr;
-  let changed = false;
+    const measured = collectHeights(view, start, end);
+    let tr = view.state.tr;
+    let changed = false;
 
-  for (const { node, pos, height, marginTop, marginBottom, pageIndex } of measured) {
-    if (
-      node.attrs.renderedHeight !== height ||
-      node.attrs.renderedMarginTop !== marginTop ||
-      node.attrs.renderedMarginBottom !== marginBottom ||
-      node.attrs.renderedPageIndex !== pageIndex
-    ) {
-      tr = tr.setNodeMarkup(pos, undefined, {
-        ...node.attrs,
-        renderedHeight: height,
-        renderedMarginTop: marginTop,
-        renderedMarginBottom: marginBottom,
-        renderedPageIndex: pageIndex,
-      });
-      changed = true;
+    for (const { node, pos, height, marginTop, marginBottom, pageIndex } of measured) {
+      if (
+        node.attrs.renderedHeight !== height ||
+        node.attrs.renderedMarginTop !== marginTop ||
+        node.attrs.renderedMarginBottom !== marginBottom ||
+        node.attrs.renderedPageIndex !== pageIndex
+      ) {
+        tr = tr.setNodeMarkup(pos, undefined, {
+          ...node.attrs,
+          renderedHeight: height,
+          renderedMarginTop: marginTop,
+          renderedMarginBottom: marginBottom,
+          renderedPageIndex: pageIndex,
+        });
+        changed = true;
+      }
     }
-  }
 
-  if (changed) {
-    view.dispatch(
-      tr
-        .setMeta(pageReflowKey, true)
-        .setMeta(heightTrackingInternalKey, true)
-    );
-  }
+    if (changed) {
+      view.dispatch(
+        tr
+          .setMeta(pageReflowKey, true)
+          .setMeta(heightTrackingInternalKey, true)
+      );
+    }
 };
 
 
@@ -99,12 +99,13 @@ export const runHeightTracking = (view: EditorView, start = 0,
 export const HeightTracking = Extension.create({
   name: "heightTracking",
   addGlobalAttributes() {
-    const blockTypes = this.extensions
+    const extensions = this.extensions;
+    const blockTypes = extensions
       .filter(ext => {
         return (ext.type === "node" && ext.config.group === "block");
       })
       .map(ext => ext.name);
-    const splittableBlocks = this.extensions
+    const splittableBlocks = extensions
       .filter(ext => ext.type === "node" && ext.config.splittable)
       .map(ext => ext.name);
 
@@ -155,9 +156,11 @@ export const HeightTracking = Extension.create({
         attributes: {
           splitId: {
             default: null,
-            parseHTML: el => el.getAttribute("data-split-id"),
-            renderHTML: attrs =>
-              attrs.splitId ? { "data-split-id": attrs.splitId } : {},
+            renderHTML: () => ({}),
+            parseHTML: () => null,
+            // parseHTML: el => el.getAttribute("data-split-id"),
+            // renderHTML: attrs =>
+            //   attrs.splitId ? { "data-split-id": attrs.splitId } : {},
           },
         },
     },
@@ -176,6 +179,7 @@ export const HeightTracking = Extension.create({
         view(editorView) {
           return {
             update(view, prevState) {
+              
               if (
                 heightTrackingInternalKey.getState(view.state) ||
                 prevState.doc.eq(view.state.doc)
@@ -191,7 +195,9 @@ export const HeightTracking = Extension.create({
               const to = Math.min(view.state.doc.content.size, diffEnd + 1);
 
               const blockType = prevState.selection.$from.parent.type.name;
+              console.log(blockType)
               const strategy = getBlockStrategy(blockType);
+              console.log(strategy)
               if (strategy) {
                 const action = strategy.decide(prevState, view.state);
                 strategy.apply(view, action);
